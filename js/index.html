@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIPE Market Data Dashboard</title>
+    
+    <!-- Link to the generated Tailwind CSS file -->
+    <link href="./css/style.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+    <!-- DataTables CSS for Tailwind -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.tailwindcss.min.css">
+</head>
+<body>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">AIPE Market Data Dashboard</h1>
+            <p class="text-lg text-gray-600 mt-1">Comprehensive analysis of market trends and ETF performance.</p>
+        </header>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Hottest Industry</h3>
+                <p id="hottest-industry" class="text-2xl font-bold text-indigo-600 mt-2 truncate">-</p>
+                <p id="hottest-industry-index" class="text-sm text-gray-500 mt-1">-</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Top Performer (YTD)</h3>
+                <p id="top-performer-name" class="text-2xl font-bold text-green-600 mt-2 truncate">-</p>
+                <p id="top-performer-change" class="text-sm text-gray-500 mt-1">-</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Biggest Share Growth (YTD)</h3>
+                <p id="top-share-growth-name" class="text-2xl font-bold text-blue-600 mt-2 truncate">-</p>
+                <p id="top-share-growth-change" class="text-sm text-gray-500 mt-1">-</p>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                <h3 class="text-sm font-medium text-gray-500">Worst Performer (Since '21)</h3>
+                <p id="worst-performer-name" class="text-2xl font-bold text-red-600 mt-2 truncate">-</p>
+                <p id="worst-performer-change" class="text-sm text-gray-500 mt-1">-</p>
+            </div>
+        </div>
+
+        <!-- Main Content Area: Charts and Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Time Series Chart -->
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4">U.S. Dollar Index (UDI) vs. Shenzhen Component Index (SZI)</h2>
+                    <div class="h-96">
+                        <canvas id="timeSeriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Interactive ETF Performance Table -->
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4">ETF Performance Overview</h2>
+                    <table id="etfTable" class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">ETF Name</th>
+                                <th scope="col" class="px-6 py-3 text-right">YTD Change (%)</th>
+                                <th scope="col" class="px-6 py-3 text-right">Since 2021 Change (%)</th>
+                                <th scope="col" class="px-6 py-3 text-right">YTD Share Change (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-8">
+                <!-- Hot Industries Chart -->
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4">Top 10 Hot Industries</h2>
+                    <div class="h-80">
+                        <canvas id="hotIndustriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AR Group Table -->
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
+                    <h2 class="text-xl font-semibold mb-4">AR Group Analysis (Latest)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3">Category</th>
+                                    <th scope="col" class="px-4 py-3 text-right">PotScore</th>
+                                </tr>
+                            </thead>
+                            <tbody id="arGroupTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- External JS Libraries (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.tailwindcss.min.js"></script>
+
+    <!-- Your custom application logic -->
+    <script src="./js/main.js"></script>
+
+</body>
+</html>

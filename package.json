@@ -1,0 +1,12 @@
+{
+  "name": "aipe-market-dashboard",
+  "version": "1.0.0",
+  "description": "A modern web UI for AIPE market data.",
+  "scripts": {
+    "build": "npx tailwindcss -i ./css/input.css -o ./css/style.css",
+    "watch": "npx tailwindcss -i ./css/input.css -o ./css/style.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.4"
+  }
+}
