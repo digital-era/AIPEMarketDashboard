@@ -57,7 +57,7 @@ function populateSummaryCards(data) {
 
 function createTimeSeriesChart(chartData) {
     const ctx = document.getElementById('timeSeriesChart').getContext('2d');
-    
+    console.log(`chartData=${chartData}`)
     const parsedData = chartData
         .map(d => ({
             date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')),
