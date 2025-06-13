@@ -180,7 +180,7 @@ function createEtfPerformanceTable(data) {
             since2021Change = priceChange2021Map.get(simpleName);
         }
         let shareChange = shareChangeMap.get(name);
-        if ((since2021Change === null) || Number.isNaN(since2021Change)) {            
+        if ((shareChange === null) || Number.isNaN(shareChange)) {            
                 console.log(`shareChangeMap:${shareChangeMap}`)
                 shareChange = shareChangeMap.get(simpleName);
         }
