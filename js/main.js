@@ -175,7 +175,13 @@ function createEtfPerformanceTable(data) {
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
         const since2021Change = priceChange2021Map.get(simpleName);
+        if (since2021Change === null) {
+            const since2021Change = priceChange2021Map.get(name);
+        }
         const shareChange = shareChangeMap.get(name);
+        if (shareChange === null) {
+            const shareChange = shareChangeMap.get(simpleName);
+        }
         
         const row = `
             <tr class="bg-white border-b hover:bg-gray-50">
