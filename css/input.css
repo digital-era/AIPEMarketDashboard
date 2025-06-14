@@ -4,6 +4,22 @@
 
 /* Custom styles can be added here if needed */
 body {
+    @apply bg-gray-100 text-gray-800 dark:bg-dark-bg dark:text-dark-text;
     font-family: 'Inter', sans-serif;
-    background-color: #f3f4f6; /* A slightly lighter gray */
+    /* Add a smooth transition for color changes */
+    @apply transition-colors duration-300;
+}
+
+/* Custom styling for DataTables controls in dark mode */
+.dataTables_length select, .dataTables_filter input {
+    @apply dark:bg-slate-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400;
+}
+
+.dataTables_info, .dataTables_paginate .paginate_button {
+    @apply dark:text-dark-subtle;
+}
+
+.dataTables_paginate .paginate_button.current, 
+.dataTables_paginate .paginate_button:hover {
+    @apply dark:!bg-slate-700 dark:!border-slate-600 dark:!text-white;
 }
