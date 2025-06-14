@@ -175,16 +175,16 @@ function createEtfPerformanceTable(data) {
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
         let since2021Change = priceChange2021Map.get(name);        
-        console.log(`priceChange2021Map:${priceChange2021Map},name:${name},simpleName:${simpleName},since2021Change:${since2021Change}`)
-        if ((since2021Change === null) || Number.isNaN(since2021Change)){
-            console.log(`priceChange2021Map:${priceChange2021Map}`)
+        console.log(`priceChange2021Map:`, priceChange2021Map)
+        if ((since2021Change === undefined) ||(since2021Change === null) || Number.isNaN(since2021Change)){
             since2021Change = priceChange2021Map.get(simpleName);
+            console.log(`since2021Change:`, since2021Change);
         }
-        let shareChange = shareChangeMap.get(name)        
-        console.log(`shareChangeMap:${shareChangeMap},name:${name},simpleName:${simpleName},shareChange:${shareChange}`)
-        if ((shareChange === null) || Number.isNaN(shareChange)) {            
-                console.log(`shareChangeMap:${shareChangeMap}`)
-                shareChange = shareChangeMap.get(simpleName);
+        let shareChange = shareChangeMap.get(name)          
+        console.log(`shareChangeMap:`, shareChangeMap)
+        if ((shareChange === undefined) ||(shareChange === null) || Number.isNaN(shareChange)) {   
+                shareChange = shareChangeMap.get(simpleName);            
+                console.log(`shareChange:`, shareChange);
         }
         
         const row = `
