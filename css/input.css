@@ -10,6 +10,7 @@ body {
     @apply transition-colors duration-300;
 }
 
+
 /* DataTables Controls Dark Mode Styling */
 .dataTables_length select, 
 .dataTables_filter input {
@@ -34,21 +35,38 @@ body {
     @apply dark:!text-gray-500 dark:!bg-transparent dark:!border-transparent;
 }
 
-/* ===================== NEW STYLE IS HERE ===================== */
-/* Style for the DataTables sorting icons in the table header */
-table.dataTable thead > tr > th.sorting,
-table.dataTable thead > tr > th.sorting_asc,
-table.dataTable thead > tr > th.sorting_desc {
-    @apply dark:text-gray-300;
+/* ================================================================ */
+/* ==================    更可靠的排序图标样式    ================== */
+/* ================================================================ */
+/*
+  This uses a more direct approach by overriding the background-image 
+  property which DataTables uses for the sorting icons.
+  We use SVG data URIs for the arrows, which allows us to control the color.
+*/
+
+/* Default sorting icon (double arrow) */
+table.dataTable thead .sorting {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
 }
 
-/* This targets the ::before and ::after pseudo-elements that create the arrows */
-table.dataTable thead .sorting::before,
-table.dataTable thead .sorting_asc::before,
-table.dataTable thead .sorting_desc::before,
-table.dataTable thead .sorting::after,
-table.dataTable thead .sorting_asc::after,
-table.dataTable thead .sorting_desc::after {
-    @apply dark:!opacity-50;
+html.dark table.dataTable thead .sorting {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
 }
-/* ===================== END OF NEW STYLE ===================== */
+
+/* Ascending sort icon (single up arrow) */
+table.dataTable thead .sorting_asc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+
+html.dark table.dataTable thead .sorting_asc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+
+/* Descending sort icon (single down arrow) */
+table.dataTable thead .sorting_desc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+
+html.dark table.dataTable thead .sorting_desc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
