@@ -48,8 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             populateSummaryCards(data);
-            createTimeSeriesChart(data.UDI_SZI_from2021);
-            createHotIndustriesChart(data.DistributeHotIndustry);
+            // We now pass the initial theme state to the chart creation functions
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            createTimeSeriesChart(data.UDI_SZI_from2021, isDarkMode);
+            createHotIndustriesChart(data.DistributeHotIndustry, isDarkMode);
             createEtfPerformanceTable(data);
             createArGroupTable(data.ARGroup);
         })
@@ -59,11 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-/**
- * 辅助函数：获取用于排序的纯数字值。
- * @param {any} value - 输入值
- * @returns {number} - 原始数值，或在无效时返回负无穷大
- */
+// ... (other helper functions like getOrderValue, formatValue, getColorClass are unchanged) ...
+
 function getOrderValue(value) {
     if (typeof value !== 'number' || isNaN(value)) {
         return -Infinity;
@@ -85,77 +84,80 @@ function getColorClass(value) {
 }
 
 function populateSummaryCards(data) {
-    // Hottest Industry
     const hottest = data.DistributeHotIndustry[0];
     document.getElementById('hottest-industry').textContent = hottest['Industry Name'];
     document.getElementById('hottest-industry-index').textContent = `${formatValue(hottest['Hot Frequency Index (%)'], 2, '%')} Index`;
-
-    // Top Performer YTD
     const topPerformer = [...data.PriceThisYearChange].sort((a, b) => b.YC - a.YC)[0];
     document.getElementById('top-performer-name').textContent = topPerformer['名称'];
     document.getElementById('top-performer-change').innerHTML = `<span class="${getColorClass(topPerformer.YC)}">${formatValue(topPerformer.YC, 2, '%')}</span>`;
-
-    // Top Share Growth YTD
     const topShareGrowth = [...data.ShareThisYearChange].sort((a, b) => b['Year\u4efd\u989d\u589e\u957f%'] - a['Year\u4efd\u989d\u589e\u957f%'])[0];
     document.getElementById('top-share-growth-name').textContent = topShareGrowth['基金简称'];
     document.getElementById('top-share-growth-change').innerHTML = `<span class="text-blue-500 dark:text-blue-400">${formatValue(topShareGrowth['Year\u4efd\u989d\u589e\u957f%'], 2, '%')}</span>`;
-    
-    // Worst Performer Since 2021
     const worstPerformer = [...data.PriceChangeFrom2021].sort((a, b) => a['价格增长%'] - b['价格增长%'])[0];
     document.getElementById('worst-performer-name').textContent = worstPerformer['基金简称'];
     document.getElementById('worst-performer-change').innerHTML = `<span class="${getColorClass(worstPerformer['价格增长%'])}">${formatValue(worstPerformer['价格增长%'], 2, '%')}</span>`;
 }
 
-// --- Chart Theming Logic ---
-function getChartOptions() {
+
+// =======================================================
+// ==================   MODIFIED SECTION START   ==================
+// =======================================================
+
+/**
+ * A dedicated function to apply theme colors to a chart instance.
+ * It surgically updates only color properties, preserving other settings.
+ * @param {Chart} chartInstance The chart instance to update.
+ */
+function applyThemeToChart(chartInstance) {
+    if (!chartInstance) return;
+
     const isDarkMode = document.documentElement.classList.contains('dark');
     const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
     const textColor = isDarkMode ? '#C9D1D9' : '#333';
+    const tooltipBgColor = isDarkMode ? '#161B22' : '#fff';
+    const tooltipBorderColor = isDarkMode ? '#30363D' : '#ccc';
+
+    const chartOptions = chartInstance.options;
+
+    // Update plugins (legend, tooltip)
+    if (chartOptions.plugins.legend) {
+        chartOptions.plugins.legend.labels.color = textColor;
+    }
+    if (chartOptions.plugins.tooltip) {
+        chartOptions.plugins.tooltip.backgroundColor = tooltipBgColor;
+        chartOptions.plugins.tooltip.borderColor = tooltipBorderColor;
+        chartOptions.plugins.tooltip.titleColor = textColor;
+        chartOptions.plugins.tooltip.bodyColor = textColor;
+    }
     
-    return {
-        plugins: {
-            legend: { labels: { color: textColor } },
-            tooltip: {
-                titleColor: textColor,
-                bodyColor: textColor,
-                backgroundColor: isDarkMode ? '#161B22' : '#fff',
-                borderColor: isDarkMode ? '#30363D' : '#ccc',
-                borderWidth: 1,
-            }
-        },
-        scales: {
-            x: {
-                grid: { color: gridColor },
-                ticks: { color: textColor },
-                title: { color: textColor }
-            },
-            y: {
-                grid: { color: gridColor },
-                ticks: { color: textColor },
-                title: { color: textColor }
-            },
-            y1: {
-                grid: { drawOnChartArea: false, color: gridColor },
-                ticks: { color: textColor },
-                title: { color: textColor }
-            }
+    // Update scales (axes)
+    Object.values(chartOptions.scales).forEach(scale => {
+        if (scale.grid) {
+            scale.grid.color = gridColor;
         }
-    };
+        if (scale.ticks) {
+            scale.ticks.color = textColor;
+        }
+        if (scale.title) {
+            scale.title.color = textColor;
+        }
+    });
+
+    chartInstance.update();
 }
 
+/**
+ * The main theme update function. Now simpler and more robust.
+ */
 function updateChartsTheme() {
-    const themeOptions = getChartOptions();
-    if (timeSeriesChartInstance) {
-        Object.assign(timeSeriesChartInstance.options, themeOptions);
-        timeSeriesChartInstance.update();
-    }
-    if (hotIndustriesChartInstance) {
-        Object.assign(hotIndustriesChartInstance.options, themeOptions);
-        hotIndustriesChartInstance.update();
-    }
+    applyThemeToChart(timeSeriesChartInstance);
+    applyThemeToChart(hotIndustriesChartInstance);
 }
 
-
+/**
+ * Creates the time series chart with all its settings.
+ * @param {object[]} chartData The data for the chart.
+ */
 function createTimeSeriesChart(chartData) {
     const ctx = document.getElementById('timeSeriesChart').getContext('2d');
     const parsedData = chartData
@@ -170,26 +172,18 @@ function createTimeSeriesChart(chartData) {
     const udiData = parsedData.map(d => (d.udi === null || isNaN(d.udi)) ? null : d.udi);
     const sziData = parsedData.map(d => (d.szi === null || isNaN(d.szi)) ? null : d.szi);
     
-    const themeOptions = getChartOptions();
-
     timeSeriesChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
                 {
-                    label: 'UDI Close',
-                    data: udiData,
-                    borderColor: 'rgb(59, 130, 246)', // Blue
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                    borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y'
+                    label: 'UDI Close', data: udiData, borderColor: 'rgb(59, 130, 246)', 
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y'
                 },
                 {
-                    label: 'SZI Close',
-                    data: sziData,
-                    borderColor: 'rgb(234, 179, 8)', // Amber
-                    backgroundColor: 'rgba(234, 179, 8, 0.2)',
-                    borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1'
+                    label: 'SZI Close', data: sziData, borderColor: 'rgb(234, 179, 8)', 
+                    backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1'
                 }
             ]
         },
@@ -198,15 +192,29 @@ function createTimeSeriesChart(chartData) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { ...themeOptions.scales.x, type: 'time', time: { unit: 'year',  displayFormats: {year: 'yyyy'} }, title: { ...themeOptions.scales.x.title, display: true, text: 'Date' } },
-                y: { ...themeOptions.scales.y, type: 'linear', display: true, position: 'left', title: { ...themeOptions.scales.y.title, display: true, text: 'UDI Value' } },
-                y1: { ...themeOptions.scales.y1, type: 'linear', display: true, position: 'right', title: { ...themeOptions.scales.y1.title, display: true, text: 'SZI Value' } }
-            },
-            plugins: themeOptions.plugins
+                x: { 
+                    type: 'time', 
+                    time: { 
+                        unit: 'year',
+                        displayFormats: { year: 'yyyy' },
+                        tooltipFormat: 'MMM dd, yyyy' 
+                    }, 
+                    title: { display: true, text: 'Date' } 
+                },
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'SZI Value' }, grid: { drawOnChartArea: false } }
+            }
         }
     });
+
+    // Apply the current theme to the newly created chart
+    applyThemeToChart(timeSeriesChartInstance);
 }
 
+/**
+ * Creates the hot industries chart with all its settings.
+ * @param {object[]} industryData The data for the chart.
+ */
 function createHotIndustriesChart(industryData) {
     const ctx = document.getElementById('hotIndustriesChart').getContext('2d');
     const top10Data = industryData.slice(0, 10).reverse();
@@ -214,32 +222,33 @@ function createHotIndustriesChart(industryData) {
     const labels = top10Data.map(d => d['Industry Name']);
     const dataValues = top10Data.map(d => d['Hot Frequency Index (%)']);
     
-    const themeOptions = getChartOptions();
-
     hotIndustriesChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Hot Frequency Index (%)',
-                data: dataValues,
-                backgroundColor: 'rgba(34, 211, 238, 0.6)', // Cyan
-                borderColor: 'rgba(34, 211, 238, 1)',
-                borderWidth: 1
+                label: 'Hot Frequency Index (%)', data: dataValues,
+                backgroundColor: 'rgba(34, 211, 238, 0.6)', borderColor: 'rgba(34, 211, 238, 1)', borderWidth: 1
             }]
         },
         options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { ...themeOptions.plugins, legend: { display: false } },
+            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
             scales: {
-                x: { ...themeOptions.scales.x, beginAtZero: true, title: { ...themeOptions.scales.x.title, display: true, text: 'Index (%)' } },
-                y: { ...themeOptions.scales.y }
+                x: { beginAtZero: true, title: { display: true, text: 'Index (%)' } },
+                y: { }
             }
         }
     });
+    
+    // Apply the current theme to the newly created chart
+    applyThemeToChart(hotIndustriesChartInstance);
 }
+
+// =======================================================
+// ===================   MODIFIED SECTION END   ===================
+// =======================================================
+
 
 function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
@@ -281,16 +290,9 @@ function createEtfPerformanceTable(data) {
     }
 
     new DataTable('#etfTable', {
-        responsive: true,
-        order: [[1, 'desc']],
-        pageLength: 10,
-        lengthMenu: [10, 25, 50, -1],
+        responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
         columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
-        language: {
-            search: "_INPUT_",
-            searchPlaceholder: "Filter records...",
-            lengthMenu: "Show _MENU_"
-        }
+        language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
     });
 }
 
