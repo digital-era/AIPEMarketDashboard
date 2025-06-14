@@ -198,7 +198,7 @@ function createTimeSeriesChart(chartData) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { ...themeOptions.scales.x, type: 'time', time: { unit: 'year' }, title: { ...themeOptions.scales.x.title, display: true, text: 'Date' } },
+                x: { ...themeOptions.scales.x, type: 'time', time: { unit: 'year',  displayFormats: {year: 'yyyy'} }, title: { ...themeOptions.scales.x.title, display: true, text: 'Date' } },
                 y: { ...themeOptions.scales.y, type: 'linear', display: true, position: 'left', title: { ...themeOptions.scales.y.title, display: true, text: 'UDI Value' } },
                 y1: { ...themeOptions.scales.y1, type: 'linear', display: true, position: 'right', title: { ...themeOptions.scales.y1.title, display: true, text: 'SZI Value' } }
             },
