@@ -10,12 +10,17 @@ body {
     @apply transition-colors duration-300;
 }
 
-/* Custom styling for DataTables controls in dark mode */
-.dataTables_length select, .dataTables_filter input {
-    @apply dark:bg-slate-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400;
+/* DataTables Controls Dark Mode Styling */
+.dataTables_length select, 
+.dataTables_filter input {
+    @apply dark:bg-slate-800 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400;
 }
 
-.dataTables_info, .dataTables_paginate .paginate_button {
+.dataTables_info {
+    @apply dark:text-dark-subtle;
+}
+
+.dataTables_paginate .paginate_button {
     @apply dark:text-dark-subtle;
 }
 
@@ -23,3 +28,27 @@ body {
 .dataTables_paginate .paginate_button:hover {
     @apply dark:!bg-slate-700 dark:!border-slate-600 dark:!text-white;
 }
+
+.dataTables_paginate .paginate_button.disabled, 
+.dataTables_paginate .paginate_button.disabled:hover {
+    @apply dark:!text-gray-500 dark:!bg-transparent dark:!border-transparent;
+}
+
+/* ===================== NEW STYLE IS HERE ===================== */
+/* Style for the DataTables sorting icons in the table header */
+table.dataTable thead > tr > th.sorting,
+table.dataTable thead > tr > th.sorting_asc,
+table.dataTable thead > tr > th.sorting_desc {
+    @apply dark:text-gray-300;
+}
+
+/* This targets the ::before and ::after pseudo-elements that create the arrows */
+table.dataTable thead .sorting::before,
+table.dataTable thead .sorting_asc::before,
+table.dataTable thead .sorting_desc::before,
+table.dataTable thead .sorting::after,
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::after {
+    @apply dark:!opacity-50;
+}
+/* ===================== END OF NEW STYLE ===================== */
