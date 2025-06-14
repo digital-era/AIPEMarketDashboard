@@ -1,18 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class=""> <!-- `class` can be 'dark' or empty -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIPE Market Data Dashboard</title>
     
-    <!-- Link to the generated Tailwind CSS file -->
     <link href="css/style.css" rel="stylesheet">
-    
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-
-    <!-- DataTables CSS for Tailwind -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.tailwindcss.min.css">
 </head>
 <body>
@@ -20,32 +15,39 @@
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
         <!-- Header -->
-        <header class="mb-8">
-            <h1 class="text-4xl font-bold text-gray-900">AIPE Market Data Dashboard</h1>
-            <p class="text-lg text-gray-600 mt-1">Comprehensive analysis of market trends and ETF performance.</p>
+        <header class="mb-8 flex justify-between items-start">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">AIPE Market Data Dashboard</h1>
+                <p class="text-lg text-gray-600 dark:text-dark-subtle mt-1">Comprehensive analysis of market trends and ETF performance.</p>
+            </div>
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg text-sm p-2.5">
+                <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+            </button>
         </header>
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Hottest Industry</h3>
-                <p id="hottest-industry" class="text-2xl font-bold text-indigo-600 mt-2 truncate">-</p>
-                <p id="hottest-industry-index" class="text-sm text-gray-500 mt-1">-</p>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-indigo-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Hottest Industry</h3>
+                <p id="hottest-industry" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-2 truncate">-</p>
+                <p id="hottest-industry-index" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Top Performer (YTD)</h3>
-                <p id="top-performer-name" class="text-2xl font-bold text-green-600 mt-2 truncate">-</p>
-                <p id="top-performer-change" class="text-sm text-gray-500 mt-1">-</p>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-green-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Top Performer (YTD)</h3>
+                <p id="top-performer-name" class="text-2xl font-bold text-green-600 dark:text-green-400 mt-2 truncate">-</p>
+                <p id="top-performer-change" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Biggest Share Growth (YTD)</h3>
-                <p id="top-share-growth-name" class="text-2xl font-bold text-blue-600 mt-2 truncate">-</p>
-                <p id="top-share-growth-change" class="text-sm text-gray-500 mt-1">-</p>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-blue-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Biggest Share Growth (YTD)</h3>
+                <p id="top-share-growth-name" class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2 truncate">-</p>
+                <p id="top-share-growth-change" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                <h3 class="text-sm font-medium text-gray-500">Worst Performer (Since '21)</h3>
-                <p id="worst-performer-name" class="text-2xl font-bold text-red-600 mt-2 truncate">-</p>
-                <p id="worst-performer-change" class="text-sm text-gray-500 mt-1">-</p>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-red-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Worst Performer (Since '21)</h3>
+                <p id="worst-performer-name" class="text-2xl font-bold text-red-600 dark:text-red-400 mt-2 truncate">-</p>
+                <p id="worst-performer-change" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
             </div>
         </div>
 
@@ -55,18 +57,18 @@
             <!-- Left Column -->
             <div class="lg:col-span-2 space-y-8">
                 <!-- Time Series Chart -->
-                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-4">U.S. Dollar Index (UDI) vs. Shenzhen Component Index (SZI)</h2>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">U.S. Dollar Index (UDI) vs. Shenzhen Component Index (SZI)</h2>
                     <div class="h-96">
                         <canvas id="timeSeriesChart"></canvas>
                     </div>
                 </div>
 
                 <!-- Interactive ETF Performance Table -->
-                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-4">ETF Performance Overview</h2>
-                    <table id="etfTable" class="w-full text-sm text-left text-gray-500">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">ETF Performance Overview</h2>
+                    <table id="etfTable" class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                        <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
                             <tr>
                                 <th scope="col" class="px-6 py-3">ETF Name</th>
                                 <th scope="col" class="px-6 py-3 text-right">YTD Change (%)</th>
@@ -83,19 +85,19 @@
             <!-- Right Column -->
             <div class="space-y-8">
                 <!-- Hot Industries Chart -->
-                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-4">Top 10 Hot Industries</h2>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top 10 Hot Industries</h2>
                     <div class="h-80">
                         <canvas id="hotIndustriesChart"></canvas>
                     </div>
                 </div>
 
                 <!-- AR Group Table -->
-                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                    <h2 class="text-xl font-semibold mb-4">AR Group Analysis (Latest)</h2>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">AR Group Analysis (Latest)</h2>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                            <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
                                 <tr>
                                     <th scope="col" class="px-4 py-3">Category</th>
                                     <th scope="col" class="px-4 py-3 text-right">PotScore</th>
@@ -110,14 +112,11 @@
         </div>
     </div>
     
-    <!-- External JS Libraries (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.tailwindcss.min.js"></script>
-
-    <!-- Your custom application logic -->
     <script src="js/main.js"></script>
 
 </body>
