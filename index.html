@@ -9,16 +9,11 @@
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
-    <!-- =================================================================== -->
-    <!-- =======================   CSS加载顺序修复   ======================= -->
-    <!-- =================================================================== -->
-    <!-- 1. 首先加载所有第三方库的CSS -->
+    <!-- DataTables CSS for Tailwind -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.tailwindcss.min.css">
     
-    <!-- 2. 最后加载我们自己的、用于覆盖的CSS文件 -->
+    <!-- Link to the generated Tailwind CSS file -->
     <link href="css/style.css" rel="stylesheet">
-    <!-- =================================================================== -->
-
 </head>
 <body>
 
@@ -36,6 +31,20 @@
                 <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
             </button>
         </header>
+
+        <!-- Navigation Menu -->
+        <nav class="mb-8">
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+                    <li class="mr-2">
+                        <a href="index.html" class="inline-block p-4 text-indigo-600 border-b-2 border-indigo-600 rounded-t-lg active dark:text-indigo-400 dark:border-indigo-400" aria-current="page">Market Overview</a>
+                    </li>
+                    <li class="mr-2">
+                        <a href="PotScoreMainFund.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">PotScore & MainFund</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -78,12 +87,12 @@
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">ETF Performance Overview</h2>
                     <table id="etfTable" class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
-                        <thead class="text-xs uppercase bg-gray-50 dark:bg-slate-800">
+                        <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-gray-700 dark:text-gray-300">ETF Name</th>
-                                <th scope="col" class="px-6 py-3 text-right text-gray-700 dark:text-gray-300">YTD Change (%)</th>
-                                <th scope="col" class="px-6 py-3 text-right text-gray-700 dark:text-gray-300">Since 2021 Change (%)</th>
-                                <th scope="col" class="px-6 py-3 text-right text-gray-700 dark:text-gray-300">YTD Share Change (%)</th>
+                                <th scope="col" class="px-6 py-3">ETF Name</th>
+                                <th scope="col" class="px-6 py-3 text-right">YTD Change (%)</th>
+                                <th scope="col" class="px-6 py-3 text-right">Since 2021 Change (%)</th>
+                                <th scope="col" class="px-6 py-3 text-right">YTD Share Change (%)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,10 +116,10 @@
                     <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">AR Group Analysis (Latest)</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
-                            <thead class="text-xs uppercase bg-gray-50 dark:bg-slate-800">
+                            <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
                                 <tr>
-                                    <th scope="col" class="px-4 py-3 text-gray-700 dark:text-gray-300">Category</th>
-                                    <th scope="col" class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">PotScore</th>
+                                    <th scope="col" class="px-4 py-3">Category</th>
+                                    <th scope="col" class="px-4 py-3 text-right">PotScore</th>
                                 </tr>
                             </thead>
                             <tbody id="arGroupTableBody">
