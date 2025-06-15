@@ -1,91 +1,81 @@
-/* 首先加载Tailwind的基础、组件和工具类 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 然后，在文件的最后，添加我们的原生CSS覆盖规则 */
-/* 这种写法比@apply有更高的可控性和优先级 */
+/* =================================================================== */
+/* ==================      DIAGNOSTIC TEST STYLE      ================== */
+/* This will add a BIG RED BORDER around the table wrapper.           */
+/* If you see this, your CSS file is correctly linked and compiled.   */
+/* =================================================================== */
+.dataTables_wrapper {
+    border: 5px solid red !important;
+}
+
+
+/* Custom base styles */
+body {
+    @apply bg-gray-100 text-gray-800 dark:bg-dark-bg dark:text-dark-text;
+    font-family: 'Inter', sans-serif;
+    @apply transition-colors duration-300;
+}
 
 /* =================================================================== */
-/* ===========      NATIVE CSS OVERRIDE FOR DATATABLES     =========== */
+/* ===========      COMPREHENSIVE DATATABLES DARK MODE FIX     =========== */
 /* =================================================================== */
 
 /* --- Container and Spacing Fix --- */
 .dataTables_wrapper .dataTables_paginate {
-    margin-top: 1.5rem !important;
+    @apply mt-6 !important;
 }
 
-/* --- Controls: "Show X entries" and "Filter" (LIGHT MODE) --- */
+/* --- Controls: "Show X entries" and "Filter" --- */
 .dataTables_wrapper .dataTables_length select,
 .dataTables_wrapper .dataTables_filter input {
-    background-color: #fff !important;
-    border-color: #d1d5db !important;
-    color: #374151 !important;
-    border-radius: 0.375rem !important;
-}
-
-/* --- Controls: "Show X entries" and "Filter" (DARK MODE) --- */
-html.dark .dataTables_wrapper .dataTables_length select,
-html.dark .dataTables_wrapper .dataTables_filter input {
-    background-color: #1e293b !important; /* slate-800 */
-    border-color: #4b5563 !important; /* gray-600 */
-    color: #e5e7eb !important; /* gray-200 */
+    @apply bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded-md shadow-sm 
+           text-gray-700 dark:text-gray-200
+           focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 !important;
 }
 
 /* --- Info Text: "Showing 1 to 10..." --- */
 .dataTables_wrapper .dataTables_info {
-    color: #374151 !important; /* gray-700 */
-}
-html.dark .dataTables_wrapper .dataTables_info {
-    color: #8b949e !important; /* dark-subtle from your config */
+    @apply text-gray-700 dark:text-dark-subtle !important;
 }
 
-/* --- Pagination Buttons (LIGHT MODE) --- */
+/* --- Pagination Buttons --- */
 .dataTables_wrapper .dataTables_paginate .paginate_button {
-    color: #374151 !important;
+    @apply text-gray-700 dark:text-dark-subtle !important;
 }
+
 .dataTables_wrapper .dataTables_paginate .paginate_button:not(.disabled):hover {
-    background-color: #e5e7eb !important;
-    border-color: #d1d5db !important;
-    color: #111827 !important;
+    @apply !bg-gray-200 dark:!bg-slate-700 !border-gray-300 dark:!border-slate-600 !text-gray-900 dark:!text-white !important;
 }
+
 .dataTables_wrapper .dataTables_paginate .paginate_button.current,
 .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-    background-color: #4f46e5 !important; /* indigo-600 */
-    border-color: #4f46e5 !important;
-    color: #fff !important;
-}
-.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-    color: #9ca3af !important; /* gray-400 */
-    background-color: transparent !important;
-    border-color: transparent !important;
+     @apply !bg-indigo-600 dark:!bg-indigo-500 !text-white !border-indigo-600 dark:!border-indigo-500 !important;
 }
 
-
-/* --- Pagination Buttons (DARK MODE) --- */
-html.dark .dataTables_wrapper .dataTables_paginate .paginate_button {
-    color: #8b949e !important;
-}
-html.dark .dataTables_wrapper .dataTables_paginate .paginate_button:not(.disabled):hover {
-    background-color: #334155 !important; /* slate-700 */
-    border-color: #475569 !important; /* slate-600 */
-    color: #fff !important;
-}
-html.dark .dataTables_wrapper .dataTables_paginate .paginate_button.current,
-html.dark .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-    background-color: #6366f1 !important; /* indigo-500 */
-    border-color: #6366f1 !important;
-    color: #fff !important;
-}
-html.dark .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
-    color: #6b7280 !important; /* gray-500 */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    @apply !text-gray-400 dark:!text-gray-500 !bg-transparent !border-transparent !important;
 }
 
-
-/* --- Table Header Sorting Icons (These were already native CSS, so they are fine) --- */
-table.dataTable thead .sorting { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
-html.dark table.dataTable thead .sorting { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
-table.dataTable thead .sorting_asc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
-html.dark table.dataTable thead .sorting_asc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
-table.dataTable thead .sorting_desc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
-html.dark table.dataTable thead .sorting_desc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
+/* --- Table Header Sorting Icons --- */
+table.dataTable thead .sorting {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+html.dark table.dataTable thead .sorting {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+table.dataTable thead .sorting_asc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+html.dark table.dataTable thead .sorting_asc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
+table.dataTable thead .sorting_desc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !importan;
+}
+html.dark table.dataTable thead .sorting_desc {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
+}
