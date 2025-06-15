@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
     <!-- =================================================================== -->
-    <!-- =======================   这是最终的修复   ======================== -->
+    <!-- =======================   CSS加载顺序修复   ======================= -->
     <!-- =================================================================== -->
     <!-- 1. 首先加载所有第三方库的CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.tailwindcss.min.css">
@@ -37,17 +37,99 @@
             </button>
         </header>
 
-        <!-- 所有其他内容保持不变... -->
-        <!-- ... -->
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-indigo-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Hottest Industry</h3>
+                <p id="hottest-industry" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-2 truncate">-</p>
+                <p id="hottest-industry-index" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
+            </div>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-green-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Top Performer (YTD)</h3>
+                <p id="top-performer-name" class="text-2xl font-bold text-green-600 dark:text-green-400 mt-2 truncate">-</p>
+                <p id="top-performer-change" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
+            </div>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-blue-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Biggest Share Growth (YTD)</h3>
+                <p id="top-share-growth-name" class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2 truncate">-</p>
+                <p id="top-share-growth-change" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
+            </div>
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md dark:shadow-lg dark:shadow-red-500/10 border border-gray-200 dark:border-dark-border">
+                <h3 class="text-sm font-medium text-gray-500 dark:text-dark-subtle">Worst Performer (Since '21)</h3>
+                <p id="worst-performer-name" class="text-2xl font-bold text-red-600 dark:text-red-400 mt-2 truncate">-</p>
+                <p id="worst-performer-change" class="text-sm text-gray-500 dark:text-dark-subtle mt-1">-</p>
+            </div>
+        </div>
 
+        <!-- Main Content Area: Charts and Tables -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Time Series Chart -->
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">U.S. Dollar Index (UDI) vs. Shenzhen Component Index (SZI)</h2>
+                    <div class="h-96">
+                        <canvas id="timeSeriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Interactive ETF Performance Table -->
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">ETF Performance Overview</h2>
+                    <table id="etfTable" class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                        <thead class="text-xs uppercase bg-gray-50 dark:bg-slate-800">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-gray-700 dark:text-gray-300">ETF Name</th>
+                                <th scope="col" class="px-6 py-3 text-right text-gray-700 dark:text-gray-300">YTD Change (%)</th>
+                                <th scope="col" class="px-6 py-3 text-right text-gray-700 dark:text-gray-300">Since 2021 Change (%)</th>
+                                <th scope="col" class="px-6 py-3 text-right text-gray-700 dark:text-gray-300">YTD Share Change (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-8">
+                <!-- Hot Industries Chart -->
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top 10 Hot Industries</h2>
+                    <div class="h-80">
+                        <canvas id="hotIndustriesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AR Group Table -->
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">AR Group Analysis (Latest)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                            <thead class="text-xs uppercase bg-gray-50 dark:bg-slate-800">
+                                <tr>
+                                    <th scope="col" class="px-4 py-3 text-gray-700 dark:text-gray-300">Category</th>
+                                    <th scope="col" class="px-4 py-3 text-right text-gray-700 dark:text-gray-300">PotScore</th>
+                                </tr>
+                            </thead>
+                            <tbody id="arGroupTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <!-- 所有JS脚本加载也保持不变... -->
+    <!-- External JS Libraries (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.tailwindcss.min.js"></script>
+
+    <!-- Your custom application logic -->
     <script src="js/main.js"></script>
 
 </body>
