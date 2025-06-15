@@ -41,98 +41,104 @@
         </nav>
 
         <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            <!-- Left Column: Tables -->
-            <div class="space-y-8">
-                <!-- Top PotScore Table -->
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top PotScore Industries (5 Days)</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
-                            <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3">Industry</th>
-                                    <th scope="col" class="px-4 py-3 text-right">PotScore</th>
-                                    <th scope="col" class="px-4 py-3 text-right">Main Fund Flow (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="topPotScoreTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+        <div class="space-y-8">
 
-                <!-- Top Main Fund Table -->
+            <!-- UDI vs GDI Charts Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Since 2021 Chart -->
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top Main Fund Industries (5 Days)</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
-                            <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3">Industry</th>
-                                    <th scope="col" class="px-4 py-3 text-right">PotScore</th>
-                                    <th scope="col" class="px-4 py-3 text-right">Main Fund Flow (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="topMainFundTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                 <!-- Top Stocks in Top PotScore Industries -->
-                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top Stocks in High PotScore Industries</h2>
-                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
-                            <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3">Stock Name</th>
-                                    <th scope="col" class="px-4 py-3">Industry</th>
-                                    <th scope="col" class="px-4 py-3 text-right">Fund Flow (%)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="topStockInTopPotScoreTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Chart and Table -->
-            <div class="space-y-8">
-                <!-- Time Series Chart -->
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">U.S. Dollar Index (UDI) vs. Gold (GDI) - Since 2021</h2>
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">UDI vs. Gold (GDI) - Since 2021</h2>
                     <div class="h-80">
-                        <canvas id="udiGdiChart"></canvas>
+                        <canvas id="udiGdiChartFrom2021"></canvas>
                     </div>
                 </div>
-                
-                 <!-- Top Stocks in Top MainFund Industries -->
-                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top Stocks in High MainFund Industries</h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
-                            <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
-                                <tr>
-                                    <th scope="col" class="px-4 py-3">Stock Name</th>
-                                    <th scope="col" class="px-4 py-3">Industry</th>
-                                    <th scope="col" class="px-4 py-3 text-right">Fund Flow (%)</th>
-                                </tr>
-                            </thead>
-                            <!-- ===================== 核心修正 ===================== -->
-                            <tbody id="topStockInMainFundTableBody"> 
-                            <!-- ===================== 修正结束 ===================== -->
-                            </tbody>
-                        </table>
+                <!-- This Year Chart -->
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">UDI vs. Gold (GDI) - This Year</h2>
+                    <div class="h-80">
+                        <canvas id="udiGdiChartThisYear"></canvas>
                     </div>
                 </div>
             </div>
-            
-        </div>
 
+            <!-- Tables Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left Column: Tables -->
+                <div class="space-y-8">
+                    <!-- Top PotScore Table -->
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top PotScore Industries (5 Days)</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                                <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Industry</th>
+                                        <th scope="col" class="px-4 py-3 text-right">PotScore</th>
+                                        <th scope="col" class="px-4 py-3 text-right">Main Fund Flow (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topPotScoreTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Top Stocks in Top PotScore Industries -->
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top Stocks in High PotScore Industries</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                                <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Stock Name</th>
+                                        <th scope="col" class="px-4 py-3">Industry</th>
+                                        <th scope="col" class="px-4 py-3 text-right">Fund Flow (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topStockInTopPotScoreTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Tables -->
+                <div class="space-y-8">
+                    <!-- Top Main Fund Table -->
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top Main Fund Industries (5 Days)</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                                <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Industry</th>
+                                        <th scope="col" class="px-4 py-3 text-right">PotScore</th>
+                                        <th scope="col" class="px-4 py-3 text-right">Main Fund Flow (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topMainFundTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                     <!-- Top Stocks in Top MainFund Industries -->
+                     <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                        <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Top Stocks in High MainFund Industries</h2>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-500 dark:text-dark-subtle">
+                                <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-slate-800">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3">Stock Name</th>
+                                        <th scope="col" class="px-4 py-3">Industry</th>
+                                        <th scope="col" class="px-4 py-3 text-right">Fund Flow (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topStockInMainFundTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
