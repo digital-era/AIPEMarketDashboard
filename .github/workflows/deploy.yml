@@ -1,5 +1,9 @@
 # .github/workflows/deploy.yml
 
+# ===================================================================
+#  此工作流专为“模式B”（云端构建）优化，并启用了缓存功能
+# ===================================================================
+
 name: Build and Deploy to GitHub Pages
 
 on:
@@ -21,21 +25,29 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up Node.js
+      - name: Set up Node.js with caching
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # ===================================================================
+          # =======================   这是核心的修改   ========================
+          # ===================================================================
+          # 启用缓存
           cache: 'npm'
+          # 明确指定缓存的键（key）依赖于 package.json 文件。
+          # 只有当 package.json 的内容发生变化时，缓存才会失效。
+          # (注意: 在v4版本中，这个行为是默认的，但明确写出有助于理解)
+          # cache-dependency-path: 'package.json' # <-- 这行是v4的默认行为，可以不写
+          # ===================================================================
 
       - name: Install dependencies
+        # 仍然使用 'npm install'
+        # 如果缓存命中，这个步骤会非常快，因为它会发现 node_modules 已经存在
         run: npm install
 
-      # =======================================================
-      #  ↓↓↓ 在这里添加权限修复步骤 ↓↓↓
-      # =======================================================
       - name: Add executable permission to Tailwind CSS
         run: chmod +x ./node_modules/.bin/tailwindcss
 
