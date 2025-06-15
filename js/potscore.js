@@ -42,11 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
+            // =======================================================
+            // ==================   MODIFIED SECTION   ==================
+            // =======================================================
+            // Using the correct keys from your JSON file
             createUdiGdiChart(data.UDI_GDI_from2021);
             populateTopPotScoreTable(data.TopPotScore5Days);
             populateTopMainFundTable(data.TopMainFund5Days);
             populateTopStockInPotScoreTable(data.TopStockInTopPotScore);
-            populateTopStockInMainFundTable(data.TopStockIn5DaysMainFund);
+            populateTopStockInMainFundTable(data.TopStockIn5DaysMainFund); // Corrected this key
+            // =======================================================
         })
         .catch(error => {
             console.error('Error fetching or parsing market data:', error);
@@ -68,7 +73,6 @@ function formatValue(value, decimals = 2, unit = '') {
     return `${value.toFixed(decimals)}${unit}`;
 }
 
-
 // --- Chart Theming and Creation ---
 function applyThemeToChart(chartInstance) {
     if (!chartInstance) return;
@@ -84,10 +88,8 @@ function applyThemeToChart(chartInstance) {
     if (chartOptions.plugins.legend) chartOptions.plugins.legend.labels.color = textColor;
     if (chartOptions.plugins.tooltip) {
         Object.assign(chartOptions.plugins.tooltip, {
-            backgroundColor: tooltipBgColor,
-            borderColor: tooltipBorderColor,
-            titleColor: textColor,
-            bodyColor: textColor,
+            backgroundColor: tooltipBgColor, borderColor: tooltipBorderColor,
+            titleColor: textColor, bodyColor: textColor,
         });
     }
     
@@ -108,9 +110,13 @@ function createUdiGdiChart(chartData) {
     const ctx = document.getElementById('udiGdiChart').getContext('2d');
     const parsedData = chartData
         .map(d => ({
-            date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')),
+            // =======================================================
+            // ==================   MODIFIED SECTION   ==================
+            // =======================================================
+            date: new Date(d.Date), // Assuming date format is now standard
             udi: d.Close_UDI,
             gdi: d.Close_GDI
+            // =======================================================
         }))
         .filter(d => !isNaN(d.date.getTime()));
 
@@ -146,18 +152,20 @@ function createUdiGdiChart(chartData) {
     applyThemeToChart(udiGdiChartInstance);
 }
 
-
 // --- Table Population Functions ---
 function populateTopPotScoreTable(data) {
     const tableBody = document.getElementById('topPotScoreTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
+        // =======================================================
+        // Using correct keys for TopPotScore5Days
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['PotScore'])}">${formatValue(item['PotScore'])}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['主力净流入-净占比'])}">${formatValue(item['主力净流入-净占比'], 2, '%')}</td>
             </tr>`;
+        // =======================================================
         tableBody.innerHTML += row;
     });
 }
@@ -166,12 +174,15 @@ function populateTopMainFundTable(data) {
     const tableBody = document.getElementById('topMainFundTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
+        // =======================================================
+        // Using correct keys for TopMainFund5Days
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['PotScore'])}">${formatValue(item['PotScore'])}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['主力净流入-净占比'])}">${formatValue(item['主力净流入-净占比'], 2, '%')}</td>
             </tr>`;
+        // =======================================================
         tableBody.innerHTML += row;
     });
 }
@@ -180,12 +191,15 @@ function populateTopStockInPotScoreTable(data) {
     const tableBody = document.getElementById('topStockInTopPotScoreTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
+        // =======================================================
+        // Using correct keys for TopStockInTopPotScore
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['名称']}</td>
                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
             </tr>`;
+        // =======================================================
         tableBody.innerHTML += row;
     });
 }
@@ -194,12 +208,15 @@ function populateTopStockInMainFundTable(data) {
     const tableBody = document.getElementById('topStockInMainFundTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
+        // =======================================================
+        // Using correct keys for TopStockIn5DaysMainFund
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['名称']}</td>
                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
             </tr>`;
+        // =======================================================
         tableBody.innerHTML += row;
     });
 }
