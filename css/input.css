@@ -2,16 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* =================================================================== */
-/* ==================      DIAGNOSTIC TEST STYLE      ================== */
-/* This will add a BIG RED BORDER around the table wrapper.           */
-/* If you see this, your CSS file is correctly linked and compiled.   */
-/* =================================================================== */
-.dataTables_wrapper {
-    border: 5px solid red !important;
-}
-
-
 /* Custom base styles */
 body {
     @apply bg-gray-100 text-gray-800 dark:bg-dark-bg dark:text-dark-text;
@@ -23,59 +13,18 @@ body {
 /* ===========      COMPREHENSIVE DATATABLES DARK MODE FIX     =========== */
 /* =================================================================== */
 
-/* --- Container and Spacing Fix --- */
-.dataTables_wrapper .dataTables_paginate {
-    @apply mt-6 !important;
-}
+/* ... (这里是之前提供的所有针对DataTables的修复，但没有红色边框) ... */
 
-/* --- Controls: "Show X entries" and "Filter" --- */
-.dataTables_wrapper .dataTables_length select,
-.dataTables_wrapper .dataTables_filter input {
-    @apply bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded-md shadow-sm 
-           text-gray-700 dark:text-gray-200
-           focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 !important;
-}
-
-/* --- Info Text: "Showing 1 to 10..." --- */
-.dataTables_wrapper .dataTables_info {
-    @apply text-gray-700 dark:text-dark-subtle !important;
-}
-
-/* --- Pagination Buttons --- */
-.dataTables_wrapper .dataTables_paginate .paginate_button {
-    @apply text-gray-700 dark:text-dark-subtle !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button:not(.disabled):hover {
-    @apply !bg-gray-200 dark:!bg-slate-700 !border-gray-300 dark:!border-slate-600 !text-gray-900 dark:!text-white !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.current,
-.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-     @apply !bg-indigo-600 dark:!bg-indigo-500 !text-white !border-indigo-600 dark:!border-indigo-500 !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
-.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
-    @apply !text-gray-400 dark:!text-gray-500 !bg-transparent !border-transparent !important;
-}
-
-/* --- Table Header Sorting Icons --- */
-table.dataTable thead .sorting {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
-}
-html.dark table.dataTable thead .sorting {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
-}
-table.dataTable thead .sorting_asc {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
-}
-html.dark table.dataTable thead .sorting_asc {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
-}
-table.dataTable thead .sorting_desc {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !importan;
-}
-html.dark table.dataTable thead .sorting_desc {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important;
-}
+.dataTables_wrapper .dataTables_paginate { @apply mt-6 !important; }
+.dataTables_wrapper .dataTables_length select, .dataTables_wrapper .dataTables_filter input { @apply bg-white dark:bg-slate-800 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-700 dark:text-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 !important; }
+.dataTables_wrapper .dataTables_info { @apply text-gray-700 dark:text-dark-subtle !important; }
+.dataTables_wrapper .dataTables_paginate .paginate_button { @apply text-gray-700 dark:text-dark-subtle !important; }
+.dataTables_wrapper .dataTables_paginate .paginate_button:not(.disabled):hover { @apply !bg-gray-200 dark:!bg-slate-700 !border-gray-300 dark:!border-slate-600 !text-gray-900 dark:!text-white !important; }
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover { @apply !bg-indigo-600 dark:!bg-indigo-500 !text-white !border-indigo-600 dark:!border-indigo-500 !important; }
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled, .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover { @apply !text-gray-400 dark:!text-gray-500 !bg-transparent !border-transparent !important; }
+table.dataTable thead .sorting { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
+html.dark table.dataTable thead .sorting { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
+table.dataTable thead .sorting_asc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
+html.dark table.dataTable thead .sorting_asc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
+table.dataTable thead .sorting_desc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231f2937' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
+html.dark table.dataTable thead .sorting_desc { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e5e7eb' transform='rotate(180)'%3e%3cpath d='M11.9997 10.8284L7.04996 15.7782L5.63574 14.364L11.9997 8L18.3637 14.364L16.9495 15.7782L11.9997 10.8284Z'/%3e%3c/svg%3e") !important; }
