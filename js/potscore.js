@@ -1,7 +1,8 @@
-// --- Global Chart Instance ---
-let udiGdiChartInstance = null;
+// --- Global Chart Instances ---
+let udiGdiChartFrom2021Instance = null;
+let udiGdiChartThisYearInstance = null; // New chart instance
 
-// --- Theme Management (Copied from main.js for consistency) ---
+// --- Theme Management ---
 const themeToggleBtn = document.getElementById('theme-toggle');
 const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
 const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
@@ -42,16 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            // =======================================================
-            // ==================   MODIFIED SECTION   ==================
-            // =======================================================
-            // Using the correct keys from your JSON file
-            createUdiGdiChart(data.UDI_GDI_from2021);
+            // Create the two charts
+            createUdiGdiChart(data.UDI_GDI_from2021, 'udiGdiChartFrom2021', 'year');
+            createUdiGdiChart(data.UDI_GDI_ThisYear, 'udiGdiChartThisYear', 'month'); // New chart call
+            
+            // Populate tables
             populateTopPotScoreTable(data.TopPotScore5Days);
             populateTopMainFundTable(data.TopMainFund5Days);
             populateTopStockInPotScoreTable(data.TopStockInTopPotScore);
-            populateTopStockInMainFundTable(data.TopStockIn5DaysMainFund); // Corrected this key
-            // =======================================================
+            populateTopStockInMainFundTable(data.TopStockIn5DaysMainFund);
         })
         .catch(error => {
             console.error('Error fetching or parsing market data:', error);
@@ -73,6 +73,7 @@ function formatValue(value, decimals = 2, unit = '') {
     return `${value.toFixed(decimals)}${unit}`;
 }
 
+
 // --- Chart Theming and Creation ---
 function applyThemeToChart(chartInstance) {
     if (!chartInstance) return;
@@ -88,8 +89,10 @@ function applyThemeToChart(chartInstance) {
     if (chartOptions.plugins.legend) chartOptions.plugins.legend.labels.color = textColor;
     if (chartOptions.plugins.tooltip) {
         Object.assign(chartOptions.plugins.tooltip, {
-            backgroundColor: tooltipBgColor, borderColor: tooltipBorderColor,
-            titleColor: textColor, bodyColor: textColor,
+            backgroundColor: tooltipBgColor,
+            borderColor: tooltipBorderColor,
+            titleColor: textColor,
+            bodyColor: textColor,
         });
     }
     
@@ -103,20 +106,18 @@ function applyThemeToChart(chartInstance) {
 }
 
 function updateChartsTheme() {
-    applyThemeToChart(udiGdiChartInstance);
+    applyThemeToChart(udiGdiChartFrom2021Instance);
+    applyThemeToChart(udiGdiChartThisYearInstance);
 }
 
-function createUdiGdiChart(chartData) {
-    const ctx = document.getElementById('udiGdiChart').getContext('2d');
+// Reusable chart creation function
+function createUdiGdiChart(chartData, canvasId, timeUnit) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
     const parsedData = chartData
         .map(d => ({
-            // =======================================================
-            // ==================   MODIFIED SECTION   ==================
-            // =======================================================
-            date: new Date(d.Date), // Assuming date format is now standard
+            date: new Date(d.Date),
             udi: d.Close_UDI,
             gdi: d.Close_GDI
-            // =======================================================
         }))
         .filter(d => !isNaN(d.date.getTime()));
 
@@ -124,7 +125,7 @@ function createUdiGdiChart(chartData) {
     const udiData = parsedData.map(d => (d.udi === null || isNaN(d.udi)) ? null : d.udi);
     const gdiData = parsedData.map(d => (d.gdi === null || isNaN(d.gdi)) ? null : d.gdi);
     
-    udiGdiChartInstance = new Chart(ctx, {
+    const chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -142,30 +143,40 @@ function createUdiGdiChart(chartData) {
         options: {
             responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' }, tooltipFormat: 'MMM dd, yyyy' }, title: { display: true, text: 'Date' } },
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } },
-                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Gold Value' }, grid: { drawOnChartArea: false } }
+                x: { type: 'time', time: { unit: timeUnit, displayFormats: { [timeUnit]: timeUnit === 'year' ? 'yyyy' : 'MMM' }, tooltipFormat: 'MMM dd, yyyy' }, title: { display: false } },
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Gold' }, grid: { drawOnChartArea: false } }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom', // Move legend to bottom to save space
+                }
             }
         }
     });
 
-    applyThemeToChart(udiGdiChartInstance);
+    // Store the correct instance
+    if (canvasId === 'udiGdiChartFrom2021') {
+        udiGdiChartFrom2021Instance = chartInstance;
+    } else if (canvasId === 'udiGdiChartThisYear') {
+        udiGdiChartThisYearInstance = chartInstance;
+    }
+
+    applyThemeToChart(chartInstance);
 }
+
 
 // --- Table Population Functions ---
 function populateTopPotScoreTable(data) {
     const tableBody = document.getElementById('topPotScoreTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
-        // =======================================================
-        // Using correct keys for TopPotScore5Days
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['PotScore'])}">${formatValue(item['PotScore'])}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['主力净流入-净占比'])}">${formatValue(item['主力净流入-净占比'], 2, '%')}</td>
             </tr>`;
-        // =======================================================
         tableBody.innerHTML += row;
     });
 }
@@ -174,15 +185,12 @@ function populateTopMainFundTable(data) {
     const tableBody = document.getElementById('topMainFundTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
-        // =======================================================
-        // Using correct keys for TopMainFund5Days
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['PotScore'])}">${formatValue(item['PotScore'])}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['主力净流入-净占比'])}">${formatValue(item['主力净流入-净占比'], 2, '%')}</td>
             </tr>`;
-        // =======================================================
         tableBody.innerHTML += row;
     });
 }
@@ -191,15 +199,12 @@ function populateTopStockInPotScoreTable(data) {
     const tableBody = document.getElementById('topStockInTopPotScoreTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
-        // =======================================================
-        // Using correct keys for TopStockInTopPotScore
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['名称']}</td>
                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
             </tr>`;
-        // =======================================================
         tableBody.innerHTML += row;
     });
 }
@@ -208,15 +213,12 @@ function populateTopStockInMainFundTable(data) {
     const tableBody = document.getElementById('topStockInMainFundTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
-        // =======================================================
-        // Using correct keys for TopStockIn5DaysMainFund
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['名称']}</td>
                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
             </tr>`;
-        // =======================================================
         tableBody.innerHTML += row;
     });
 }
