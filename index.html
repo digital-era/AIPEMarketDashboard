@@ -5,10 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIPE Market Data Dashboard</title>
     
-    <link href="css/style.css" rel="stylesheet">
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+    <!-- =================================================================== -->
+    <!-- =======================   关键修改：修正加载顺序   ====================== -->
+    <!-- =================================================================== -->
+    <!-- 1. 首先加载第三方库的CSS (Load library CSS FIRST) -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.tailwindcss.min.css">
+    
+    <!-- 2. 然后加载我们自己的、用于覆盖的CSS (Load OUR override CSS SECOND) -->
+    <link href="css/style.css" rel="stylesheet">
+    <!-- =================================================================== -->
+
 </head>
 <body>
 
