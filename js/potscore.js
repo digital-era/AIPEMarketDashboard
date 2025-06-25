@@ -195,13 +195,24 @@ function populateTopMainFundTable(data) {
     });
 }
 
+// MODIFIED FUNCTION
 function populateTopStockInPotScoreTable(data) {
     const tableBody = document.getElementById('topStockInTopPotScoreTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
+        const stockName = item['名称'];
+        // Encode the stock name for use in a URL
+        const encodedStockName = encodeURIComponent(stockName);
+        // Construct the full URL with the query parameter
+        const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;
+
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['名称']}</td>
+                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
+                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                        ${stockName}
+                    </a>
+                </td>
                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
             </tr>`;
@@ -209,13 +220,24 @@ function populateTopStockInPotScoreTable(data) {
     });
 }
 
+// MODIFIED FUNCTION
 function populateTopStockInMainFundTable(data) {
     const tableBody = document.getElementById('topStockInMainFundTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
+        const stockName = item['名称'];
+        // Encode the stock name for use in a URL
+        const encodedStockName = encodeURIComponent(stockName);
+        // Construct the full URL with the query parameter
+        const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;
+
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item['名称']}</td>
+                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
+                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                        ${stockName}
+                    </a>
+                </td>
                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
             </tr>`;
