@@ -33,8 +33,9 @@ themeToggleBtn.addEventListener('click', () => {
 // Apply theme on initial load
 (function() {
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+    //const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    //applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+    applyTheme(savedTheme || 'dark');
 })();
 
 
