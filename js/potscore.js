@@ -209,7 +209,7 @@ function populateTopStockInPotScoreTable(data) {
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
-                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
                         ${stockName}
                     </a>
                 </td>
@@ -234,7 +234,7 @@ function populateTopStockInMainFundTable(data) {
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
-                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
                         ${stockName}
                     </a>
                 </td>
