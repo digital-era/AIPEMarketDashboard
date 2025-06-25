@@ -308,17 +308,6 @@ function createEtfPerformanceTable(data) {
     });
 }
 
-    if ($.fn.DataTable.isDataTable('#etfTable')) {
-        $('#etfTable').DataTable().destroy();
-    }
-
-    new DataTable('#etfTable', {
-        responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
-        columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
-        language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
-    });
-}
-
 function createArGroupTable(arData) {
     const tableBody = document.getElementById('arGroupTableBody');
     tableBody.innerHTML = '';
