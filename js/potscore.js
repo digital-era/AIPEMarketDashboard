@@ -29,8 +29,10 @@ themeToggleBtn.addEventListener('click', () => {
 
 (function() {
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+    //const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    //applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+    // We are changing the fallback value to always be 'dark'
+    applyTheme(savedTheme || 'dark');
 })();
 
 // --- Main Data Loading ---
