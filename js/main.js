@@ -258,7 +258,14 @@ function createEtfPerformanceTable(data) {
     const shareChangeMap = new Map(data.ShareThisYearChange.map(item => [item['基金简称'], item['Year\u4efd\u989d\u589e\u957f%']]));
 
     data.PriceThisYearChange.forEach(item => {
+        // *** MODIFICATION START ***
         const name = item['名称'];
+        // 1. Encode the ETF name for the URL
+        const encodedName = encodeURIComponent(name);
+        // 2. Construct the full URL with the 'stock' parameter
+        const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
+        // *** MODIFICATION END ***
+        
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
 
@@ -270,7 +277,12 @@ function createEtfPerformanceTable(data) {
         
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">${name}</td>
+                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <!-- 3. Replace the plain text name with the link -->
+                    <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                        ${name}
+                    </a>
+                </td>
                 <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">
                     ${formatValue(ytdChange, 2, '%')}
                 </td>
@@ -284,6 +296,17 @@ function createEtfPerformanceTable(data) {
         `;
         tableBody.innerHTML += row;
     });
+
+    if ($.fn.DataTable.isDataTable('#etfTable')) {
+        $('#etfTable').DataTable().destroy();
+    }
+
+    new DataTable('#etfTable', {
+        responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
+        columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
+        language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
+    });
+}
 
     if ($.fn.DataTable.isDataTable('#etfTable')) {
         $('#etfTable').DataTable().destroy();
