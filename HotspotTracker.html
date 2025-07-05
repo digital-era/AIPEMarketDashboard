@@ -131,7 +131,7 @@
             // --- URL HELPER FUNCTION ---
             const getStockUrl = (code, market) => {
                 const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
-                const codeToEncode = market === 'hk' ? `UK${code}` : code;
+                const codeToEncode = market === 'hk' ? `HK${code}` : code;
                 return `${baseUrl}${encodeURIComponent(codeToEncode)}`;
             };
 
