@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class=""> <!-- `class` can be 'dark' or empty -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotspot Tracker - Market Data Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    
+    <!-- Link to the Tailwind CSS file (assuming it's in the css/ folder) -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <style>
+        /* 可以在这里直接添加骨架屏等少量样式 */
+        @keyframes pulse { 50% { opacity: .6; } }
+        .skeleton { 
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+            background-color: #e5e7eb; /* light mode skeleton color */
+        }
+        .dark .skeleton {
+            background-color: #374151; /* dark mode skeleton color */
+        }
+        /* 给刷新按钮添加旋转动画 */
+        .reloading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- Header (Reused from your existing layout) -->
+        <header class="mb-8 flex justify-between items-start">
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
+                <p id="status-text" class="text-lg text-gray-600 dark:text-gray-400 mt-1">Initializing Hotspot Tracker...</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                 <!-- Manual Refresh Button -->
+                <button id="refresh-button" title="Manual Refresh" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20 4s-2-2-6-2-8 4-8 4S2 14 6 18s8-4 8-4"></path></svg>
+                </button>
+                <!-- Auto Refresh Toggle -->
+                <div class="flex items-center">
+                    <label for="auto-refresh-toggle" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Auto Refresh</label>
+                    <input type="checkbox" id="auto-refresh-toggle" class="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500">
+                </div>
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" type="button" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Navigation Menu (Updated for this page) -->
+        <nav class="mb-8">
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+                    <li class="mr-2">
+                        <a href="index.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Market Overview</a>
+                    </li>
+                    <li class="mr-2">
+                        <a href="PotScoreMainFund.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">PotScore & MainFund</a>
+                    </li>
+                    <li class="mr-2">
+                        <a href="HotspotTracker.html" class="inline-block p-4 text-indigo-600 border-b-2 border-indigo-600 rounded-t-lg active dark:text-indigo-400 dark:border-indigo-400" aria-current="page">Hotspot Tracker</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- ETF Section -->
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                <h2 class="text-xl font-semibold mb-4">ETF Hotspot</h2>
+                <div id="etf-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+            </div>
+
+            <!-- A-Share Stock Section -->
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                <h2 class="text-xl font-semibold mb-4">A-Share Hotspot</h2>
+                <div id="stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+            </div>
+
+            <!-- HK Stock Section -->
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                <h2 class="text-xl font-semibold mb-4">Hong Kong Stock Hotspot</h2>
+                <div id="hk-stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+            </div>
+
+            <!-- A-Share 10-days Watchlist Section -->
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                <h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (A-Share)</h2>
+                <div id="stock-10days-container" class="overflow-x-auto"></div>
+            </div>
+
+            <!-- HK Stock 10-days Watchlist Section -->
+            <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border lg:col-span-2">
+                <h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (HK Stock)</h2>
+                <div id="hk-stock-10days-container" class="overflow-x-auto"></div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- CONFIGURATION ---
+            const GITHUB_USER = 'digital-era';
+            const GITHUB_REPO = 'AIPEHotTracker';
+            const DATA_PATH = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@main/data`;
+
+            const dataSources = [
+                { id: 'etf', file: 'etf_data.json', container: 'etf-container', renderer: renderTopDownTable },
+                { id: 'stock', file: 'stock_data.json', container: 'stock-container', renderer: renderTopDownTable },
+                { id: 'hk-stock', file: 'hk_stock_data.json', container: 'hk-stock-container', renderer: renderTopDownTable },
+                { id: 'stock-10days', file: 'stock_10days_data.json', container: 'stock-10days-container', renderer: renderAFlatTable },
+                { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', container: 'hk-stock-10days-container', renderer: renderHKFlatTable }
+            ];
+
+            let autoRefreshInterval;
+
+            // --- UI ELEMENTS ---
+            const statusText = document.getElementById('status-text');
+            const refreshButton = document.getElementById('refresh-button');
+            const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
+            
+            // --- THEME TOGGLE LOGIC (Copied from your existing file) ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
+            }
+            themeToggleBtn.addEventListener('click', function() {
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+                document.documentElement.classList.toggle('dark');
+                const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('color-theme', theme);
+            });
+
+            // --- DATA FETCHING AND RENDERING LOGIC ---
+
+            // Renders a skeleton loading state
+            const renderSkeleton = (containerId, rendererType) => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const skeletonRow = `<tr><td class="py-2.5 px-4"><div class="h-4 skeleton rounded w-full"></div></td><td class="py-2.5 px-4"><div class="h-4 skeleton rounded w-3/4"></div></td></tr>`.repeat(5);
+                const skeletonTable = (title) => `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><table class="w-full"><tbody>${skeletonRow}</tbody></table></div>`;
+
+                if (rendererType === 'flat') {
+                    container.innerHTML = skeletonTable(''); // Flat tables don't need a sub-title
+                } else {
+                    container.innerHTML = skeletonTable('Top Performers') + skeletonTable('Worst Performers');
+                }
+            };
+            
+            // Renders tables with 'top_up_20' and 'top_down_20'
+            function renderTopDownTable(containerId, data) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                if (!data || data.error) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown error'}</p>`;
+                    return;
+                }
+                const createTableHTML = (list, title) => {
+                    if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500">No data available.</p></div>`;
+                    let rows = list.map(item => {
+                        const percentClass = item.Percent > 0 ? 'text-green-500' : 'text-red-500';
+                        return `<tr>
+                                    <td class="px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></td>
+                                    <td class="px-4 py-2 text-right ${percentClass}">${item.Percent.toFixed(2)}%</td>
+                                </tr>`;
+                    }).join('');
+                    
+                    return `<div class="w-full">
+                                <h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3>
+                                <div class="overflow-hidden rounded-lg border dark:border-gray-700">
+                                    <table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table>
+                                </div>
+                            </div>`;
+                };
+                container.innerHTML = createTableHTML(data.top_up_20, 'Top Performers') + createTableHTML(data.top_down_20, 'Worst Performers');
+            }
+            
+            // Renders a flat list table for A-shares
+            function renderAFlatTable(containerId, data) {
+                 const container = document.getElementById(containerId);
+                if (!container) return;
+                if (!data || data.error || !Array.isArray(data)) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Invalid data format'}</p>`;
+                    return;
+                }
+                let rows = data.map(item => {
+                     const percentClass = item.Percent > 0 ? 'text-green-500' : 'text-red-500';
+                     return `<tr>
+                                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap">${item['名称']}</td>
+                                <td class="px-4 py-2 text-gray-500 dark:text-gray-400">${item['代码']}</td>
+                                <td class="px-4 py-2 text-right ${percentClass}">${item.Percent.toFixed(2)}%</td>
+                                <td class="px-4 py-2 text-right">${item.PE_TTM !== null ? item.PE_TTM.toFixed(2) : '-'}</td>
+                                <td class="px-4 py-2 text-right">${item.PB !== null ? item.PB.toFixed(2) : '-'}</td>
+                            </tr>`;
+                }).join('');
+                
+                const tableHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700">
+                                    <table class="w-full text-sm text-left">
+                                        <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700">
+                                            <tr>
+                                                <th class="px-4 py-3">Name</th><th class="px-4 py-3">Code</th>
+                                                <th class="px-4 py-3 text-right">Change %</th>
+                                                <th class="px-4 py-3 text-right">PE(TTM)</th><th class="px-4 py-3 text-right">PB</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y dark:divide-gray-700">${rows}</tbody>
+                                    </table>
+                                </div>`;
+                container.innerHTML = tableHTML;
+            }
+
+            // Renders a flat list table for HK-shares
+            function renderHKFlatTable(containerId, data) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                if (!data || data.error || !Array.isArray(data)) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Invalid data format'}</p>`;
+                    return;
+                }
+                let rows = data.map(item => {
+                     const percentClass = item.Percent > 0 ? 'text-green-500' : 'text-red-500';
+                     return `<tr>
+                                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white whitespace-nowrap">${item['名称']}</td>
+                                <td class="px-4 py-2 text-gray-500 dark:text-gray-400">${item['代码']}</td>
+                                <td class="px-4 py-2 text-right ${percentClass}">${item.Percent.toFixed(2)}%</td>
+                             </tr>`;
+                }).join('');
+                
+                const tableHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700">
+                                    <table class="w-full text-sm text-left">
+                                        <thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700">
+                                            <tr>
+                                                <th class="px-4 py-3">Name</th><th class="px-4 py-3">Code</th>
+                                                <th class="px-4 py-3 text-right">Change %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y dark:divide-gray-700">${rows}</tbody>
+                                    </table>
+                                </div>`;
+                container.innerHTML = tableHTML;
+            }
+            
+            async function fetchData() {
+                statusText.textContent = 'Fetching latest data from server...';
+                refreshButton.classList.add('reloading');
+
+                dataSources.forEach(source => renderSkeleton(source.container, source.renderer.name.includes('Flat') ? 'flat' : 'topdown'));
+
+                const fetchPromises = dataSources.map(source => 
+                    fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
+                        .then(response => response.ok ? response.json() : Promise.reject(new Error(`Failed to load ${source.file}`)))
+                        .catch(error => ({ error: error.message }))
+                );
+
+                const results = await Promise.all(fetchPromises);
+
+                let lastUpdateTime = "N/A", tradeDate = "N/A";
+                results.forEach((data, index) => {
+                    const source = dataSources[index];
+                    source.renderer(source.container, data);
+                    if (data && !data.error) {
+                        lastUpdateTime = data.update_time_bjt || lastUpdateTime;
+                        tradeDate = data.trade_date || tradeDate;
+                    }
+                });
+                
+                statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
+                refreshButton.classList.remove('reloading');
+            }
+
+            // --- EVENT LISTENERS ---
+            refreshButton.addEventListener('click', fetchData);
+            
+            autoRefreshToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    autoRefreshInterval = setInterval(fetchData, 60000); // Refresh every 60 seconds
+                    statusText.textContent += ' (Auto-refresh enabled)';
+                } else {
+                    clearInterval(autoRefreshInterval);
+                    statusText.textContent = statusText.textContent.replace(' (Auto-refresh enabled)', '');
+                }
+            });
+
+            // Initial data fetch on page load
+            fetchData();
+        });
+    </script>
+
+</body>
+</html>
