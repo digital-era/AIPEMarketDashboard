@@ -32,7 +32,7 @@
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
-        <!-- Header (Identical to other pages) -->
+        <!-- Header -->
         <header class="mb-8 flex justify-between items-start">
             <div>
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
@@ -64,16 +64,25 @@
         <!-- Main Content Grid -->
         <div class="space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
                 <!-- NASDAQ Column -->
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">NASDAQ Daily Movers</h2>
-                    <div id="nasdaq-daily-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+                    <!-- MODIFIED: Wrapper for side-by-side tables -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div id="nasdaq-daily-up-container"></div>
+                        <div id="nasdaq-daily-down-container"></div>
+                    </div>
                 </div>
 
                 <!-- Dow Jones Column -->
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">Dow Jones Daily Movers</h2>
-                    <div id="dowjones-daily-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
+                    <!-- MODIFIED: Wrapper for side-by-side tables -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div id="dowjones-daily-up-container"></div>
+                        <div id="dowjones-daily-down-container"></div>
+                    </div>
                 </div>
             </div>
 
@@ -98,8 +107,9 @@
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
 
             const dataSources = [
-                { id: 'nasdaq-daily', file: 'nasdaq_daily_data.json', renderer: renderTopDownTable, type: 'topdown' },
-                { id: 'dowjones-daily', file: 'dowjones_daily_data.json', renderer: renderTopDownTable, type: 'topdown' },
+                // Note: renderer is now just a placeholder for type detection
+                { id: 'nasdaq-daily', file: 'nasdaq_daily_data.json', type: 'topdown' },
+                { id: 'dowjones-daily', file: 'dowjones_daily_data.json', type: 'topdown' },
                 { id: 'indices-chart', file: 'us_indices_1y_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
             ];
 
@@ -108,7 +118,7 @@
             const refreshButton = document.getElementById('refresh-button');
             const themeToggleBtn = document.getElementById('theme-toggle');
 
-            // --- THEME TOGGLE LOGIC ---
+            // --- THEME TOGGLE LOGIC (Defaults to dark) ---
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
             const applyTheme = (theme) => {
@@ -122,12 +132,17 @@
                     themeToggleLightIcon.classList.add('hidden');
                 }
                 dataSources.filter(s => s.chartInstance).forEach(s => {
-                    s.chartInstance.updateOptions({ theme: { mode: theme } });
+                    if (s.chartInstance) {
+                        s.chartInstance.updateOptions({ theme: { mode: theme } });
+                    }
                 });
             };
             
-            const currentTheme = localStorage.getItem('color-theme') || 'light';
-            applyTheme(currentTheme);
+            if (localStorage.getItem('color-theme') === 'light') {
+                applyTheme('light');
+            } else {
+                applyTheme('dark');
+            }
 
             themeToggleBtn.addEventListener('click', function() {
                 const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
@@ -138,38 +153,42 @@
             // --- DATA RENDERING FUNCTIONS ---
             const getStockUrl = (code) => `https://finance.yahoo.com/quote/${code}`;
 
-            const renderSkeleton = (containerId, type) => {
-                const container = document.getElementById(`${containerId}-container`);
-                if (!container) return;
-                if (type === 'chart') {
-                    container.innerHTML = `<div class="h-80 skeleton w-full"></div>`; // Taller skeleton
-                } else { // topdown
-                    const skeletonRow = `<tr><td class="py-2.5 px-4"><div class="h-4 skeleton w-full"></div></td><td class="py-2.5 px-4"><div class="h-4 skeleton w-3/4"></div></td></tr>`.repeat(5);
-                    const skeletonTable = (title) => `<div class="w-full"><h3 class="text-lg font-medium mb-2 opacity-0">${title}</h3><table class="w-full"><tbody>${skeletonRow}</tbody></table></div>`;
-                    container.innerHTML = skeletonTable('Top') + skeletonTable('Worst');
+            const renderSkeleton = (source) => {
+                if (source.type === 'chart') {
+                    const container = document.getElementById(`${source.id}-container`);
+                    if (container) container.innerHTML = `<div class="h-80 skeleton w-full"></div>`;
+                } else if (source.type === 'topdown') {
+                    const skeletonHTML = `<h3 class="text-lg font-medium mb-2 skeleton w-3/4 h-6"></h3>` + 
+                                         `<div class="h-64 skeleton w-full mt-2"></div>`;
+                    const upContainer = document.getElementById(`${source.id}-up-container`);
+                    const downContainer = document.getElementById(`${source.id}-down-container`);
+                    if (upContainer) upContainer.innerHTML = skeletonHTML;
+                    if (downContainer) downContainer.innerHTML = skeletonHTML;
                 }
             };
-
-            function renderTopDownTable(containerId, data) {
+            
+            // NEW: Renders a single table into a specific container
+            function renderSingleTable(containerId, list, title) {
                 const container = document.getElementById(containerId);
-                if (!container || !data || data.error) {
-                    container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown error'}</p>`; return;
+                if (!container) return;
+
+                if (!list || list.length === 0) {
+                     container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><p class="text-sm text-gray-500">No data available.</p>`;
+                     return;
                 }
-                const createTableHTML = (list, title) => {
-                    if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500">No data.</p></div>`;
-                    let rows = list.map(item => {
-                        const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                        const url = getStockUrl(item['代码']);
-                        return `<tr>
-                                    <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
-                                    </td>
-                                    <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
-                                </tr>`;
-                    }).join('');
-                    return `<div class="w-full"><h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div></div>`;
-                };
-                container.innerHTML = createTableHTML(data.top_up_20, 'Top Performers') + createTableHTML(data.top_down_20, 'Worst Performers');
+                
+                let rows = list.map(item => {
+                    const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
+                    const url = getStockUrl(item['代码']);
+                    return `<tr>
+                                <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                    <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
+                                </td>
+                                <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
+                            </tr>`;
+                }).join('');
+
+                container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
             function renderIndexChart(containerId, data) {
@@ -190,18 +209,18 @@
                 const options = {
                     series: series,
                     chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
-                    colors: ['#1A56DB', '#FDBA8C'], // Blue for NASDAQ, Orange for Dow Jones
+                    colors: ['#1A56DB', '#FDBA8C'],
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth', width: 2 },
                     xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } } },
                     yaxis: { 
                         labels: { 
-                            formatter: (val) => `${val}`, // Y-axis shows the normalized value
+                            formatter: (val) => `${val}`,
                             style: { colors: '#9ca3af' } 
                         },
                         title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
                     },
-                    grid: { borderColor: '#e5e7eb' },
+                    grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
                     legend: { show: true, position: 'top', horizontalAlign: 'right', floating: true, offsetY: -25, offsetX: -5 },
                     tooltip: {
                         x: { format: 'dd MMM yyyy' },
@@ -213,7 +232,10 @@
                 };
                 
                 if (source.chartInstance) {
-                    source.chartInstance.updateOptions({ series: series });
+                    source.chartInstance.updateOptions({ 
+                        series: series,
+                        grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
+                    });
                 } else {
                     source.chartInstance = new ApexCharts(container, options);
                     source.chartInstance.render();
@@ -224,7 +246,7 @@
                 statusText.textContent = 'Fetching latest data...';
                 refreshButton.classList.add('reloading');
 
-                dataSources.forEach(source => renderSkeleton(source.id, source.type));
+                dataSources.forEach(source => renderSkeleton(source));
 
                 const fetchPromises = dataSources.map(source =>
                     fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
@@ -235,13 +257,35 @@
 
                 const results = await Promise.all(fetchPromises);
                 let lastUpdateTime = "N/A";
+
                 results.forEach((data, index) => {
                     const source = dataSources[index];
-                    source.renderer(`${source.id}-container`, data);
-                    if (data && !data.error && data.update_time_bjt) {
-                        lastUpdateTime = data.update_time_bjt;
+                    
+                    if (data && !data.error) {
+                        if (source.type === 'topdown') {
+                            // Special handling for the split tables
+                            renderSingleTable(`${source.id}-up-container`, data.top_up_20, 'Top Performers');
+                            renderSingleTable(`${source.id}-down-container`, data.top_down_20, 'Worst Performers');
+                        } else if (source.type === 'chart') {
+                            // Call the chart renderer
+                            source.renderer(`${source.id}-container`, data);
+                        }
+
+                        if (data.update_time_bjt) {
+                            lastUpdateTime = data.update_time_bjt;
+                        }
+                    } else {
+                        // Handle fetch error for all types
+                        if (source.type === 'topdown') {
+                            const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
+                            document.getElementById(`${source.id}-up-container`).innerHTML = errorMsg;
+                            document.getElementById(`${source.id}-down-container`).innerHTML = errorMsg;
+                        } else {
+                            document.getElementById(`${source.id}-container`).innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
+                        }
                     }
                 });
+
                 statusText.textContent = `Last updated (UTC): ${lastUpdateTime}`;
                 refreshButton.classList.remove('reloading');
             }
