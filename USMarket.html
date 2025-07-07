@@ -1,259 +1,147 @@
-<!DOCTYPE html>
-<html lang="zh-CN" class=""> <!-- Default class is empty, JS will handle theme -->
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>US Market - Market Data Dashboard</title>
+import yfinance as yf
+import pandas as pd
+import json
+from datetime import datetime
+import pytz
+
+# --- 配置 ---
+
+# 纳斯达克100成分股 (示例列表，实际使用时建议从可靠来源动态获取或定期更新)
+# 为了简化，这里只列出一部分作为示例。请替换为完整的纳斯ДАК 100 列表。
+NAS_TICKERS = [
+    'AAPL', 'MSFT', 'AMZN', 'NVDA', 'GOOGL', 'GOOG', 'TSLA', 'META', 'AVGO', 'PEP',
+    'COST', 'ADBE', 'CSCO', 'TMUS', 'NFLX', 'AMD', 'INTC', 'CMCSA', 'QCOM', 'INTU'
+    # ... 添加更多股票代码
+]
+
+# 道琼斯30成分股
+DOW_TICKERS = [
+    'AXP', 'AMGN', 'AAPL', 'BA', 'CAT', 'CSCO', 'CVX', 'GS', 'HD', 'HON',
+    'IBM', 'INTC', 'JNJ', 'KO', 'JPM', 'MCD', 'MMM', 'MRK', 'MSFT', 'NKE',
+    'PG', 'TRV', 'UNH', 'CRM', 'VZ', 'V', 'WBA', 'WMT', 'DIS', 'DOW'
+]
+
+# 指数代码
+INDEX_TICKERS = {
+    "nasdaq": "^IXIC",
+    "dowjones": "^DJI",
+    "gold": "GC=F",      # COMEX Gold Futures
+    "dollar": "DX-Y.NYB" # US Dollar Index
+}
+
+# 输出文件路径
+OUTPUT_DIR = "data/"
+NAS_OUTPUT_FILE = OUTPUT_DIR + "us_nas_stock_data.json"
+DOW_OUTPUT_FILE = OUTPUT_DIR + "us_dowj_stock_data.json"
+INDEX_OUTPUT_FILE = OUTPUT_DIR + "us_index_data.json"
+
+# --- 函数定义 ---
+
+def get_current_utc_time():
+    """获取当前UTC时间并格式化"""
+    return datetime.now(pytz.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+
+def generate_movers_json(tickers, filename):
+    """获取股票列表的动态数据并生成Top/Down 20的JSON文件"""
+    print(f"Fetching data for {len(tickers)} tickers for {filename}...")
     
-    <link rel="preconnect" href="https://rsms.me/">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+    # 获取最近两天的数据以计算变化
+    data = yf.download(tickers, period="2d", progress=False)
+    if data.empty:
+        print(f"Could not download data for {filename}.")
+        return
 
-    <style>
-        @keyframes pulse { 50% { opacity: .6; } }
-        .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: #e5e7eb; border-radius: 0.25rem; }
-        .dark .skeleton { background-color: #374151; }
-        .reloading { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .apexcharts-tooltip { background: #f3f3f3; color: #333; }
-        .apexcharts-tooltip.apexcharts-theme-dark { background: #374151; color: #fff; }
-    </style>
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    # 获取股票的详细信息（如名称）
+    stock_info = {}
+    for ticker in tickers:
+        try:
+            stock_info[ticker] = yf.Ticker(ticker).info.get('longName', ticker)
+        except Exception as e:
+            print(f"Could not get info for {ticker}: {e}")
+            stock_info[ticker] = ticker
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+    # 计算百分比变化
+    close_prices = data['Close']
+    if len(close_prices) < 2:
+        print("Not enough data to calculate change.")
+        return
         
-        <header class="mb-8 flex justify-between items-start">
-            <div>
-                <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
-                <p id="status-text" class="text-lg text-gray-600 dark:text-dark-subtle mt-1">US Market Page</p>
-            </div>
-            <div class="flex items-center space-x-3">
-                 <button id="refresh-button" title="Manual Refresh" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
-                    <svg class="w-5 h-5 reloading" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20 4s-2-2-6-2-8 4-8 4S2 14 6 18s8-4 8-4"></path></svg>
-                </button>
-                <button id="theme-toggle" type="button" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
-                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707z"></path></svg>
-                </button>
-            </div>
-        </header>
-
-        <nav class="mb-8">
-            <div class="border-b border-gray-200 dark:border-gray-700">
-                <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
-                    <li class="mr-2"><a href="index.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Market Overview</a></li>
-                    <li class="mr-2"><a href="PotScoreMainFund.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">PotScore & MainFund</a></li>
-                    <li class="mr-2"><a href="HotspotTracker.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Hotspot Tracker</a></li>
-                    <li class="mr-2"><a href="us_market.html" class="inline-block p-4 text-indigo-600 border-b-2 border-indigo-600 rounded-t-lg active dark:text-indigo-400 dark:border-indigo-400" aria-current="page">US Market</a></li>
-                </ul>
-            </div>
-        </nav>
-
-        <div class="space-y-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">NASDAQ Daily Movers</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div id="nasdaq-daily-up-container"></div>
-                        <div id="nasdaq-daily-down-container"></div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">Dow Jones Daily Movers</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div id="dowjones-daily-up-container"></div>
-                        <div id="dowjones-daily-down-container"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">Major Indices 1-Year Normalized Performance</h2>
-                    <div id="indices-chart-container"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    prev_close = close_prices.iloc[-2]
+    latest_close = close_prices.iloc[-1]
     
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    percent_change = ((latest_close - prev_close) / prev_close) * 100
+    
+    results = []
+    for ticker in tickers:
+        if pd.notna(percent_change.get(ticker)):
+            results.append({
+                "代码": ticker,
+                "名称": stock_info.get(ticker, ticker),
+                "Percent": percent_change[ticker]
+            })
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const GITHUB_USER = 'digital-era';
-            const GITHUB_REPO = 'AIPEHotTracker';
-            const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
+    # 排序并获取Top/Down 20
+    results.sort(key=lambda x: x['Percent'], reverse=True)
+    top_up = results[:20]
+    
+    results.sort(key=lambda x: x['Percent'])
+    top_down = results[:20]
 
-            const dataSources = [
-                { id: 'nasdaq-daily', file: 'us_nas_stock_data.json', type: 'topdown' },
-                { id: 'dowjones-daily', file: 'us_dowj_stock_data.json', type: 'topdown' },
-                { id: 'indices-chart', file: 'us_index_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
-            ];
+    # 构建最终的JSON结构
+    output_data = {
+        "update_time_utc": get_current_utc_time(),
+        "top_up_20": top_up,
+        "top_down_20": top_down
+    }
 
-            const statusText = document.getElementById('status-text');
-            const refreshButton = document.getElementById('refresh-button');
-            const themeToggleBtn = document.getElementById('theme-toggle');
+    # 保存到文件
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=4)
+    print(f"Successfully saved data to {filename}")
 
-            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-            const applyTheme = (theme) => {
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    themeToggleLightIcon.classList.remove('hidden');
-                    themeToggleDarkIcon.classList.add('hidden');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    themeToggleDarkIcon.classList.remove('hidden');
-                    themeToggleLightIcon.classList.add('hidden');
-                }
-                dataSources.filter(s => s.chartInstance).forEach(s => {
-                    if (s.chartInstance) {
-                        s.chartInstance.updateOptions({ theme: { mode: theme } });
-                    }
-                });
-            };
-            
-            if (localStorage.getItem('color-theme') === 'light') {
-                applyTheme('light');
-            } else {
-                applyTheme('dark');
-            }
+def generate_index_json(tickers, filename):
+    """获取指数的1年历史数据并生成归一化的JSON文件"""
+    print(f"Fetching 1-year index data for {filename}...")
+    
+    data = yf.download(list(tickers.values()), period="1y", interval="1d", progress=False)['Close']
+    if data.empty:
+        print(f"Could not download index data.")
+        return
+        
+    # 归一化处理 (第一天 = 100)
+    normalized_data = (data / data.iloc[0]) * 100
+    
+    output_data = {
+        "update_time_utc": get_current_utc_time()
+    }
+    
+    for key, ticker_symbol in tickers.items():
+        series_data = []
+        for date, value in normalized_data[ticker_symbol].items():
+            if pd.notna(value):
+                series_data.append({
+                    "date": date.strftime('%Y-%m-%d'),
+                    "value": value
+                })
+        output_data[key] = series_data
 
-            themeToggleBtn.addEventListener('click', function() {
-                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                localStorage.setItem('color-theme', newTheme);
-                applyTheme(newTheme);
-            });
+    # 保存到文件
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(output_data, f, ensure_ascii=False, indent=4)
+    print(f"Successfully saved data to {filename}")
 
-            const getStockUrl = (code) => `https://finance.yahoo.com/quote/${code}`;
 
-            const renderSkeleton = (source) => {
-                if (source.type === 'chart') {
-                    const container = document.getElementById(`${source.id}-container`);
-                    if (container) container.innerHTML = `<div class="h-80 skeleton w-full"></div>`;
-                } else if (source.type === 'topdown') {
-                    const skeletonHTML = `<h3 class="text-lg font-medium mb-2 skeleton w-3/4 h-6"></h3><div class="h-64 skeleton w-full mt-2"></div>`;
-                    const upContainer = document.getElementById(`${source.id}-up-container`);
-                    const downContainer = document.getElementById(`${source.id}-down-container`);
-                    if (upContainer) upContainer.innerHTML = skeletonHTML;
-                    if (downContainer) downContainer.innerHTML = skeletonHTML;
-                }
-            };
-            
-            function renderSingleTable(containerId, list, title) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                if (!list || list.length === 0) {
-                     container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><p class="text-sm text-gray-500">No data available.</p>`;
-                     return;
-                }
-                let rows = list.map(item => {
-                    const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                    const url = getStockUrl(item['代码']);
-                    return `<tr>
-                                <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                    <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
-                                </td>
-                                <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
-                            </tr>`;
-                }).join('');
-                container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
-            }
+# --- 主程序 ---
+if __name__ == "__main__":
+    # 确保输出目录存在
+    import os
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-            function renderIndexChart(containerId, data) {
-                const container = document.getElementById(containerId);
-                const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
-
-                if (!container || !data || data.error || !data.nasdaq || !data.dowjones || !data.gold || !data.dollar) {
-                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid chart data'}</p>`; return;
-                }
-                
-                const createSeries = (seriesData) => seriesData.map(d => ({ x: d.date, y: parseFloat(d.value).toFixed(2) }));
-                
-                const series = [
-                    { name: 'NASDAQ', data: createSeries(data.nasdaq) },
-                    { name: 'Dow Jones', data: createSeries(data.dowjones) },
-                    { name: 'Comex Gold', data: createSeries(data.gold) },
-                    { name: 'Dollar Index', data: createSeries(data.dollar) }
-                ];
-                
-                const options = {
-                    series: series,
-                    chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
-                    colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'], // Blue, Orange, Yellow, Gray
-                    dataLabels: { enabled: false },
-                    stroke: { curve: 'smooth', width: 2 },
-                    xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } } },
-                    yaxis: { 
-                        labels: { formatter: (val) => `${val}`, style: { colors: '#9ca3af' } },
-                        title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
-                    },
-                    grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
-                    legend: { show: true, position: 'top', horizontalAlign: 'right', floating: true, offsetY: -25, offsetX: -5 },
-                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val}` }, shared: true, intersect: false },
-                    theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
-                };
-                
-                if (source.chartInstance) {
-                    source.chartInstance.updateOptions({
-                        series: series,
-                        grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
-                    });
-                } else {
-                    source.chartInstance = new ApexCharts(container, options);
-                    source.chartInstance.render();
-                }
-            }
-            
-            async function fetchData() {
-                statusText.textContent = 'Fetching latest data...';
-                refreshButton.classList.add('reloading');
-
-                dataSources.forEach(source => renderSkeleton(source));
-
-                const fetchPromises = dataSources.map(source =>
-                    fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
-                        .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
-                        .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
-                        .catch(err => ({ error: err.message, id: source.id }))
-                );
-
-                const results = await Promise.all(fetchPromises);
-                let lastUpdateTime = "N/A";
-
-                results.forEach((data, index) => {
-                    const source = dataSources[index];
-                    if (data && !data.error) {
-                        if (source.type === 'topdown') {
-                            renderSingleTable(`${source.id}-up-container`, data.top_up_20, 'Top Performers');
-                            renderSingleTable(`${source.id}-down-container`, data.top_down_20, 'Worst Performers');
-                        } else if (source.type === 'chart') {
-                            source.renderer(`${source.id}-container`, data);
-                        }
-                        if (data.update_time_utc) { // Assuming new key is update_time_utc
-                            lastUpdateTime = data.update_time_utc;
-                        }
-                    } else {
-                        const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
-                        if (source.type === 'topdown') {
-                            document.getElementById(`${source.id}-up-container`).innerHTML = errorMsg;
-                            document.getElementById(`${source.id}-down-container`).innerHTML = errorMsg;
-                        } else {
-                            document.getElementById(`${source.id}-container`).innerHTML = errorMsg;
-                        }
-                    }
-                });
-
-                statusText.textContent = `Last updated (UTC): ${lastUpdateTime}`;
-                refreshButton.classList.remove('reloading');
-            }
-            
-            refreshButton.addEventListener('click', fetchData);
-            fetchData();
-        });
-    </script>
-</body>
-</html>
+    # 生成股票动态数据
+    generate_movers_json(NAS_TICKERS, NAS_OUTPUT_FILE)
+    generate_movers_json(DOW_TICKERS, DOW_OUTPUT_FILE)
+    
+    # 生成指数历史数据
+    generate_index_json(INDEX_TICKERS, INDEX_OUTPUT_FILE)
+    
+    print("\nAll data updated successfully!")
