@@ -11,28 +11,19 @@
     <link href="css/style.css" rel="stylesheet">
 
     <style>
-        /* Reusing the same helper styles */
         @keyframes pulse { 50% { opacity: .6; } }
         .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: #e5e7eb; border-radius: 0.25rem; }
         .dark .skeleton { background-color: #374151; }
         .reloading { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        /* Chart tooltip styling */
-        .apexcharts-tooltip {
-            background: #f3f3f3;
-            color: #333;
-        }
-        .apexcharts-tooltip.apexcharts-theme-dark {
-            background: #374151;
-            color: #fff;
-        }
+        .apexcharts-tooltip { background: #f3f3f3; color: #333; }
+        .apexcharts-tooltip.apexcharts-theme-dark { background: #374151; color: #fff; }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
-        <!-- Header -->
         <header class="mb-8 flex justify-between items-start">
             <div>
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
@@ -49,7 +40,6 @@
             </div>
         </header>
 
-        <!-- Navigation Menu -->
         <nav class="mb-8">
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
@@ -61,24 +51,18 @@
             </div>
         </nav>
 
-        <!-- Main Content Grid -->
         <div class="space-y-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                
-                <!-- NASDAQ Column -->
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">NASDAQ Daily Movers</h2>
-                    <!-- MODIFIED: Wrapper for side-by-side tables -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div id="nasdaq-daily-up-container"></div>
                         <div id="nasdaq-daily-down-container"></div>
                     </div>
                 </div>
 
-                <!-- Dow Jones Column -->
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">Dow Jones Daily Movers</h2>
-                    <!-- MODIFIED: Wrapper for side-by-side tables -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div id="dowjones-daily-up-container"></div>
                         <div id="dowjones-daily-down-container"></div>
@@ -86,39 +70,33 @@
                 </div>
             </div>
 
-            <!-- Combined Chart Section -->
             <div class="grid grid-cols-1">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">NASDAQ vs Dow Jones 1-Year Normalized Performance</h2>
+                    <h2 class="text-xl font-semibold mb-4">Major Indices 1-Year Normalized Performance</h2>
                     <div id="indices-chart-container"></div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Include ApexCharts Library -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // --- CONFIGURATION ---
             const GITHUB_USER = 'digital-era';
             const GITHUB_REPO = 'AIPEHotTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
 
             const dataSources = [
-                // Note: renderer is now just a placeholder for type detection
-                { id: 'nasdaq-daily', file: 'nasdaq_daily_data.json', type: 'topdown' },
-                { id: 'dowjones-daily', file: 'dowjones_daily_data.json', type: 'topdown' },
-                { id: 'indices-chart', file: 'us_indices_1y_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
+                { id: 'nasdaq-daily', file: 'us_nas_stock_data.json', type: 'topdown' },
+                { id: 'dowjones-daily', file: 'us_dowj_stock_data.json', type: 'topdown' },
+                { id: 'indices-chart', file: 'us_index_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
             ];
 
-            // --- UI ELEMENTS ---
             const statusText = document.getElementById('status-text');
             const refreshButton = document.getElementById('refresh-button');
             const themeToggleBtn = document.getElementById('theme-toggle');
 
-            // --- THEME TOGGLE LOGIC (Defaults to dark) ---
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
             const applyTheme = (theme) => {
@@ -150,7 +128,6 @@
                 applyTheme(newTheme);
             });
 
-            // --- DATA RENDERING FUNCTIONS ---
             const getStockUrl = (code) => `https://finance.yahoo.com/quote/${code}`;
 
             const renderSkeleton = (source) => {
@@ -158,8 +135,7 @@
                     const container = document.getElementById(`${source.id}-container`);
                     if (container) container.innerHTML = `<div class="h-80 skeleton w-full"></div>`;
                 } else if (source.type === 'topdown') {
-                    const skeletonHTML = `<h3 class="text-lg font-medium mb-2 skeleton w-3/4 h-6"></h3>` + 
-                                         `<div class="h-64 skeleton w-full mt-2"></div>`;
+                    const skeletonHTML = `<h3 class="text-lg font-medium mb-2 skeleton w-3/4 h-6"></h3><div class="h-64 skeleton w-full mt-2"></div>`;
                     const upContainer = document.getElementById(`${source.id}-up-container`);
                     const downContainer = document.getElementById(`${source.id}-down-container`);
                     if (upContainer) upContainer.innerHTML = skeletonHTML;
@@ -167,16 +143,13 @@
                 }
             };
             
-            // NEW: Renders a single table into a specific container
             function renderSingleTable(containerId, list, title) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
-
                 if (!list || list.length === 0) {
                      container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><p class="text-sm text-gray-500">No data available.</p>`;
                      return;
                 }
-                
                 let rows = list.map(item => {
                     const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
                     const url = getStockUrl(item['代码']);
@@ -187,52 +160,45 @@
                                 <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                             </tr>`;
                 }).join('');
-
                 container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
             function renderIndexChart(containerId, data) {
                 const container = document.getElementById(containerId);
-                if (!container || !data || data.error || !data.nasdaq || !data.dowjones) {
+                const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
+
+                if (!container || !data || data.error || !data.nasdaq || !data.dowjones || !data.gold || !data.dollar) {
                     container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid chart data'}</p>`; return;
                 }
                 
-                const nasdaqSeries = data.nasdaq.map(d => ({ x: d.date, y: parseFloat(d.value).toFixed(2) }));
-                const dowjonesSeries = data.dowjones.map(d => ({ x: d.date, y: parseFloat(d.value).toFixed(2) }));
-                const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
+                const createSeries = (seriesData) => seriesData.map(d => ({ x: d.date, y: parseFloat(d.value).toFixed(2) }));
                 
                 const series = [
-                    { name: 'NASDAQ', data: nasdaqSeries },
-                    { name: 'Dow Jones', data: dowjonesSeries }
+                    { name: 'NASDAQ', data: createSeries(data.nasdaq) },
+                    { name: 'Dow Jones', data: createSeries(data.dowjones) },
+                    { name: 'Comex Gold', data: createSeries(data.gold) },
+                    { name: 'Dollar Index', data: createSeries(data.dollar) }
                 ];
                 
                 const options = {
                     series: series,
                     chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
-                    colors: ['#1A56DB', '#FDBA8C'],
+                    colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'], // Blue, Orange, Yellow, Gray
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth', width: 2 },
                     xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } } },
                     yaxis: { 
-                        labels: { 
-                            formatter: (val) => `${val}`,
-                            style: { colors: '#9ca3af' } 
-                        },
+                        labels: { formatter: (val) => `${val}`, style: { colors: '#9ca3af' } },
                         title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
                     },
                     grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
                     legend: { show: true, position: 'top', horizontalAlign: 'right', floating: true, offsetY: -25, offsetX: -5 },
-                    tooltip: {
-                        x: { format: 'dd MMM yyyy' },
-                        y: { formatter: (val) => `${val}` },
-                        shared: true,
-                        intersect: false
-                    },
+                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val}` }, shared: true, intersect: false },
                     theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
                 };
                 
                 if (source.chartInstance) {
-                    source.chartInstance.updateOptions({ 
+                    source.chartInstance.updateOptions({
                         series: series,
                         grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
                     });
@@ -260,28 +226,23 @@
 
                 results.forEach((data, index) => {
                     const source = dataSources[index];
-                    
                     if (data && !data.error) {
                         if (source.type === 'topdown') {
-                            // Special handling for the split tables
                             renderSingleTable(`${source.id}-up-container`, data.top_up_20, 'Top Performers');
                             renderSingleTable(`${source.id}-down-container`, data.top_down_20, 'Worst Performers');
                         } else if (source.type === 'chart') {
-                            // Call the chart renderer
                             source.renderer(`${source.id}-container`, data);
                         }
-
-                        if (data.update_time_bjt) {
-                            lastUpdateTime = data.update_time_bjt;
+                        if (data.update_time_utc) { // Assuming new key is update_time_utc
+                            lastUpdateTime = data.update_time_utc;
                         }
                     } else {
-                        // Handle fetch error for all types
+                        const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
                         if (source.type === 'topdown') {
-                            const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
                             document.getElementById(`${source.id}-up-container`).innerHTML = errorMsg;
                             document.getElementById(`${source.id}-down-container`).innerHTML = errorMsg;
                         } else {
-                            document.getElementById(`${source.id}-container`).innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
+                            document.getElementById(`${source.id}-container`).innerHTML = errorMsg;
                         }
                     }
                 });
@@ -289,8 +250,7 @@
                 statusText.textContent = `Last updated (UTC): ${lastUpdateTime}`;
                 refreshButton.classList.remove('reloading');
             }
-
-            // --- INITIALIZATION ---
+            
             refreshButton.addEventListener('click', fetchData);
             fetchData();
         });
