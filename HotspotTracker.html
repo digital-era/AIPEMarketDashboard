@@ -89,10 +89,7 @@
             // --- CONFIGURATION ---
             const GITHUB_USER = 'digital-era';
             const GITHUB_REPO = 'AIPEHotTracker';
-            //const DATA_PATH = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@main/data`;
             const DATA_PATH = `https://cdn.jsdelivr.net/gh/${GITHUB_USER}/${GITHUB_REPO}@latest/data`;
-            //https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
-
 
             const dataSources = [
                 { id: 'etf', file: 'etf_data.json', renderer: renderTopDownTable, market: 'etf' },
@@ -109,20 +106,17 @@
             const refreshButton = document.getElementById('refresh-button');
             const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
             
-            // --- THEME TOGGLE LOGIC (Updated to default to dark) ---
+            // --- THEME TOGGLE LOGIC ---
             const themeToggleBtn = document.getElementById('theme-toggle');
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-
             if (localStorage.getItem('color-theme') === 'light') {
                 document.documentElement.classList.remove('dark');
                 themeToggleDarkIcon.classList.remove('hidden');
             } else {
-                // Default to dark if theme is 'dark' or not set at all
                 document.documentElement.classList.add('dark');
                 themeToggleLightIcon.classList.remove('hidden');
             }
-
             themeToggleBtn.addEventListener('click', function() {
                 document.documentElement.classList.toggle('dark');
                 themeToggleDarkIcon.classList.toggle('hidden');
@@ -162,7 +156,7 @@
                                     <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                                         <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
                                     </td>
-                                    <td class="py-2 px-1 text-right ${percentClass}">${item.Percent.toFixed(2)}%</td>
+                                    <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                                 </tr>`;
                     }).join('');
                     return `<div class="w-full"><h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div></div>`;
@@ -183,7 +177,7 @@
                                     <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
-                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent.toFixed(2)}%</td>
+                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                                 <td class="py-2 px-4 text-right">${item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.PB != null ? item.PB.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.Amount != null ? item.Amount.toFixed(2) : '-'}</td>
@@ -212,7 +206,7 @@
                                     <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
-                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent.toFixed(2)}%</td>
+                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                              </tr>`;
                 }).join('');
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>
@@ -233,16 +227,33 @@
                 };
                 Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
 
-                const fetchPromises = dataSources.map(source => 
+                // --- MODIFIED FETCH LOGIC ---
+                const fetchPromises = dataSources.map(source =>
                     fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
-                        .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP error`)))
-                        .catch(error => ({ error: error.message, id: source.id }))
+                        .then(response => {
+                            if (!response.ok) {
+                                return Promise.reject(new Error(`HTTP error ${response.status}`));
+                            }
+                            return response.text(); // Get raw text first
+                        })
+                        .then(text => {
+                            // Sanitize the text: replace non-standard NaN with standard JSON null
+                            const sanitizedText = text.replace(/NaN/g, 'null');
+                            return JSON.parse(sanitizedText); // Now parse the clean JSON
+                        })
+                        .catch(error => {
+                            // Catch any error from fetch or parsing
+                            console.error(`Failed to load or parse ${source.file}:`, error);
+                            return { error: error.message, id: source.id };
+                        })
                 );
 
                 const results = await Promise.all(fetchPromises);
                 let lastUpdateTime = "N/A", tradeDate = "N/A";
                 results.forEach((data, index) => {
                     const source = dataSources[index];
+                    // Since we replaced NaN with null, we also need to handle `null` in rendering
+                    // I've updated the rendering functions to check for `null` before calling .toFixed()
                     source.renderer(`${source.id}-container`, data, source.market);
                     if (data && !data.error) {
                         if (Array.isArray(data) && data.length > 0) {
