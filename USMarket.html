@@ -1,27 +1,36 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class=""> <!-- Default class is empty, JS will handle theme -->
+<html lang="zh-CN" class=""> 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>US Market - Market Data Dashboard</title>
     
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-    <!-- ApexCharts JS must be loaded before the script block -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
     <style>
         @keyframes pulse { 50% { opacity: .6; } }
         .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: #e5e7eb; border-radius: 0.25rem; }
         .dark .skeleton { background-color: #374151; }
         .reloading { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        /* Keep tooltip styles for consistency */
         .apexcharts-tooltip { background: #f3f3f3; color: #333; }
         .apexcharts-tooltip.apexcharts-theme-dark { background: #374151; color: #fff; }
+        
+        /* 新增样式 */
+        .chart-container { height: 450px; }
+        @media (max-width: 768px) {
+            .chart-container { height: 500px; }
+            .apexcharts-toolbar { padding: 2px !important; }
+            .apexcharts-zoom-icon, .apexcharts-zoomin-icon, 
+            .apexcharts-zoomout-icon, .apexcharts-reset-icon,
+            .apexcharts-menu-icon { 
+                transform: scale(0.8); 
+                margin: 0 2px !important;
+            }
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
@@ -76,13 +85,12 @@
             <div class="grid grid-cols-1">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">Major Indices 1-Year Normalized Performance</h2>
-                    <div id="indices-chart-container"></div>
+                    <div id="indices-chart-container" class="chart-container"></div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Script tag moved to the bottom of body, after HTML elements -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const GITHUB_USER = 'digital-era';
@@ -169,7 +177,6 @@
                 container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
-            // --- Function with MERGED FIXES ---
             function renderIndexChart(containerId, data) {
                 const container = document.getElementById(containerId);
                 const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
@@ -188,76 +195,130 @@
                     { name: 'Dollar Index', data: createSeries(data.dollar) }
                 ];
                 
-                // *** MERGED FIX 1: Dynamically calculate X and Y axis ranges to remove excess padding ***
-                let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
-                series.forEach(s => {
-                    s.data.forEach(point => {
-                        if (point.x < xMin) xMin = point.x;
-                        if (point.x > xMax) xMax = point.x;
-                        if (point.y < yMin) yMin = point.y;
-                        if (point.y > yMax) yMax = point.y;
-                    });
-                });
-                const yRange = yMax - yMin;
-                const yPadding = yRange * 0.05; // 5% padding
-                const yAxisMin = Math.floor(yMin - yPadding);
-                const yAxisMax = Math.ceil(yMax + yPadding);
-                // *** END OF MERGED FIX 1 ***
-
-
+                // 更鲜明的颜色方案
+                const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'];
+                
                 const options = {
                     series: series,
                     chart: { 
                         type: 'area', 
-                        height: 350,
+                        height: '100%',
                         toolbar: { 
                             show: true,
-                            autoSelected: 'pan'
+                            autoSelected: 'pan',
+                            tools: {
+                                download: true,
+                                selection: true,
+                                zoom: true,
+                                zoomin: true,
+                                zoomout: true,
+                                pan: true,
+                                reset: true
+                            }
                         }, 
                         zoom: { 
-                            enabled: true 
-                        } 
+                            enabled: true,
+                            autoScaleYaxis: true
+                        },
+                        animations: {
+                            enabled: true,
+                            easing: 'easeinout',
+                            speed: 800,
+                            animateGradually: {
+                                enabled: true,
+                                delay: 150
+                            },
+                            dynamicAnimation: {
+                                enabled: true,
+                                speed: 350
+                            }
+                        },
+                        events: {
+                            mounted: function(chartContext, config) {
+                                // 渲染后立即触发重绘以解决空白问题
+                                setTimeout(() => {
+                                    chartContext.updateSeries(series, true);
+                                }, 300);
+                            }
+                        }
                     },
-                    // Original colors array
-                    colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'],
+                    colors: colors,
                     dataLabels: { enabled: false },
-                    // *** MERGED FIX 2: Explicitly set STROKE colors for better visibility ***
                     stroke: { 
                         curve: 'smooth', 
-                        width: 2,
-                        // The blue color for NASDAQ is now darker and more solid
-                        colors: ['#0033A1', '#FDBA8C', '#FACA15', '#9CA3AF'] 
+                        width: 3,
+                        colors: colors
+                    },
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.7,
+                            opacityTo: 0.2,
+                            stops: [0, 90, 100]
+                        }
                     },
                     xaxis: { 
                         type: 'datetime', 
-                        // Apply calculated min/max to remove blank space
-                        min: xMin,
-                        max: xMax,
-                        labels: { style: { colors: '#9ca3af' } } 
+                        labels: { style: { colors: '#9ca3af' } },
+                        tooltip: {
+                            enabled: false
+                        }
                     },
                     yaxis: { 
-                        // Apply calculated min/max
-                        min: yAxisMin,
-                        max: yAxisMax,
                         labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } },
                         title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
                     },
-                    grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
-                    legend: { show: true, position: 'top', horizontalAlign: 'right', floating: true, offsetY: -25, offsetX: -5 },
-                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val.toFixed(2)}` }, shared: true, intersect: false },
+                    grid: { 
+                        borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb',
+                        padding: {
+                            top: 20,
+                            right: 10,
+                            bottom: 10,
+                            left: 10
+                        } 
+                    },
+                    legend: { 
+                        show: true, 
+                        position: 'top', 
+                        horizontalAlign: 'right', 
+                        floating: true, 
+                        offsetY: -25, 
+                        offsetX: -5,
+                        labels: {
+                            colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563'
+                        }
+                    },
+                    tooltip: { 
+                        x: { format: 'dd MMM yyyy' }, 
+                        y: { formatter: (val) => `${val.toFixed(2)}` }, 
+                        shared: true, 
+                        intersect: false,
+                        style: {
+                            fontSize: '14px'
+                        }
+                    },
                     theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
                 };
                 
                 if (source.chartInstance) {
                     source.chartInstance.updateOptions({
                         series: series,
-                        xaxis: options.xaxis, // Update x-axis on refresh
-                        yaxis: options.yaxis, // Update y-axis on refresh
-                        grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
+                        xaxis: options.xaxis,
+                        yaxis: options.yaxis,
+                        grid: options.grid,
+                        theme: options.theme
                     });
                 } else {
                     source.chartInstance = new ApexCharts(container, options);
                     source.chartInstance.render();
+                    
+                    // 解决初始渲染空白问题
+                    setTimeout(() => {
+                        if (source.chartInstance) {
+                            source.chartInstance.updateSeries(series, true);
+                        }
+                    }, 500);
                 }
             }
             
@@ -306,6 +367,17 @@
             
             refreshButton.addEventListener('click', fetchData);
             fetchData();
+            
+            // 添加窗口大小改变时的重绘
+            window.addEventListener('resize', function() {
+                dataSources.filter(s => s.chartInstance).forEach(s => {
+                    setTimeout(() => {
+                        if (s.chartInstance) {
+                            s.chartInstance.updateSeries(s.chartInstance.opts.series, true);
+                        }
+                    }, 300);
+                });
+            });
         });
     </script>
 </body>
