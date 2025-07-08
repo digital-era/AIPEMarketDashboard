@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class=""> 
+<html lang="zh-CN" class=""> <!-- Default class is empty, JS will handle theme -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -118,37 +118,32 @@
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
             
-            // 修复1: 确保默认使用暗色主题
-            const applyTheme = (theme) => {
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    themeToggleLightIcon.classList.remove('hidden');
-                    themeToggleDarkIcon.classList.add('hidden');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    themeToggleDarkIcon.classList.remove('hidden');
-                    themeToggleLightIcon.classList.add('hidden');
-                }
+            // 按照参考代码的主题设置逻辑
+            if (localStorage.getItem('color-theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                themeToggleLightIcon.classList.add('hidden');
+                themeToggleDarkIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                themeToggleDarkIcon.classList.add('hidden');
+                themeToggleLightIcon.classList.remove('hidden');
+            }
+
+            themeToggleBtn.addEventListener('click', function() {
+                // 切换主题
+                document.documentElement.classList.toggle('dark');
+                // 更新图标显示
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+                // 保存主题设置
+                const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('color-theme', theme);
+                // 更新图表主题
                 dataSources.filter(s => s.chartInstance).forEach(s => {
                     if (s.chartInstance) {
                         s.chartInstance.updateOptions({ theme: { mode: theme } });
                     }
                 });
-            };
-            
-            // 默认使用暗色主题
-            if (localStorage.getItem('color-theme') === 'light') {
-                applyTheme('light');
-            } else {
-                // 默认设为暗色主题
-                localStorage.setItem('color-theme', 'dark');
-                applyTheme('dark');
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                localStorage.setItem('color-theme', newTheme);
-                applyTheme(newTheme);
             });
 
             const getStockUrl = (code) => {
@@ -291,13 +286,13 @@
                             left: 10
                         } 
                     },
-                    // 修复2: 优化图例位置，避免与工具栏重叠
+                    // 图例位置优化：居中显示
                     legend: { 
                         show: true, 
                         position: 'top', 
-                        horizontalAlign: 'right', 
+                        horizontalAlign: 'center', 
                         floating: false, 
-                        offsetY: -10,
+                        offsetY: 0,
                         offsetX: 0,
                         labels: {
                             colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563'
