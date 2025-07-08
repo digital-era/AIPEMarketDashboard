@@ -30,6 +30,25 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+        
+        /* --- NEW: Styles for sortable table headers --- */
+        .sortable-header {
+            cursor: pointer;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
+        }
+        .sortable-header .sort-indicator {
+            color: #9ca3af; /* Tailwind gray-400 */
+            display: inline-block;
+            width: 1em; /* Reserve space for the icon */
+        }
+        .sortable-header[data-sort-dir] .sort-indicator {
+             color: #1f2937; /* Tailwind gray-800 */
+        }
+        .dark .sortable-header[data-sort-dir] .sort-indicator {
+             color: #e5e7eb; /* Tailwind gray-200 */
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
@@ -82,7 +101,6 @@
             <div class="grid grid-cols-1">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (A-Share)</h2><div id="stock-10days-container" class="overflow-x-auto"></div></div>
             </div>
-            <!-- *** NEW: Added container for Stock Observation List *** -->
             <div class="grid grid-cols-1">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">Stock Observation List</h2>
@@ -99,14 +117,14 @@
             const GITHUB_REPO = 'AIPEHotTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
 
-            // *** NEW: Added stock_observe_data.json to the sources ***
+            // *** MODIFIED: Added isSortable flag for the stock observation list ***
             const dataSources = [
                 { id: 'etf', file: 'etf_data.json', renderer: renderTopDownTable },
                 { id: 'stock', file: 'stock_data.json', renderer: renderTopDownTable },
                 { id: 'hk-stock', file: 'hk_stock_data.json', renderer: renderTopDownTable },
                 { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable },
                 { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable },
-                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable } // Reusing the A-share flat table renderer
+                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true }
             ];
 
             let autoRefreshInterval;
@@ -135,12 +153,9 @@
                 localStorage.setItem('color-theme', theme);
             });
 
-            // *** MODIFIED: Smart URL helper function, no 'market' param needed ***
             const getStockUrl = (code) => {
                 const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
-                // Convert code to string to be safe
                 const codeStr = String(code);
-                // Heuristic: 5-digit numeric codes are HK stocks.
                 const isHkStock = codeStr.length === 5 && /^\d+$/.test(codeStr);
                 const codeToEncode = isHkStock ? `HK${codeStr}` : codeStr;
                 return `${baseUrl}${encodeURIComponent(codeToEncode)}`;
@@ -165,7 +180,6 @@
                     if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500">No data.</p></div>`;
                     let rows = list.map(item => {
                         const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                        // *** MODIFIED: Removed 'market' argument ***
                         const url = getStockUrl(item['代码']);
                         return `<tr>
                                     <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
@@ -179,14 +193,14 @@
                 container.innerHTML = createTableHTML(data.top_up_20, 'Top Performers') + createTableHTML(data.top_down_20, 'Worst Performers');
             }
             
-            function renderAFlatTable(containerId, data) {
+            // *** MODIFIED: Function now accepts `isSortable` flag to render sortable headers ***
+            function renderAFlatTable(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container || !data || data.error || !Array.isArray(data)) {
                     container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid data'}</p>`; return;
                 }
                 let rows = data.map(item => {
                      const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                     // *** MODIFIED: Removed 'market' argument ***
                      const url = getStockUrl(item['代码']);
                      return `<tr>
                                 <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
@@ -200,12 +214,25 @@
                                 <td class="py-2 px-4 text-right">${item.TotalMarketCap != null ? item.TotalMarketCap.toFixed(2) : '-'}</td>
                             </tr>`;
                 }).join('');
-                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>
-                                    <th class="px-4 py-3">Name</th><th class="px-4 py-3">Code</th>
-                                    <th class="px-4 py-3 text-right">Change %</th><th class="px-4 py-3 text-right">PE(TTM)</th>
-                                    <th class="px-4 py-3 text-right">PB</th><th class="px-4 py-3 text-right">Amount(亿)</th>
-                                    <th class="px-4 py-3 text-right">Mkt Cap(亿)</th>
-                                </tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
+                
+                const headers = [
+                    { label: 'Name', type: 'string' },
+                    { label: 'Code', type: 'string' },
+                    { label: 'Change %', type: 'number', align: 'right' },
+                    { label: 'PE(TTM)', type: 'number', align: 'right' },
+                    { label: 'PB', type: 'number', align: 'right' },
+                    { label: 'Amount(亿)', type: 'number', align: 'right' },
+                    { label: 'Mkt Cap(亿)', type: 'number', align: 'right' }
+                ];
+                const headerHtml = headers.map(h => {
+                    const alignClass = h.align === 'right' ? 'text-right' : '';
+                    if (isSortable) {
+                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
+                    }
+                    return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
+                }).join('');
+
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
             function renderHKFlatTable(containerId, data) {
@@ -216,7 +243,6 @@
                 }
                 let rows = data.map(item => {
                      const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                     // *** MODIFIED: Removed 'market' argument ***
                      const url = getStockUrl(item['代码']);
                      return `<tr>
                                 <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
@@ -235,42 +261,33 @@
                 statusText.textContent = 'Fetching latest data...';
                 refreshButton.classList.add('reloading');
 
-                // *** NEW: Added mapping for stock-observe ***
                 const rendererMap = {
                     'etf': { renderer: renderTopDownTable, type: 'topdown' },
                     'stock': { renderer: renderTopDownTable, type: 'topdown' },
                     'hk-stock': { renderer: renderTopDownTable, type: 'topdown' },
                     'stock-10days': { renderer: renderAFlatTable, type: 'flat' },
                     'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' },
-                    'stock-observe': { renderer: renderAFlatTable, type: 'flat' } // Added skeleton config
+                    'stock-observe': { renderer: renderAFlatTable, type: 'flat' } 
                 };
                 Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
 
                 const fetchPromises = dataSources.map(source =>
                     fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
                         .then(response => {
-                            if (!response.ok) {
-                                return Promise.reject(new Error(`HTTP error ${response.status}`));
-                            }
+                            if (!response.ok) return Promise.reject(new Error(`HTTP error ${response.status}`));
                             return response.text();
                         })
-                        .then(text => {
-                            const sanitizedText = text.replace(/NaN/g, 'null');
-                            return JSON.parse(sanitizedText);
-                        })
-                        .catch(error => {
-                            console.error(`Failed to load or parse ${source.file}:`, error);
-                            return { error: error.message, id: source.id };
-                        })
+                        .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
+                        .catch(error => ({ error: error.message, id: source.id }))
                 );
 
                 const results = await Promise.all(fetchPromises);
                 let lastUpdateTime = "N/A", tradeDate = "N/A";
                 results.forEach((data, index) => {
                     const source = dataSources[index];
-                    // Pass the data to the correct renderer
-                    // The 'market' argument is no longer used by the URL generator but is kept for function signature consistency.
-                    source.renderer(`${source.id}-container`, data);
+                    // *** MODIFIED: Pass the isSortable flag to the renderer ***
+                    source.renderer(`${source.id}-container`, data, source.isSortable);
+
                     if (data && !data.error) {
                         if (Array.isArray(data) && data.length > 0) {
                             lastUpdateTime = data[0].update_time_bjt || lastUpdateTime;
@@ -285,12 +302,67 @@
                 refreshButton.classList.remove('reloading');
             }
 
+            // *** NEW: Table sorting logic ***
+            function setupTableSorting() {
+                document.addEventListener('click', function (e) {
+                    const th = e.target.closest('th.sortable-header');
+                    if (!th) return;
+
+                    const table = th.closest('table');
+                    const tbody = table.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const colIndex = th.cellIndex;
+                    const sortType = th.dataset.sortType;
+                    const currentDir = th.dataset.sortDir || 'desc';
+                    const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+
+                    // Update header indicators
+                    table.querySelectorAll('th.sortable-header').forEach(header => {
+                        header.removeAttribute('data-sort-dir');
+                        header.querySelector('.sort-indicator').textContent = '';
+                    });
+                    th.dataset.sortDir = newDir;
+                    th.querySelector('.sort-indicator').textContent = newDir === 'asc' ? '▲' : '▼';
+
+                    // Sort rows
+                    rows.sort((rowA, rowB) => {
+                        const valA_raw = rowA.cells[colIndex].textContent.trim();
+                        const valB_raw = rowB.cells[colIndex].textContent.trim();
+
+                        let valA, valB;
+
+                        if (sortType === 'number') {
+                            const parse = (val) => {
+                                if (val === '-') return newDir === 'asc' ? Infinity : -Infinity;
+                                return parseFloat(val.replace(/%|,/g, '')) || (newDir === 'asc' ? Infinity : -Infinity);
+                            };
+                            valA = parse(valA_raw);
+                            valB = parse(valB_raw);
+                        } else {
+                            valA = valA_raw.toLowerCase();
+                            valB = valB_raw.toLowerCase();
+                        }
+
+                        if (valA < valB) return newDir === 'asc' ? -1 : 1;
+                        if (valA > valB) return newDir === 'asc' ? 1 : -1;
+                        return 0;
+                    });
+
+                    // Re-append sorted rows
+                    tbody.innerHTML = '';
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            }
+
             // --- EVENT LISTENERS ---
             refreshButton.addEventListener('click', fetchData);
             autoRefreshToggle.addEventListener('change', (e) => {
                 if (e.target.checked) autoRefreshInterval = setInterval(fetchData, 60000);
                 else clearInterval(autoRefreshInterval);
             });
+
+            // Initialize sorting and fetch data
+            setupTableSorting();
             fetchData();
         });
     </script>
