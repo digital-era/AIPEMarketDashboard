@@ -21,12 +21,20 @@
         .chart-container { height: 450px; }
         @media (max-width: 768px) {
             .chart-container { height: 500px; }
-            .apexcharts-toolbar { padding: 2px !important; }
+            .apexcharts-toolbar { 
+                padding: 2px !important; 
+                top: 10px !important;
+                right: 5px !important;
+            }
+            .apexcharts-legend { 
+                padding-top: 30px !important; 
+                text-align: center !important;
+            }
             .apexcharts-zoom-icon, .apexcharts-zoomin-icon, 
             .apexcharts-zoomout-icon, .apexcharts-reset-icon,
             .apexcharts-menu-icon { 
-                transform: scale(0.8); 
-                margin: 0 2px !important;
+                transform: scale(0.75); 
+                margin: 0 1px !important;
             }
         }
     </style>
@@ -109,6 +117,8 @@
 
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            
+            // 修复1: 确保默认使用暗色主题
             const applyTheme = (theme) => {
                 if (theme === 'dark') {
                     document.documentElement.classList.add('dark');
@@ -126,9 +136,12 @@
                 });
             };
             
+            // 默认使用暗色主题
             if (localStorage.getItem('color-theme') === 'light') {
                 applyTheme('light');
             } else {
+                // 默认设为暗色主题
+                localStorage.setItem('color-theme', 'dark');
                 applyTheme('dark');
             }
 
@@ -278,15 +291,20 @@
                             left: 10
                         } 
                     },
+                    // 修复2: 优化图例位置，避免与工具栏重叠
                     legend: { 
                         show: true, 
                         position: 'top', 
                         horizontalAlign: 'right', 
-                        floating: true, 
-                        offsetY: -25, 
-                        offsetX: -5,
+                        floating: false, 
+                        offsetY: -10,
+                        offsetX: 0,
                         labels: {
                             colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563'
+                        },
+                        itemMargin: {
+                            horizontal: 5,
+                            vertical: 5
                         }
                     },
                     tooltip: { 
@@ -307,7 +325,8 @@
                         xaxis: options.xaxis,
                         yaxis: options.yaxis,
                         grid: options.grid,
-                        theme: options.theme
+                        theme: options.theme,
+                        legend: options.legend
                     });
                 } else {
                     source.chartInstance = new ApexCharts(container, options);
