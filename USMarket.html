@@ -5,26 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>US Market - Market Data Dashboard</title>
     
+    <!-- Google Fonts & Your Existing CSS -->
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <!-- ApexCharts JS -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <style>
+        /* Custom styles for loading and theme */
         @keyframes pulse { 50% { opacity: .6; } }
-        .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: #e5e7eb; border-radius: 0.25rem; }
-        .dark .skeleton { background-color: #374151; }
-        .reloading { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        /* Keep tooltip styles for consistency */
-        .apexcharts-tooltip { background: #f3f3f3; color: #333; }
-        .apexcharts-tooltip.apexcharts-theme-dark { background: #374151; color: #fff; }
+        .skeleton { 
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; 
+            background-color: #e5e7eb; /* light mode skeleton */
+            border-radius: 0.25rem;
+        }
+        .dark .skeleton {
+            background-color: #374151; /* dark mode skeleton */
+        }
+        .reloading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        /* Style for ApexCharts tooltips in dark mode */
+        .apexcharts-tooltip.apexcharts-theme-light {
+            background: #f3f4f6; /* bg-gray-100 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        .dark .apexcharts-tooltip.apexcharts-theme-light {
+             background: #374151; /* dark:bg-gray-700 */
+             border-color: #4b5563; /* dark:border-gray-600 */
+        }
+        .dark .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title,
+        .dark .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-label,
+        .dark .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-text-value {
+             color: #e5e7eb; /* dark:text-gray-200 */
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
 
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
+        <!-- Header -->
         <header class="mb-8 flex justify-between items-start">
             <div>
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
@@ -41,255 +68,253 @@
             </div>
         </header>
 
+        <!-- Navigation Menu -->
         <nav class="mb-8">
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
                     <li class="mr-2"><a href="index.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Market Overview</a></li>
                     <li class="mr-2"><a href="PotScoreMainFund.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">PotScore MainFund</a></li>
                     <li class="mr-2"><a href="HotspotTracker.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Hotspot Tracker</a></li>
-                    <li class="mr-2"><a href="us_market.html" class="inline-block p-4 text-indigo-600 border-b-2 border-indigo-600 rounded-t-lg active dark:text-indigo-400 dark:border-indigo-400" aria-current="page">US Market</a></li>
+                    <li class="mr-2"><a href="USMarket.html" class="inline-block p-4 text-indigo-600 border-b-2 border-indigo-600 rounded-t-lg active dark:text-indigo-400 dark:border-indigo-400" aria-current="page">US Market</a></li>
                 </ul>
             </div>
         </nav>
 
+        <!-- Main Content -->
         <div class="space-y-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">NASDAQ Daily Movers</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div id="nasdaq-daily-up-container"></div>
-                        <div id="nasdaq-daily-down-container"></div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">Dow Jones Daily Movers</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div id="dowjones-daily-up-container"></div>
-                        <div id="dowjones-daily-down-container"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">Major Indices 1-Year Normalized Performance</h2>
-                    <div id="indices-chart-container"></div>
+            <div class="bg-white dark:bg-dark-card p-4 sm:p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                <h2 class="text-xl font-semibold mb-4">US Market Major Indices</h2>
+                <div id="chart-container">
+                     <!-- Skeleton Loader for Chart -->
+                    <div class="skeleton w-full h-96 rounded-lg"></div>
                 </div>
             </div>
         </div>
+
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const GITHUB_USER = 'digital-era';
-            const GITHUB_REPO = 'AIPEUSTracker';
-            const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- CONFIGURATION ---
+        const GITHUB_USER = 'digital-era';
+        const GITHUB_REPO = 'AIPEHotTracker';
+        const DATA_FILE = 'us_indices_data.json';
+        const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data/${DATA_FILE}`;
 
-            const dataSources = [
-                { id: 'nasdaq-daily', file: 'us_nas_stock_data.json', type: 'topdown' },
-                { id: 'dowjones-daily', file: 'us_dowj_stock_data.json', type: 'topdown' },
-                { id: 'indices-chart', file: 'us_index_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
+        // --- UI ELEMENTS ---
+        const statusText = document.getElementById('status-text');
+        const refreshButton = document.getElementById('refresh-button');
+        const chartContainer = document.getElementById('chart-container');
+        let chart;
+
+        // --- THEME TOGGLE LOGIC ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
+                themeToggleDarkIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
+                themeToggleLightIcon.classList.add('hidden');
+            }
+            // Update chart theme if it exists
+            if (chart) {
+                chart.updateOptions({
+                    chart: {
+                        foreColor: theme === 'dark' ? '#e5e7eb' : '#374151'
+                    },
+                    tooltip: {
+                        theme: theme === 'dark' ? 'dark' : 'light'
+                    }
+                });
+            }
+        }
+
+        const currentTheme = localStorage.getItem('color-theme') || 'light';
+        applyTheme(currentTheme);
+
+        themeToggleBtn.addEventListener('click', function() {
+            const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+            localStorage.setItem('color-theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        function renderChart(data) {
+            if (!data || data.error) {
+                chartContainer.innerHTML = `<p class="text-red-500">Failed to load chart data: ${data?.error || 'Unknown error'}</p>`;
+                return;
+            }
+
+            // Clear skeleton or previous chart
+            chartContainer.innerHTML = '';
+            
+            const series = [
+                { name: 'S&P 500', data: data.sp500 },
+                { name: 'NASDAQ Composite', data: data.nasdaq },
+                { name: 'VIX', data: data.vix, yaxis: 1 } // Assign VIX to the second y-axis
             ];
 
-            const statusText = document.getElementById('status-text');
-            const refreshButton = document.getElementById('refresh-button');
-            const themeToggleBtn = document.getElementById('theme-toggle');
-
-            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
-            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
-            const applyTheme = (theme) => {
-                if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    themeToggleLightIcon.classList.remove('hidden');
-                    themeToggleDarkIcon.classList.add('hidden');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    themeToggleDarkIcon.classList.remove('hidden');
-                    themeToggleLightIcon.classList.add('hidden');
-                }
-                dataSources.filter(s => s.chartInstance).forEach(s => {
-                    if (s.chartInstance) {
-                        s.chartInstance.updateOptions({ theme: { mode: theme } });
-                    }
+            // *** MODIFICATION 1: Dynamically calculate x-axis range to fit data ***
+            // Find the overall min and max timestamps from all series data to avoid blank spaces
+            let minDate = Infinity;
+            let maxDate = -Infinity;
+            series.forEach(s => {
+                s.data.forEach(point => {
+                    if (point[0] < minDate) minDate = point[0];
+                    if (point[0] > maxDate) maxDate = point[0];
                 });
-            };
-            
-            if (localStorage.getItem('color-theme') === 'light') {
-                applyTheme('light');
-            } else {
-                applyTheme('dark');
-            }
-
-            themeToggleBtn.addEventListener('click', function() {
-                const newTheme = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-                localStorage.setItem('color-theme', newTheme);
-                applyTheme(newTheme);
             });
+            // Add a little padding (e.g., 1 day) so points don't sit on the edge
+            const PADDING = 24 * 60 * 60 * 1000;
+            minDate -= PADDING;
+            maxDate += PADDING;
 
-            const getStockUrl = (code) => {
-                const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
-                const prefixedCode = `US${code}`;
-                return `${baseUrl}${encodeURIComponent(prefixedCode)}`;
-            };
 
-            const renderSkeleton = (source) => {
-                if (source.type === 'chart') {
-                    const container = document.getElementById(`${source.id}-container`);
-                    if (container) container.innerHTML = `<div class="h-80 skeleton w-full"></div>`;
-                } else if (source.type === 'topdown') {
-                    const skeletonHTML = `<h3 class="text-lg font-medium mb-2 skeleton w-3/4 h-6"></h3><div class="h-64 skeleton w-full mt-2"></div>`;
-                    const upContainer = document.getElementById(`${source.id}-up-container`);
-                    const downContainer = document.getElementById(`${source.id}-down-container`);
-                    if (upContainer) upContainer.innerHTML = skeletonHTML;
-                    if (downContainer) downContainer.innerHTML = skeletonHTML;
-                }
-            };
-            
-            function renderSingleTable(containerId, list, title) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                if (!list || list.length === 0) {
-                     container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><p class="text-sm text-gray-500">No data available.</p>`;
-                     return;
-                }
-                let rows = list.map(item => {
-                    const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                    const url = getStockUrl(item['代码']);
-                    return `<tr>
-                                <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                    <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
-                                </td>
-                                <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
-                            </tr>`;
-                }).join('');
-                container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
-            }
-
-            function renderIndexChart(containerId, data) {
-                const container = document.getElementById(containerId);
-                const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
-
-                if (!container || !data || data.error || !data.nasdaq || !data.dowjones || !data.gold || !data.dollar) {
-                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid chart data'}</p>`;
-                    return;
-                }
-                
-                const createSeries = (seriesData) => seriesData.map(d => ({ x: new Date(d.date).getTime(), y: parseFloat(d.value) }));
-                
-                const series = [
-                    { name: 'NASDAQ', data: createSeries(data.nasdaq) },
-                    { name: 'Dow Jones', data: createSeries(data.dowjones) },
-                    { name: 'Comex Gold', data: createSeries(data.gold) },
-                    { name: 'Dollar Index', data: createSeries(data.dollar) }
-                ];
-                
-                // *** FIX 1: Manually calculate Y-axis range to remove excess padding ***
-                let dataMin = Infinity;
-                let dataMax = -Infinity;
-                series.forEach(s => {
-                    s.data.forEach(point => {
-                        if (point.y < dataMin) dataMin = point.y;
-                        if (point.y > dataMax) dataMax = point.y;
-                    });
-                });
-                const range = dataMax - dataMin;
-                const padding = range * 0.05; // Use 5% padding
-                const yAxisMin = Math.floor(dataMin - padding);
-                const yAxisMax = Math.ceil(dataMax + padding);
-                // *** END OF FIX 1 ***
-
-                const options = {
-                    series: series,
-                    chart: { 
-                        type: 'area', 
-                        height: 350,
-                        // *** FIX 2: Enable zoom/pan and set pan as default for mobile sliding ***
-                        toolbar: { 
-                            show: true,
-                            autoSelected: 'pan' // Default tool is pan (drag/slide)
-                        }, 
-                        zoom: { 
-                            enabled: true 
-                        } 
+            const options = {
+                series: series,
+                chart: {
+                    type: 'area',
+                    height: 400,
+                    stacked: false,
+                    foreColor: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: true,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: true,
+                            reset: true
+                        },
+                        autoSelected: 'zoom' 
                     },
-                    colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'],
-                    dataLabels: { enabled: false },
-                    stroke: { curve: 'smooth', width: 2 },
-                    xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } } },
-                    yaxis: { 
-                        // *** FIX 1 (continued): Apply the calculated min and max ***
-                        min: yAxisMin,
-                        max: yAxisMax,
-                        labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } },
-                        title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
+                },
+                colors: ['#10B981', '#3B82F6', '#EF4444'], // Green for S&P, Blue for Nasdaq, Red for VIX
+                dataLabels: {
+                    enabled: false
+                },
+                // *** MODIFICATION 2: Explicitly set STROKE colors for better visibility ***
+                // This ensures the lines themselves are solid and vibrant, especially the blue one.
+                stroke: {
+                    colors: ['#10B981', '#0052CC', '#EF4444'], // Using a darker, more solid blue for NASDAQ stroke
+                    width: [3, 3, 2], // Thicker lines for indices, thinner for VIX
+                    curve: 'smooth'
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        opacityFrom: 0.6,
+                        opacityTo: 0.05,
+                        stops: [0, 95, 100]
+                    }
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'left'
+                },
+                xaxis: {
+                    type: 'datetime',
+                    // Use the calculated min/max to fit the data perfectly
+                    min: minDate,
+                    max: maxDate,
+                    labels: {
+                        datetimeUTC: false // Display in local time
+                    }
+                },
+                yaxis: [
+                    {
+                        // First y-axis for S&P and NASDAQ
+                        seriesName: 'S&P 500',
+                        axisTicks: { show: true },
+                        axisBorder: { show: true, color: '#10B981' },
+                        labels: {
+                            style: { colors: '#10B981' }
+                        },
+                        title: {
+                            text: "Index Value (S&P, NASDAQ)",
+                            style: { color: '#10B981' }
+                        },
                     },
-                    grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
-                    legend: { show: true, position: 'top', horizontalAlign: 'right', floating: true, offsetY: -25, offsetX: -5 },
-                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val.toFixed(2)}` }, shared: true, intersect: false },
-                    theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
-                };
-                
-                if (source.chartInstance) {
-                    source.chartInstance.updateOptions({
-                        series: series,
-                        yaxis: options.yaxis, // Make sure to update the y-axis on refresh
-                        grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
-                    });
-                } else {
-                    source.chartInstance = new ApexCharts(container, options);
-                    source.chartInstance.render();
-                }
-            }
-            
-            async function fetchData() {
-                statusText.textContent = 'Fetching latest data...';
-                refreshButton.classList.add('reloading');
-
-                dataSources.forEach(source => renderSkeleton(source));
-
-                const fetchPromises = dataSources.map(source =>
-                    fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
-                        .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
-                        .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
-                        .catch(err => ({ error: err.message, id: source.id }))
-                );
-
-                const results = await Promise.all(fetchPromises);
-                let lastUpdateTime = "N/A";
-
-                results.forEach((data, index) => {
-                    const source = dataSources[index];
-                    if (data && !data.error) {
-                        if (source.type === 'topdown') {
-                            renderSingleTable(`${source.id}-up-container`, data.top_up_20, 'Top Performers');
-                            renderSingleTable(`${source.id}-down-container`, data.top_down_20, 'Worst Performers');
-                        } else if (source.type === 'chart') {
-                            source.renderer(`${source.id}-container`, data);
-                        }
-                        if (data.update_time_utc) {
-                            lastUpdateTime = data.update_time_utc;
-                        }
-                    } else {
-                        const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
-                        if (source.type === 'topdown') {
-                            document.getElementById(`${source.id}-up-container`).innerHTML = errorMsg;
-                            document.getElementById(`${source.id}-down-container`).innerHTML = errorMsg;
-                        } else {
-                            document.getElementById(`${source.id}-container`).innerHTML = errorMsg;
+                    {
+                        // Second y-axis for VIX
+                        seriesName: 'VIX',
+                        opposite: true,
+                        axisTicks: { show: true },
+                        axisBorder: { show: true, color: '#EF4444' },
+                        labels: {
+                            style: { colors: '#EF4444' }
+                        },
+                        title: {
+                            text: "VIX Value",
+                            style: { color: '#EF4444' }
                         }
                     }
-                });
+                ],
+                tooltip: {
+                    x: {
+                        format: 'yyyy-MM-dd'
+                    },
+                    theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+                    shared: true,
+                    intersect: false,
+                },
+                grid: {
+                    borderColor: '#9ca3af40'
+                }
+            };
 
-                statusText.textContent = `Last updated (UTC): ${lastUpdateTime}`;
-                refreshButton.classList.remove('reloading');
+            chart = new ApexCharts(chartContainer, options);
+            chart.render();
+        }
+        
+        async function fetchData() {
+            statusText.textContent = 'Fetching latest US market data...';
+            refreshButton.querySelector('svg').classList.add('reloading');
+            chartContainer.innerHTML = '<div class="skeleton w-full h-96 rounded-lg"></div>'; // Show skeleton on refresh
+
+            try {
+                const response = await fetch(`${DATA_PATH}?t=${new Date().getTime()}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                const rawText = await response.text();
+                // Data has timestamps in milliseconds and values
+                // Example: {"sp500": [[1672617600000, 3824.14], ...], ...}
+                const data = JSON.parse(rawText.replace(/NaN/g, 'null'));
+
+                renderChart(data);
+
+                // Find the latest date from the data to display in the status
+                let latestTimestamp = 0;
+                if(data.sp500 && data.sp500.length > 0) {
+                   latestTimestamp = data.sp500[data.sp500.length - 1][0];
+                }
+                const lastUpdateDate = new Date(latestTimestamp).toLocaleDateString();
+                statusText.textContent = `Data as of: ${lastUpdateDate}`;
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                statusText.textContent = 'Failed to load data.';
+                chartContainer.innerHTML = `<p class="text-red-500">Error loading data. Please try refreshing. Details: ${error.message}</p>`;
+            } finally {
+                refreshButton.querySelector('svg').classList.remove('reloading');
             }
-            
-            refreshButton.addEventListener('click', fetchData);
-            fetchData();
-        });
+        }
+
+        // --- EVENT LISTENERS ---
+        refreshButton.addEventListener('click', fetchData);
+
+        // Initial data fetch
+        fetchData();
+    });
     </script>
+
 </body>
 </html>
