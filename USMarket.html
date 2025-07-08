@@ -128,7 +128,13 @@
                 applyTheme(newTheme);
             });
 
-            const getStockUrl = (code) => `https://finance.yahoo.com/quote/${code}`;
+            const getStockUrl = (code) => {
+                const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
+                // 为美股代码添加 "US" 前缀
+                const prefixedCode = `US${code}`;
+                // 返回完整且经过编码的 URL
+                return `${baseUrl}${encodeURIComponent(prefixedCode)}`;
+            };
 
             const renderSkeleton = (source) => {
                 if (source.type === 'chart') {
