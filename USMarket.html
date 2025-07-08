@@ -169,15 +169,16 @@
                 container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
-            function renderIndexChart(containerId, data) {
+                       function renderIndexChart(containerId, data) {
                 const container = document.getElementById(containerId);
                 const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
 
                 if (!container || !data || data.error || !data.nasdaq || !data.dowjones || !data.gold || !data.dollar) {
-                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid chart data'}</p>`; return;
+                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid chart data'}</p>`;
+                    return;
                 }
                 
-                const createSeries = (seriesData) => seriesData.map(d => ({ x: d.date, y: parseFloat(d.value).toFixed(2) }));
+                const createSeries = (seriesData) => seriesData.map(d => ({ x: d.date, y: parseFloat(d.value) }));
                 
                 const series = [
                     { name: 'NASDAQ', data: createSeries(data.nasdaq) },
@@ -186,26 +187,46 @@
                     { name: 'Dollar Index', data: createSeries(data.dollar) }
                 ];
                 
+                // *** NEW: Manually calculate the Y-axis range to remove excess padding ***
+                let dataMin = Infinity;
+                let dataMax = -Infinity;
+
+                series.forEach(s => {
+                    s.data.forEach(point => {
+                        if (point.y < dataMin) dataMin = point.y;
+                        if (point.y > dataMax) dataMax = point.y;
+                    });
+                });
+
+                // Add a small, controlled padding (e.g., 5% of the range) for better aesthetics
+                const range = dataMax - dataMin;
+                const padding = range * 0.05; 
+                // *** END OF NEW LOGIC ***
+
                 const options = {
                     series: series,
                     chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
-                    colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'], // Blue, Orange, Yellow, Gray
+                    colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'],
                     dataLabels: { enabled: false },
                     stroke: { curve: 'smooth', width: 2 },
                     xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } } },
                     yaxis: { 
-                        labels: { formatter: (val) => `${val}`, style: { colors: '#9ca3af' } },
+                        // *** MODIFIED: Use the calculated min and max values ***
+                        min: Math.floor(dataMin - padding), // Use floor/ceil for cleaner axis labels
+                        max: Math.ceil(dataMax + padding),
+                        labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } }, // Use toFixed(0) for integer labels
                         title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
                     },
                     grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' },
                     legend: { show: true, position: 'top', horizontalAlign: 'right', floating: true, offsetY: -25, offsetX: -5 },
-                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val}` }, shared: true, intersect: false },
+                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val.toFixed(2)}` }, shared: true, intersect: false }, // Keep tooltip precise
                     theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
                 };
                 
                 if (source.chartInstance) {
                     source.chartInstance.updateOptions({
                         series: series,
+                        yaxis: options.yaxis, // Make sure to update the yaxis as well
                         grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
                     });
                 } else {
