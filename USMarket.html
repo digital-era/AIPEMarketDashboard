@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <!-- ApexCharts JS must be loaded before the script block -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <style>
         @keyframes pulse { 50% { opacity: .6; } }
@@ -80,8 +82,7 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
+    <!-- Script tag moved to the bottom of body, after HTML elements -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const GITHUB_USER = 'digital-era';
@@ -168,6 +169,7 @@
                 container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
+            // --- Function with MERGED FIXES ---
             function renderIndexChart(containerId, data) {
                 const container = document.getElementById(containerId);
                 const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
@@ -186,41 +188,55 @@
                     { name: 'Dollar Index', data: createSeries(data.dollar) }
                 ];
                 
-                // *** FIX 1: Manually calculate Y-axis range to remove excess padding ***
-                let dataMin = Infinity;
-                let dataMax = -Infinity;
+                // *** MERGED FIX 1: Dynamically calculate X and Y axis ranges to remove excess padding ***
+                let xMin = Infinity, xMax = -Infinity, yMin = Infinity, yMax = -Infinity;
                 series.forEach(s => {
                     s.data.forEach(point => {
-                        if (point.y < dataMin) dataMin = point.y;
-                        if (point.y > dataMax) dataMax = point.y;
+                        if (point.x < xMin) xMin = point.x;
+                        if (point.x > xMax) xMax = point.x;
+                        if (point.y < yMin) yMin = point.y;
+                        if (point.y > yMax) yMax = point.y;
                     });
                 });
-                const range = dataMax - dataMin;
-                const padding = range * 0.05; // Use 5% padding
-                const yAxisMin = Math.floor(dataMin - padding);
-                const yAxisMax = Math.ceil(dataMax + padding);
-                // *** END OF FIX 1 ***
+                const yRange = yMax - yMin;
+                const yPadding = yRange * 0.05; // 5% padding
+                const yAxisMin = Math.floor(yMin - yPadding);
+                const yAxisMax = Math.ceil(yMax + yPadding);
+                // *** END OF MERGED FIX 1 ***
+
 
                 const options = {
                     series: series,
                     chart: { 
                         type: 'area', 
                         height: 350,
-                        // *** FIX 2: Enable zoom/pan and set pan as default for mobile sliding ***
                         toolbar: { 
                             show: true,
-                            autoSelected: 'pan' // Default tool is pan (drag/slide)
+                            autoSelected: 'pan'
                         }, 
                         zoom: { 
                             enabled: true 
                         } 
                     },
+                    // Original colors array
                     colors: ['#1A56DB', '#FDBA8C', '#FACA15', '#9CA3AF'],
                     dataLabels: { enabled: false },
-                    stroke: { curve: 'smooth', width: 2 },
-                    xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } } },
+                    // *** MERGED FIX 2: Explicitly set STROKE colors for better visibility ***
+                    stroke: { 
+                        curve: 'smooth', 
+                        width: 2,
+                        // The blue color for NASDAQ is now darker and more solid
+                        colors: ['#0033A1', '#FDBA8C', '#FACA15', '#9CA3AF'] 
+                    },
+                    xaxis: { 
+                        type: 'datetime', 
+                        // Apply calculated min/max to remove blank space
+                        min: xMin,
+                        max: xMax,
+                        labels: { style: { colors: '#9ca3af' } } 
+                    },
                     yaxis: { 
-                        // *** FIX 1 (continued): Apply the calculated min and max ***
+                        // Apply calculated min/max
                         min: yAxisMin,
                         max: yAxisMax,
                         labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } },
@@ -235,7 +251,8 @@
                 if (source.chartInstance) {
                     source.chartInstance.updateOptions({
                         series: series,
-                        yaxis: options.yaxis, // Make sure to update the y-axis on refresh
+                        xaxis: options.xaxis, // Update x-axis on refresh
+                        yaxis: options.yaxis, // Update y-axis on refresh
                         grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
                     });
                 } else {
