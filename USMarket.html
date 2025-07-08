@@ -160,7 +160,7 @@
                                 <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                             </tr>`;
                 }).join('');
-                container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
+                container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
             function renderIndexChart(containerId, data) {
