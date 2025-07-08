@@ -117,12 +117,12 @@
             const GITHUB_REPO = 'AIPEHotTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
 
-            // *** MODIFIED: Added isSortable flag for the stock observation list ***
+            // *** MODIFIED: Added isSortable flag for 'stock-10days' ***
             const dataSources = [
                 { id: 'etf', file: 'etf_data.json', renderer: renderTopDownTable },
                 { id: 'stock', file: 'stock_data.json', renderer: renderTopDownTable },
                 { id: 'hk-stock', file: 'hk_stock_data.json', renderer: renderTopDownTable },
-                { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable },
+                { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable, isSortable: true },
                 { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable },
                 { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true }
             ];
@@ -193,7 +193,6 @@
                 container.innerHTML = createTableHTML(data.top_up_20, 'Top Performers') + createTableHTML(data.top_down_20, 'Worst Performers');
             }
             
-            // *** MODIFIED: Function now accepts `isSortable` flag to render sortable headers ***
             function renderAFlatTable(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container || !data || data.error || !Array.isArray(data)) {
@@ -285,7 +284,6 @@
                 let lastUpdateTime = "N/A", tradeDate = "N/A";
                 results.forEach((data, index) => {
                     const source = dataSources[index];
-                    // *** MODIFIED: Pass the isSortable flag to the renderer ***
                     source.renderer(`${source.id}-container`, data, source.isSortable);
 
                     if (data && !data.error) {
@@ -302,7 +300,6 @@
                 refreshButton.classList.remove('reloading');
             }
 
-            // *** NEW: Table sorting logic ***
             function setupTableSorting() {
                 document.addEventListener('click', function (e) {
                     const th = e.target.closest('th.sortable-header');
