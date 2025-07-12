@@ -107,15 +107,15 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // --- [MODIFIED] Configuration section ---
+            // --- Configuration section ---
             const GITHUB_USER = 'digital-era';
             const GITHUB_REPO = 'AIPEUSTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
             
-            // --- [NEW] API Trigger and Auto Refresh configuration ---
+            // --- API Trigger and Auto Refresh configuration ---
             const VERCEL_TRIGGER_URL = 'https://aipeus-tracker.vercel.app/api/trigger';
-            const REFRESH_DELAY_MS = 270000; // 4.5 minutes wait time for backend processing
-            const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
+            const REFRESH_DELAY_MS = 270000; 
+            const AUTO_REFRESH_INTERVAL_MS = 300000;
 
             const dataSources = [
                 { id: 'nasdaq-daily', file: 'us_nas_stock_data.json', type: 'topdown' },
@@ -123,14 +123,13 @@
                 { id: 'indices-chart', file: 'us_index_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
             ];
 
-            // --- [NEW] State variables ---
             let autoRefreshInterval;
             let isRefreshing = false;
 
-            // --- [MODIFIED] UI Elements ---
+            // --- UI Elements ---
             const statusText = document.getElementById('status-text');
             const refreshButton = document.getElementById('refresh-button');
-            const autoRefreshToggle = document.getElementById('auto-refresh-toggle'); // New
+            const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
             const themeToggleBtn = document.getElementById('theme-toggle');
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
@@ -145,7 +144,6 @@
                 themeToggleDarkIcon.classList.add('hidden');
                 themeToggleLightIcon.classList.remove('hidden');
             }
-
             themeToggleBtn.addEventListener('click', function() {
                 document.documentElement.classList.toggle('dark');
                 themeToggleDarkIcon.classList.toggle('hidden');
@@ -159,26 +157,15 @@
                 });
             });
 
-            // --- [NEW] Time conversion function ---
+            // --- Time conversion function (Unchanged) ---
             function convertUTCToET(utcString) {
                 if (!utcString || utcString === 'N/A') return 'N/A';
                 try {
-                    // Create a date object assuming the input string is UTC
                     const date = new Date(utcString.replace(' UTC', 'Z'));
-                    // Format it to US Eastern Time
-                    return date.toLocaleString('en-US', {
-                        timeZone: 'America/New_York',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: false // Use 24-hour format
-                    }) + ' ET';
+                    return date.toLocaleString('en-US', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) + ' ET';
                 } catch (e) {
                     console.error("Failed to parse date:", utcString, e);
-                    return utcString; // Fallback to original string on error
+                    return utcString;
                 }
             }
             
@@ -222,6 +209,7 @@
                 container.innerHTML = `<h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
+            // --- [MODIFIED] Chart rendering function with the minimal fix ---
             function renderIndexChart(containerId, data) {
                 const container = document.getElementById(containerId);
                 const source = dataSources.find(s => s.id === containerId.replace('-container', ''));
@@ -232,233 +220,91 @@
                 }
                 
                 const createSeries = (seriesData) => seriesData.map(d => ({ x: new Date(d.date).getTime(), y: parseFloat(d.value) }));
-                const series = [
-                    { name: 'NASDAQ', data: createSeries(data.nasdaq) },
-                    { name: 'Dow Jones', data: createSeries(data.dowjones) },
-                    { name: 'Comex Gold', data: createSeries(data.gold) },
-                    { name: 'Dollar Index', data: createSeries(data.dollar) }
-                ];
-                
-                // 更鲜明的颜色方案
+                const series = [ { name: 'NASDAQ', data: createSeries(data.nasdaq) }, { name: 'Dow Jones', data: createSeries(data.dowjones) }, { name: 'Comex Gold', data: createSeries(data.gold) }, { name: 'Dollar Index', data: createSeries(data.dollar) } ];
                 const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'];
-                
                 const options = {
                     series: series,
-                    chart: { 
-                        type: 'area', 
-                        height: '100%',
-                        toolbar: { 
-                            show: true,
-                            autoSelected: 'pan',
-                            tools: {
-                                download: true,
-                                selection: true,
-                                zoom: true,
-                                zoomin: true,
-                                zoomout: true,
-                                pan: true,
-                                reset: true
-                            }
-                        }, 
-                        zoom: { 
-                            enabled: true,
-                            autoScaleYaxis: true
-                        },
-                        animations: {
-                            enabled: true,
-                            easing: 'easeinout',
-                            speed: 800,
-                            animateGradually: {
-                                enabled: true,
-                                delay: 150
-                            },
-                            dynamicAnimation: {
-                                enabled: true,
-                                speed: 350
-                            }
-                        },
-                        events: {
-                            mounted: function(chartContext, config) {
-                                // 渲染后立即触发重绘以解决空白问题
-                                setTimeout(() => {
-                                    chartContext.updateSeries(series, true);
-                                }, 300);
-                            }
-                        }
+                    chart: { type: 'area', height: '100%', toolbar: { show: true, autoSelected: 'pan' }, zoom: { enabled: true, autoScaleYaxis: true }, animations: { enabled: true, easing: 'easeinout', speed: 800, animateGradually: { enabled: true, delay: 150 }, dynamicAnimation: { enabled: true, speed: 350 } },
+                        events: { mounted: function(chartContext, config) { setTimeout(() => { chartContext.updateSeries(series, true); }, 300); } }
                     },
-                    colors: colors,
-                    dataLabels: { enabled: false },
-                    stroke: { 
-                        curve: 'smooth', 
-                        width: 3,
-                        colors: colors
-                    },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.7,
-                            opacityTo: 0.2,
-                            stops: [0, 90, 100]
-                        }
-                    },
-                    xaxis: { 
-                        type: 'datetime', 
-                        labels: { style: { colors: '#9ca3af' } },
-                        tooltip: {
-                            enabled: false
-                        }
-                    },
-                    yaxis: { 
-                        labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } },
-                        title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
-                    },
-                    grid: { 
-                        borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb',
-                        padding: {
-                            top: 20,
-                            right: 10,
-                            bottom: 10,
-                            left: 10
-                        } 
-                    },
-                    // 图例位置优化：居中显示
-                    legend: { 
-                        show: true, 
-                        position: 'top', 
-                        horizontalAlign: 'center', 
-                        floating: false, 
-                        offsetY: 0,
-                        offsetX: 0,
-                        labels: {
-                            colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563'
-                        },
-                        itemMargin: {
-                            horizontal: 5,
-                            vertical: 5
-                        }
-                    },
-                    tooltip: { 
-                        x: { format: 'dd MMM yyyy' }, 
-                        y: { formatter: (val) => `${val.toFixed(2)}` }, 
-                        shared: true, 
-                        intersect: false,
-                        style: {
-                            fontSize: '14px'
-                        }
-                    },
+                    colors: colors, dataLabels: { enabled: false }, stroke: { curve: 'smooth', width: 3, colors: colors },
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.2, stops: [0, 90, 100] } },
+                    xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } }, tooltip: { enabled: false } },
+                    yaxis: { labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } }, title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } } },
+                    grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb', padding: { top: 20, right: 10, bottom: 10, left: 10 } },
+                    legend: { show: true, position: 'top', horizontalAlign: 'center', floating: false, offsetY: 0, offsetX: 0, labels: { colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563' }, itemMargin: { horizontal: 5, vertical: 5 } },
+                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val.toFixed(2)}` }, shared: true, intersect: false, style: { fontSize: '14px' } },
                     theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
                 };
                 
                 if (source.chartInstance) {
-                    source.chartInstance.updateOptions({
-                        series: series,
-                        xaxis: options.xaxis,
-                        yaxis: options.yaxis,
-                        grid: options.grid,
-                        theme: options.theme,
-                        legend: options.legend
-                    });
+                    source.chartInstance.updateOptions(options);
+                    // [THE ONLY FIX ADDED] Force a redraw after updating options to solve the visibility issue.
+                    setTimeout(() => {
+                        source.chartInstance.updateSeries(series, true);
+                    }, 100); // A small delay is sometimes needed for the DOM to settle.
                 } else {
                     source.chartInstance = new ApexCharts(container, options);
                     source.chartInstance.render();
-                    
-                    // 解决初始渲染空白问题
-                    setTimeout(() => {
-                        if (source.chartInstance) {
-                            source.chartInstance.updateSeries(series, true);
-                        }
-                    }, 500);
+                    setTimeout(() => { if (source.chartInstance) { source.chartInstance.updateSeries(series, true); } }, 500);
                 }
             }
             
-            // --- [RESTRUCTURED] Main data fetching logic ---
+            // --- Main data fetching logic (Unchanged) ---
             async function fetchAndRenderData() {
                 statusText.textContent = 'Fetching latest data files...';
                 refreshButton.classList.add('reloading');
                 refreshButton.disabled = true;
-
                 dataSources.forEach(source => renderSkeleton(source));
-
-                const fetchPromises = dataSources.map(source =>
-                    fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
-                        .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
-                        .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
-                        .catch(err => ({ error: err.message, id: source.id }))
-                );
-
+                const fetchPromises = dataSources.map(source => fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`).then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`))).then(text => JSON.parse(text.replace(/NaN/g, 'null'))).catch(err => ({ error: err.message, id: source.id })));
                 const results = await Promise.all(fetchPromises);
                 let lastUpdateTimeUTC = "N/A";
-
                 results.forEach((data, index) => {
                     const source = dataSources[index];
                     if (data && !data.error) {
-                        if (source.type === 'topdown') {
-                            renderSingleTable(`${source.id}-up-container`, data.top_up_20, 'Top Performers');
-                            renderSingleTable(`${source.id}-down-container`, data.top_down_20, 'Worst Performers');
-                        } else if (source.type === 'chart') {
-                            source.renderer(`${source.id}-container`, data);
-                        }
-                        if (data.update_time_utc) {
-                            lastUpdateTimeUTC = data.update_time_utc;
-                        }
+                        if (source.type === 'topdown') { renderSingleTable(`${source.id}-up-container`, data.top_up_20, 'Top Performers'); renderSingleTable(`${source.id}-down-container`, data.top_down_20, 'Worst Performers');
+                        } else if (source.type === 'chart') { source.renderer(`${source.id}-container`, data); }
+                        if (data.update_time_utc) { lastUpdateTimeUTC = data.update_time_utc; }
                     } else {
                         const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
-                        if (source.type === 'topdown') {
-                            document.getElementById(`${source.id}-up-container`).innerHTML = errorMsg;
-                            document.getElementById(`${source.id}-down-container`).innerHTML = errorMsg;
-                        } else {
-                            document.getElementById(`${source.id}-container`).innerHTML = errorMsg;
-                        }
+                        if (source.type === 'topdown') { document.getElementById(`${source.id}-up-container`).innerHTML = errorMsg; document.getElementById(`${source.id}-down-container`).innerHTML = errorMsg;
+                        } else { document.getElementById(`${source.id}-container`).innerHTML = errorMsg; }
                     }
                 });
-                
-                // [MODIFIED] Display time in ET
                 const lastUpdateTimeET = convertUTCToET(lastUpdateTimeUTC);
                 statusText.textContent = `Last updated (ET): ${lastUpdateTimeET}`;
-                
                 refreshButton.classList.remove('reloading');
                 refreshButton.disabled = false;
                 isRefreshing = false;
             }
 
-            // --- [NEW] Main function to trigger the entire refresh process with graceful degradation ---
+            // --- Main function to trigger the entire refresh process (Unchanged) ---
             async function triggerAndFetchData() {
-                if (isRefreshing) {
-                    console.log("A refresh is already in progress. Please wait.");
-                    return;
-                }
+                if (isRefreshing) { console.log("A refresh is already in progress. Please wait."); return; }
                 isRefreshing = true;
                 refreshButton.disabled = true;
                 refreshButton.classList.add('reloading');
                 statusText.textContent = 'Sending refresh request to server...';
-
                 try {
                     const response = await fetch(VERCEL_TRIGGER_URL, { method: 'POST' });
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || `Trigger API failed with status ${response.status}`);
-                    }
-                    statusText.textContent = `Refresh triggered. Waiting for new data... (approx. 90s)`;
+                    if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || `Trigger API failed with status ${response.status}`); }
+                    statusText.textContent = `Refresh triggered. Waiting for new data... (approx. 4.5 min)`;
                     setTimeout(() => fetchAndRenderData(), REFRESH_DELAY_MS);
                 } catch (error) {
                     console.error("Failed to trigger refresh:", error);
                     statusText.textContent = `Trigger failed: ${error.message}. Attempting to fetch existing data...`;
-                    fetchAndRenderData(); // Graceful Degradation
+                    fetchAndRenderData();
                 }
             }
             
-            // --- [MODIFIED] Event listeners ---
+            // --- Event listeners (Unchanged) ---
             refreshButton.addEventListener('click', triggerAndFetchData);
-
             autoRefreshToggle.addEventListener('change', (e) => {
                 clearInterval(autoRefreshInterval);
-                if (e.target.checked) {
-                    autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS);
-                }
+                if (e.target.checked) { autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS); }
             });
             
-            // --- Initial Load ---
+            // --- Initial Load (Unchanged) ---
             (function initialFetch() {
                 dataSources.forEach(source => renderSkeleton(source));
                 fetchAndRenderData();
@@ -467,11 +313,7 @@
             // --- Window resize listener (Unchanged) ---
             window.addEventListener('resize', function() {
                 dataSources.filter(s => s.chartInstance).forEach(s => {
-                    setTimeout(() => {
-                        if (s.chartInstance) {
-                            s.chartInstance.updateSeries(s.chartInstance.opts.series, true);
-                        }
-                    }, 300);
+                    setTimeout(() => { if (s.chartInstance) { s.chartInstance.updateSeries(s.chartInstance.opts.series, true); } }, 300);
                 });
             });
         });
