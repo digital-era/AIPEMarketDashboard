@@ -116,8 +116,12 @@
             const GITHUB_USER = 'digital-era';
             const GITHUB_REPO = 'AIPEHotTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
+            
+            // --- NEW: API Trigger configuration ---
+            const VERCEL_TRIGGER_URL = 'https://aipe-hot-tracker.vercel.app/api/trigger';
+            const REFRESH_DELAY_MS = 90000; // 90 seconds wait time for backend processing
+            const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
 
-            // *** MODIFIED: Added isSortable flag for 'stock-10days' ***
             const dataSources = [
                 { id: 'etf', file: 'etf_data.json', renderer: renderTopDownTable },
                 { id: 'stock', file: 'stock_data.json', renderer: renderTopDownTable },
@@ -128,13 +132,15 @@
             ];
 
             let autoRefreshInterval;
+            // --- NEW: State variable to prevent concurrent refreshes ---
+            let isRefreshing = false;
 
             // --- UI ELEMENTS ---
             const statusText = document.getElementById('status-text');
             const refreshButton = document.getElementById('refresh-button');
             const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
             
-            // --- THEME TOGGLE LOGIC ---
+            // --- THEME TOGGLE LOGIC (Unchanged) ---
             const themeToggleBtn = document.getElementById('theme-toggle');
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
@@ -153,6 +159,7 @@
                 localStorage.setItem('color-theme', theme);
             });
 
+            // (Unchanged)
             const getStockUrl = (code) => {
                 const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
                 const codeStr = String(code);
@@ -161,7 +168,7 @@
                 return `${baseUrl}${encodeURIComponent(codeToEncode)}`;
             };
 
-            // --- DATA RENDERING FUNCTIONS ---
+            // --- DATA RENDERING FUNCTIONS (Unchanged) ---
             const renderSkeleton = (containerId, rendererType) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -256,9 +263,12 @@
                                 </tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
-            async function fetchData() {
-                statusText.textContent = 'Fetching latest data...';
+            // --- MODIFIED: This function is now renamed and ONLY fetches/renders data ---
+            async function fetchAndRenderData() {
+                // The original fetchData logic is moved here.
+                statusText.textContent = 'Fetching latest data files...';
                 refreshButton.classList.add('reloading');
+                refreshButton.disabled = true;
 
                 const rendererMap = {
                     'etf': { renderer: renderTopDownTable, type: 'topdown' },
@@ -297,9 +307,50 @@
                     }
                 });
                 statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
+                
+                // Re-enable button and reset state at the end of the process
                 refreshButton.classList.remove('reloading');
+                refreshButton.disabled = false;
+                isRefreshing = false;
             }
+            
+            // --- NEW & IMPROVED: The main function to trigger the entire refresh process with graceful degradation ---
+            async function triggerAndFetchData() {
+                if (isRefreshing) {
+                    console.log("A refresh is already in progress. Please wait.");
+                    return;
+                }
+                isRefreshing = true;
+                refreshButton.disabled = true;
+                refreshButton.classList.add('reloading');
+                statusText.textContent = 'Sending refresh request to server...';
 
+                try {
+                    const response = await fetch(VERCEL_TRIGGER_URL, { method: 'POST' });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Trigger API failed with status ${response.status}`);
+                    }
+                    
+                    // API Trigger successful
+                    statusText.textContent = `Refresh triggered. Waiting for new data... (approx. 90s)`;
+                    
+                    // Wait for the backend process, then fetch the new files.
+                    setTimeout(() => {
+                        fetchAndRenderData();
+                    }, REFRESH_DELAY_MS);
+
+                } catch (error) {
+                    // API Trigger FAILED
+                    console.error("Failed to trigger refresh:", error);
+                    statusText.textContent = `Trigger failed: ${error.message}. Attempting to fetch existing data...`;
+                    
+                    // Graceful Degradation: Immediately try to fetch whatever data is currently available
+                    fetchAndRenderData();
+                }
+            }
+            
+            // (Unchanged)
             function setupTableSorting() {
                 document.addEventListener('click', function (e) {
                     const th = e.target.closest('th.sortable-header');
@@ -325,9 +376,7 @@
                     rows.sort((rowA, rowB) => {
                         const valA_raw = rowA.cells[colIndex].textContent.trim();
                         const valB_raw = rowB.cells[colIndex].textContent.trim();
-
                         let valA, valB;
-
                         if (sortType === 'number') {
                             const parse = (val) => {
                                 if (val === '-') return newDir === 'asc' ? Infinity : -Infinity;
@@ -339,28 +388,64 @@
                             valA = valA_raw.toLowerCase();
                             valB = valB_raw.toLowerCase();
                         }
-
                         if (valA < valB) return newDir === 'asc' ? -1 : 1;
                         if (valA > valB) return newDir === 'asc' ? 1 : -1;
                         return 0;
                     });
-
-                    // Re-append sorted rows
                     tbody.innerHTML = '';
                     rows.forEach(row => tbody.appendChild(row));
                 });
             }
 
-            // --- EVENT LISTENERS ---
-            refreshButton.addEventListener('click', fetchData);
+            // --- EVENT LISTENERS (MODIFIED) ---
+            refreshButton.addEventListener('click', triggerAndFetchData);
+            
             autoRefreshToggle.addEventListener('change', (e) => {
-                if (e.target.checked) autoRefreshInterval = setInterval(fetchData, 60000);
-                else clearInterval(autoRefreshInterval);
+                clearInterval(autoRefreshInterval); // Always clear previous interval
+                if (e.target.checked) {
+                    // Start the interval timer
+                    autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS);
+                }
             });
 
-            // Initialize sorting and fetch data
+            // --- INITIALIZATION (MODIFIED) ---
             setupTableSorting();
-            fetchData();
+            // On first page load, just fetch the existing data without triggering.
+            // This provides instant content to the user.
+            (function initialFetch() {
+                statusText.textContent = 'Loading initial data...';
+                refreshButton.disabled = true;
+                const originalFetchData = async () => {
+                    // This is a simplified version of fetchAndRenderData for the first load
+                    const fetchPromises = dataSources.map(source =>
+                        fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
+                            .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
+                            .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
+                            .catch(err => ({ error: err.message, id: source.id }))
+                    );
+                    const results = await Promise.all(fetchPromises);
+                    let lastUpdateTime = "N/A", tradeDate = "N/A";
+                    results.forEach((data, index) => {
+                        const source = dataSources[index];
+                        source.renderer(`${source.id}-container`, data, source.isSortable);
+                        if (data && !data.error) {
+                            if (Array.isArray(data) && data.length > 0) { lastUpdateTime = data[0].update_time_bjt || lastUpdateTime; tradeDate = data[0].trade_date || tradeDate; } 
+                            else if (data.update_time_bjt) { lastUpdateTime = data.update_time_bjt; tradeDate = data.trade_date; }
+                        }
+                    });
+                    statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
+                    refreshButton.classList.remove('reloading');
+                    refreshButton.disabled = false;
+                };
+                
+                const rendererMap = {
+                    'etf': { type: 'topdown' }, 'stock': { type: 'topdown' }, 'hk-stock': { type: 'topdown' },
+                    'stock-10days': { type: 'flat' }, 'hk-stock-10days': { type: 'flat' }, 'stock-observe': { type: 'flat' }
+                };
+                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
+                
+                originalFetchData();
+            })();
         });
     </script>
 
