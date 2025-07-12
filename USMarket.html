@@ -50,10 +50,15 @@
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
                 <p id="status-text" class="text-lg text-gray-600 dark:text-dark-subtle mt-1">US Market Page</p>
             </div>
+            <!-- [MODIFIED] Header section to include Auto Refresh toggle -->
             <div class="flex items-center space-x-3">
                  <button id="refresh-button" title="Manual Refresh" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
                     <svg class="w-5 h-5 reloading" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20 4s-2-2-6-2-8 4-8 4S2 14 6 18s8-4 8-4"></path></svg>
                 </button>
+                <div class="flex items-center">
+                    <label for="auto-refresh-toggle" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Auto Refresh</label>
+                    <input type="checkbox" id="auto-refresh-toggle" class="form-checkbox h-5 w-5 text-indigo-600 rounded">
+                </div>
                 <button id="theme-toggle" type="button" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707z"></path></svg>
@@ -102,9 +107,15 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // --- [MODIFIED] Configuration section ---
             const GITHUB_USER = 'digital-era';
             const GITHUB_REPO = 'AIPEUSTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
+            
+            // --- [NEW] API Trigger and Auto Refresh configuration ---
+            const VERCEL_TRIGGER_URL = 'https://aipeus-tracker.vercel.app/api/trigger';
+            const REFRESH_DELAY_MS = 90000; // 90 seconds wait time for backend processing
+            const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
 
             const dataSources = [
                 { id: 'nasdaq-daily', file: 'us_nas_stock_data.json', type: 'topdown' },
@@ -112,14 +123,19 @@
                 { id: 'indices-chart', file: 'us_index_data.json', renderer: renderIndexChart, type: 'chart', chartInstance: null }
             ];
 
+            // --- [NEW] State variables ---
+            let autoRefreshInterval;
+            let isRefreshing = false;
+
+            // --- [MODIFIED] UI Elements ---
             const statusText = document.getElementById('status-text');
             const refreshButton = document.getElementById('refresh-button');
+            const autoRefreshToggle = document.getElementById('auto-refresh-toggle'); // New
             const themeToggleBtn = document.getElementById('theme-toggle');
-
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
             
-            // 按照参考代码的主题设置逻辑
+            // --- Theme logic (Unchanged) ---
             if (localStorage.getItem('color-theme') === 'light') {
                 document.documentElement.classList.remove('dark');
                 themeToggleLightIcon.classList.add('hidden');
@@ -131,15 +147,11 @@
             }
 
             themeToggleBtn.addEventListener('click', function() {
-                // 切换主题
                 document.documentElement.classList.toggle('dark');
-                // 更新图标显示
                 themeToggleDarkIcon.classList.toggle('hidden');
                 themeToggleLightIcon.classList.toggle('hidden');
-                // 保存主题设置
                 const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
                 localStorage.setItem('color-theme', theme);
-                // 更新图表主题
                 dataSources.filter(s => s.chartInstance).forEach(s => {
                     if (s.chartInstance) {
                         s.chartInstance.updateOptions({ theme: { mode: theme } });
@@ -147,6 +159,30 @@
                 });
             });
 
+            // --- [NEW] Time conversion function ---
+            function convertUTCToET(utcString) {
+                if (!utcString || utcString === 'N/A') return 'N/A';
+                try {
+                    // Create a date object assuming the input string is UTC
+                    const date = new Date(utcString.replace(' UTC', 'Z'));
+                    // Format it to US Eastern Time
+                    return date.toLocaleString('en-US', {
+                        timeZone: 'America/New_York',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false // Use 24-hour format
+                    }) + ' ET';
+                } catch (e) {
+                    console.error("Failed to parse date:", utcString, e);
+                    return utcString; // Fallback to original string on error
+                }
+            }
+            
+            // --- Helper functions (Unchanged) ---
             const getStockUrl = (code) => {
                 const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
                 const prefixedCode = `US${code}`;
@@ -196,150 +232,40 @@
                 }
                 
                 const createSeries = (seriesData) => seriesData.map(d => ({ x: new Date(d.date).getTime(), y: parseFloat(d.value) }));
-                
                 const series = [
                     { name: 'NASDAQ', data: createSeries(data.nasdaq) },
                     { name: 'Dow Jones', data: createSeries(data.dowjones) },
                     { name: 'Comex Gold', data: createSeries(data.gold) },
                     { name: 'Dollar Index', data: createSeries(data.dollar) }
                 ];
-                
-                // 更鲜明的颜色方案
                 const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'];
                 
                 const options = {
                     series: series,
-                    chart: { 
-                        type: 'area', 
-                        height: '100%',
-                        toolbar: { 
-                            show: true,
-                            autoSelected: 'pan',
-                            tools: {
-                                download: true,
-                                selection: true,
-                                zoom: true,
-                                zoomin: true,
-                                zoomout: true,
-                                pan: true,
-                                reset: true
-                            }
-                        }, 
-                        zoom: { 
-                            enabled: true,
-                            autoScaleYaxis: true
-                        },
-                        animations: {
-                            enabled: true,
-                            easing: 'easeinout',
-                            speed: 800,
-                            animateGradually: {
-                                enabled: true,
-                                delay: 150
-                            },
-                            dynamicAnimation: {
-                                enabled: true,
-                                speed: 350
-                            }
-                        },
-                        events: {
-                            mounted: function(chartContext, config) {
-                                // 渲染后立即触发重绘以解决空白问题
-                                setTimeout(() => {
-                                    chartContext.updateSeries(series, true);
-                                }, 300);
-                            }
-                        }
-                    },
-                    colors: colors,
-                    dataLabels: { enabled: false },
-                    stroke: { 
-                        curve: 'smooth', 
-                        width: 3,
-                        colors: colors
-                    },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.7,
-                            opacityTo: 0.2,
-                            stops: [0, 90, 100]
-                        }
-                    },
-                    xaxis: { 
-                        type: 'datetime', 
-                        labels: { style: { colors: '#9ca3af' } },
-                        tooltip: {
-                            enabled: false
-                        }
-                    },
-                    yaxis: { 
-                        labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } },
-                        title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } }
-                    },
-                    grid: { 
-                        borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb',
-                        padding: {
-                            top: 20,
-                            right: 10,
-                            bottom: 10,
-                            left: 10
-                        } 
-                    },
-                    // 图例位置优化：居中显示
-                    legend: { 
-                        show: true, 
-                        position: 'top', 
-                        horizontalAlign: 'center', 
-                        floating: false, 
-                        offsetY: 0,
-                        offsetX: 0,
-                        labels: {
-                            colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563'
-                        },
-                        itemMargin: {
-                            horizontal: 5,
-                            vertical: 5
-                        }
-                    },
-                    tooltip: { 
-                        x: { format: 'dd MMM yyyy' }, 
-                        y: { formatter: (val) => `${val.toFixed(2)}` }, 
-                        shared: true, 
-                        intersect: false,
-                        style: {
-                            fontSize: '14px'
-                        }
-                    },
+                    chart: { type: 'area', height: '100%', toolbar: { show: true, autoSelected: 'pan' }, zoom: { enabled: true, autoScaleYaxis: true }, animations: { enabled: true, easing: 'easeinout', speed: 800, animateGradually: { enabled: true, delay: 150 }, dynamicAnimation: { enabled: true, speed: 350 } } },
+                    colors: colors, dataLabels: { enabled: false }, stroke: { curve: 'smooth', width: 3, colors: colors },
+                    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.2, stops: [0, 90, 100] } },
+                    xaxis: { type: 'datetime', labels: { style: { colors: '#9ca3af' } }, tooltip: { enabled: false } },
+                    yaxis: { labels: { formatter: (val) => `${val.toFixed(0)}`, style: { colors: '#9ca3af' } }, title: { text: 'Normalized Value (Start = 100)', style: { color: '#9ca3af', fontWeight: 'normal' } } },
+                    grid: { borderColor: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb', padding: { top: 20, right: 10, bottom: 10, left: 10 } },
+                    legend: { show: true, position: 'top', horizontalAlign: 'center', floating: false, offsetY: 0, offsetX: 0, labels: { colors: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#4b5563' }, itemMargin: { horizontal: 5, vertical: 5 } },
+                    tooltip: { x: { format: 'dd MMM yyyy' }, y: { formatter: (val) => `${val.toFixed(2)}` }, shared: true, intersect: false, style: { fontSize: '14px' } },
                     theme: { mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light' }
                 };
                 
                 if (source.chartInstance) {
-                    source.chartInstance.updateOptions({
-                        series: series,
-                        xaxis: options.xaxis,
-                        yaxis: options.yaxis,
-                        grid: options.grid,
-                        theme: options.theme,
-                        legend: options.legend
-                    });
+                    source.chartInstance.updateOptions(options);
                 } else {
                     source.chartInstance = new ApexCharts(container, options);
                     source.chartInstance.render();
-                    
-                    // 解决初始渲染空白问题
-                    setTimeout(() => {
-                        if (source.chartInstance) {
-                            source.chartInstance.updateSeries(series, true);
-                        }
-                    }, 500);
                 }
             }
             
-            async function fetchData() {
-                statusText.textContent = 'Fetching latest data...';
+            // --- [RESTRUCTURED] Main data fetching logic ---
+            async function fetchAndRenderData() {
+                statusText.textContent = 'Fetching latest data files...';
                 refreshButton.classList.add('reloading');
+                refreshButton.disabled = true;
 
                 dataSources.forEach(source => renderSkeleton(source));
 
@@ -351,7 +277,7 @@
                 );
 
                 const results = await Promise.all(fetchPromises);
-                let lastUpdateTime = "N/A";
+                let lastUpdateTimeUTC = "N/A";
 
                 results.forEach((data, index) => {
                     const source = dataSources[index];
@@ -363,7 +289,7 @@
                             source.renderer(`${source.id}-container`, data);
                         }
                         if (data.update_time_utc) {
-                            lastUpdateTime = data.update_time_utc;
+                            lastUpdateTimeUTC = data.update_time_utc;
                         }
                     } else {
                         const errorMsg = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown'}</p>`;
@@ -375,15 +301,59 @@
                         }
                     }
                 });
-
-                statusText.textContent = `Last updated (UTC): ${lastUpdateTime}`;
+                
+                // [MODIFIED] Display time in ET
+                const lastUpdateTimeET = convertUTCToET(lastUpdateTimeUTC);
+                statusText.textContent = `Last updated (ET): ${lastUpdateTimeET}`;
+                
                 refreshButton.classList.remove('reloading');
+                refreshButton.disabled = false;
+                isRefreshing = false;
+            }
+
+            // --- [NEW] Main function to trigger the entire refresh process with graceful degradation ---
+            async function triggerAndFetchData() {
+                if (isRefreshing) {
+                    console.log("A refresh is already in progress. Please wait.");
+                    return;
+                }
+                isRefreshing = true;
+                refreshButton.disabled = true;
+                refreshButton.classList.add('reloading');
+                statusText.textContent = 'Sending refresh request to server...';
+
+                try {
+                    const response = await fetch(VERCEL_TRIGGER_URL, { method: 'POST' });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Trigger API failed with status ${response.status}`);
+                    }
+                    statusText.textContent = `Refresh triggered. Waiting for new data... (approx. 90s)`;
+                    setTimeout(() => fetchAndRenderData(), REFRESH_DELAY_MS);
+                } catch (error) {
+                    console.error("Failed to trigger refresh:", error);
+                    statusText.textContent = `Trigger failed: ${error.message}. Attempting to fetch existing data...`;
+                    fetchAndRenderData(); // Graceful Degradation
+                }
             }
             
-            refreshButton.addEventListener('click', fetchData);
-            fetchData();
+            // --- [MODIFIED] Event listeners ---
+            refreshButton.addEventListener('click', triggerAndFetchData);
+
+            autoRefreshToggle.addEventListener('change', (e) => {
+                clearInterval(autoRefreshInterval);
+                if (e.target.checked) {
+                    autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS);
+                }
+            });
             
-            // 添加窗口大小改变时的重绘
+            // --- Initial Load ---
+            (function initialFetch() {
+                dataSources.forEach(source => renderSkeleton(source));
+                fetchAndRenderData();
+            })();
+            
+            // --- Window resize listener (Unchanged) ---
             window.addEventListener('resize', function() {
                 dataSources.filter(s => s.chartInstance).forEach(s => {
                     setTimeout(() => {
