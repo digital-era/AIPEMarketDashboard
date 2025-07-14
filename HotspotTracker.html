@@ -562,7 +562,7 @@
                 isRefreshing = true;
                 refreshButton.disabled = true;
                 refreshButton.classList.add('reloading');
-                statusText.textContent = 'Sending refresh request to server...';
+                //statusText.textContent = 'Sending refresh request to server...';
 
                 // Get dynamic lists from localStorage
                 const aShareDynamicList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
