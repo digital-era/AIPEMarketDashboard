@@ -71,7 +71,7 @@
                 </div>
                 <button id="theme-toggle" type="button" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l-.707-.707z"></path></svg>
                 </button>
             </div>
         </header>
@@ -107,6 +107,38 @@
                     <div id="stock-observe-container" class="overflow-x-auto"></div>
                 </div>
             </div>
+
+            <!-- NEW: A-Share Dynamic List -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4">A-Share Dynamic List</h2>
+                    <div class="mb-4 relative">
+                        <input type="text" id="a-share-dynamic-search" placeholder="Enter A-share code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <div id="a-share-dynamic-suggestions" class="absolute z-10 w-full"></div>
+                    </div>
+                    <div id="a-share-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4">
+                        <!-- Selected A-shares will be rendered here -->
+                    </div>
+                    <div id="a-share-dynamic-data-container" class="overflow-x-auto">
+                        <!-- Dynamic A-share data from API will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- NEW: HK Dynamic List -->
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4">HK Dynamic List</h2>
+                    <div class="mb-4 relative">
+                        <input type="text" id="hk-dynamic-search" placeholder="Enter HK stock code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                        <div id="hk-dynamic-suggestions" class="absolute z-10 w-full"></div>
+                    </div>
+                    <div id="hk-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4">
+                        <!-- Selected HK stocks will be rendered here -->
+                    </div>
+                    <div id="hk-dynamic-data-container" class="overflow-x-auto">
+                        <!-- Dynamic HK stock data from API will be rendered here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -117,7 +149,7 @@
             const GITHUB_REPO = 'AIPEHotTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
             
-            // --- NEW: API Trigger configuration ---
+            // --- API Trigger configuration ---
             const VERCEL_TRIGGER_URL = 'https://aipe-hot-tracker.vercel.app/api/trigger';
             const REFRESH_DELAY_MS = 270000; // 4.5 minutes wait time for backend processing
             const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
@@ -128,11 +160,14 @@
                 { id: 'hk-stock', file: 'hk_stock_data.json', renderer: renderTopDownTable },
                 { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable, isSortable: true },
                 { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable },
-                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true }
+                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
+                // NEW: Dynamic List data sources
+                { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true },
+                { id: 'hk-dynamic-data', file: 'hk_stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true } 
             ];
 
             let autoRefreshInterval;
-            // --- NEW: State variable to prevent concurrent refreshes ---
+            // --- State variable to prevent concurrent refreshes ---
             let isRefreshing = false;
 
             // --- UI ELEMENTS ---
@@ -140,6 +175,24 @@
             const refreshButton = document.getElementById('refresh-button');
             const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
             
+            // NEW: Dynamic List UI elements
+            const aShareDynamicSearchInput = document.getElementById('a-share-dynamic-search');
+            const aShareDynamicSuggestionsDiv = document.getElementById('a-share-dynamic-suggestions');
+            const aShareDynamicSelectedListDiv = document.getElementById('a-share-dynamic-selected-list');
+
+            const hkDynamicSearchInput = document.getElementById('hk-dynamic-search');
+            const hkDynamicSuggestionsDiv = document.getElementById('hk-dynamic-suggestions');
+            const hkDynamicSelectedListDiv = document.getElementById('hk-dynamic-selected-list');
+
+            // --- Global data for autocomplete ---
+            let allAShares = []; // Example: [{ code: '000001', name: '平安银行' }, ...]
+            let allHKShares = []; // Example: [{ code: '00700', name: '腾讯控股' }, ...]
+
+            // --- Local Storage Keys ---
+            const LS_KEY_A_SHARE_DYNAMIC = 'aShareDynamicList';
+            const LS_KEY_HK_DYNAMIC = 'hkDynamicList';
+
+
             // --- THEME TOGGLE LOGIC (Unchanged) ---
             const themeToggleBtn = document.getElementById('theme-toggle');
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
@@ -184,7 +237,7 @@
                     container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown error'}</p>`; return;
                 }
                 const createTableHTML = (list, title) => {
-                    if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500">No data.</p></div>`;
+                    if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500 dark:text-gray-400">No data.</p></div>`;
                     let rows = list.map(item => {
                         const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
                         const url = getStockUrl(item['代码']);
@@ -265,7 +318,6 @@
             
             // --- MODIFIED: This function is now renamed and ONLY fetches/renders data ---
             async function fetchAndRenderData() {
-                // The original fetchData logic is moved here.
                 statusText.textContent = 'Fetching latest data files...';
                 refreshButton.classList.add('reloading');
                 refreshButton.disabled = true;
@@ -276,7 +328,10 @@
                     'hk-stock': { renderer: renderTopDownTable, type: 'topdown' },
                     'stock-10days': { renderer: renderAFlatTable, type: 'flat' },
                     'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' },
-                    'stock-observe': { renderer: renderAFlatTable, type: 'flat' } 
+                    'stock-observe': { renderer: renderAFlatTable, type: 'flat' },
+                    // NEW: Dynamic List rendering
+                    'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' },
+                    'hk-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
                 };
                 Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
 
@@ -294,7 +349,8 @@
                 let lastUpdateTime = "N/A", tradeDate = "N/A";
                 results.forEach((data, index) => {
                     const source = dataSources[index];
-                    source.renderer(`${source.id}-container`, data, source.isSortable);
+                    const containerId = `${source.id}-container`;
+                    source.renderer(containerId, data, source.isSortable);
 
                     if (data && !data.error) {
                         if (Array.isArray(data) && data.length > 0) {
@@ -313,8 +369,139 @@
                 refreshButton.disabled = false;
                 isRefreshing = false;
             }
+
+            // NEW: Functions to manage dynamic lists in localStorage
+            function getDynamicList(key) {
+                try {
+                    const stored = localStorage.getItem(key);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (e) {
+                    console.error(`Error parsing dynamic list from localStorage for key ${key}:`, e);
+                    return [];
+                }
+            }
+
+            function setDynamicList(key, list) {
+                localStorage.setItem(key, JSON.stringify(list));
+            }
+
+            function addStockToDynamicList(key, stock) {
+                const list = getDynamicList(key);
+                // Prevent adding duplicates
+                if (!list.some(s => s.code === stock.code)) {
+                    list.push(stock);
+                    setDynamicList(key, list);
+                    renderSelectedDynamicList(key);
+                }
+            }
+
+            function removeStockFromDynamicList(key, code) {
+                let list = getDynamicList(key);
+                list = list.filter(stock => stock.code !== code);
+                setDynamicList(key, list);
+                renderSelectedDynamicList(key);
+            }
+
+            // NEW: Render selected dynamic list UI
+            function renderSelectedDynamicList(key) {
+                const listDiv = key === LS_KEY_A_SHARE_DYNAMIC ? aShareDynamicSelectedListDiv : hkDynamicSelectedListDiv;
+                const list = getDynamicList(key);
+                listDiv.innerHTML = ''; // Clear previous entries
+                if (list.length === 0) {
+                    listDiv.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>';
+                    return;
+                }
+                list.forEach(stock => {
+                    const span = document.createElement('span');
+                    span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-700 dark:text-indigo-100';
+                    span.innerHTML = `
+                        ${stock.name} (${stock.code})
+                        <button type="button" class="ml-2 -mr-0.5 h-4 w-4 inline-flex items-center justify-center rounded-full text-indigo-500 hover:bg-indigo-200 hover:text-indigo-900 dark:hover:bg-indigo-600 dark:hover:text-indigo-50" data-code="${stock.code}">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    `;
+                    span.querySelector('button').addEventListener('click', (e) => {
+                        removeStockFromDynamicList(key, e.currentTarget.dataset.code);
+                    });
+                    listDiv.appendChild(span);
+                });
+            }
+
+            // MODIFIED: Fetch all stock data for autocomplete using FlowInfoBase.json and HKFlowInfoBase.json
+            async function fetchAllStocksData() {
+                try {
+                    const [aShareRes, hkShareRes] = await Promise.all([
+                        fetch(`${DATA_PATH}/FlowInfoBase.json?t=${new Date().getTime()}`),
+                        fetch(`${DATA_PATH}/HKFlowInfoBase.json?t=${new Date().getTime()}`)
+                    ]);
+
+                    if (aShareRes.ok) {
+                        const data = await aShareRes.json();
+                        allAShares = data.map(item => ({ code: item['代码'], name: item['名称'] }));
+                    } else {
+                        console.error('Failed to load FlowInfoBase.json', await aShareRes.text());
+                    }
+
+                    if (hkShareRes.ok) {
+                        const data = await hkShareRes.json();
+                        allHKShares = data.map(item => ({ code: item['代码'], name: item['名称'] }));
+                    } else {
+                        console.error('Failed to load HKFlowInfoBase.json', await hkShareRes.text());
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching all stock data for autocomplete:", error);
+                }
+            }
+
+            // NEW: Autocomplete/Search Logic
+            function setupAutoComplete(inputElement, suggestionsDiv, stockList, dynamicListKey) {
+                let timeout = null;
+                inputElement.addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    const query = inputElement.value.trim();
+                    suggestionsDiv.innerHTML = ''; // Clear previous suggestions
+
+                    if (query.length < 2) { // Require at least 2 characters for search
+                        return;
+                    }
+
+                    timeout = setTimeout(() => {
+                        const lowerQuery = query.toLowerCase();
+                        const filteredStocks = stockList.filter(stock =>
+                            stock.name.toLowerCase().includes(lowerQuery) ||
+                            stock.code.toLowerCase().includes(lowerQuery)
+                        ).slice(0, 10); // Limit suggestions to 10
+
+                        if (filteredStocks.length > 0) {
+                            const ul = document.createElement('ul');
+                            ul.className = 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto';
+                            filteredStocks.forEach(stock => {
+                                const li = document.createElement('li');
+                                li.className = 'px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-gray-900 dark:text-gray-100';
+                                li.textContent = `${stock.name} (${stock.code})`;
+                                li.dataset.code = stock.code;
+                                li.dataset.name = stock.name;
+                                li.addEventListener('click', () => {
+                                    addStockToDynamicList(dynamicListKey, { code: stock.code, name: stock.name });
+                                    inputElement.value = ''; // Clear input after selection
+                                    suggestionsDiv.innerHTML = ''; // Clear suggestions
+                                });
+                                ul.appendChild(li);
+                            });
+                            suggestionsDiv.appendChild(ul);
+                        }
+                    }, 300); // Debounce
+                });
+
+                // Clear suggestions when input loses focus (with a small delay to allow click)
+                inputElement.addEventListener('blur', () => {
+                    setTimeout(() => suggestionsDiv.innerHTML = '', 100); 
+                });
+            }
             
-            // --- NEW & IMPROVED: The main function to trigger the entire refresh process with graceful degradation ---
+            // --- MODIFIED: The main function to trigger the entire refresh process with graceful degradation ---
+            // Now sends dynamic list parameters
             async function triggerAndFetchData() {
                 if (isRefreshing) {
                     console.log("A refresh is already in progress. Please wait.");
@@ -325,15 +512,28 @@
                 refreshButton.classList.add('reloading');
                 statusText.textContent = 'Sending refresh request to server...';
 
+                // Get dynamic lists from localStorage
+                const aShareDynamicList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
+                const hkDynamicList = getDynamicList(LS_KEY_HK_DYNAMIC).map(s => s.code);
+
                 try {
-                    const response = await fetch(VERCEL_TRIGGER_URL, { method: 'POST' });
+                    const response = await fetch(VERCEL_TRIGGER_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            dynamiclist: aShareDynamicList, // Send A-share dynamic list
+                            dynamicHKlist: hkDynamicList    // Send HK dynamic list
+                        })
+                    });
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.error || `Trigger API failed with status ${response.status}`);
                     }
                     
                     // API Trigger successful
-                    statusText.textContent = `Refresh triggered. Waiting for new data... (approx. 90s)`;
+                    statusText.textContent = `Refresh triggered. Waiting for new data... (approx. ${REFRESH_DELAY_MS / 1000}s)`;
                     
                     // Wait for the backend process, then fetch the new files.
                     setTimeout(() => {
@@ -410,13 +610,35 @@
 
             // --- INITIALIZATION (MODIFIED) ---
             setupTableSorting();
-            // On first page load, just fetch the existing data without triggering.
-            // This provides instant content to the user.
-            (function initialFetch() {
-                statusText.textContent = 'Loading initial data...';
+            
+            // On first page load, load dynamic lists, setup autocomplete, then fetch existing data without triggering.
+            (async function initialSetupAndFetch() { // Changed to async IIFE
+                statusText.textContent = 'Loading initial data and setting up controls...';
                 refreshButton.disabled = true;
-                const originalFetchData = async () => {
-                    // This is a simplified version of fetchAndRenderData for the first load
+
+                // 1. Fetch all stock data for autocomplete (now using FlowInfoBase.json and HKFlowInfoBase.json)
+                await fetchAllStocksData();
+
+                // 2. Setup autocomplete for both A-share and HK stock inputs
+                setupAutoComplete(aShareDynamicSearchInput, aShareDynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
+                setupAutoComplete(hkDynamicSearchInput, hkDynamicSuggestionsDiv, allHKShares, LS_KEY_HK_DYNAMIC);
+
+                // 3. Render previously selected dynamic lists from localStorage
+                renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
+                renderSelectedDynamicList(LS_KEY_HK_DYNAMIC);
+
+                // 4. Render skeletons for all data containers
+                const rendererMap = {
+                    'etf': { type: 'topdown' }, 'stock': { type: 'topdown' }, 'hk-stock': { type: 'topdown' },
+                    'stock-10days': { type: 'flat' }, 'hk-stock-10days': { type: 'flat' }, 'stock-observe': { type: 'flat' },
+                    'a-share-dynamic-data': { type: 'flat' }, 
+                    'hk-dynamic-data': { type: 'flat' }
+                };
+                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
+                
+                // 5. Finally, fetch and render the main dashboard data without triggering a backend refresh initially
+                // This provides instant content to the user.
+                const initialDataFetchOnly = async () => {
                     const fetchPromises = dataSources.map(source =>
                         fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
                             .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
@@ -437,15 +659,9 @@
                     refreshButton.classList.remove('reloading');
                     refreshButton.disabled = false;
                 };
-                
-                const rendererMap = {
-                    'etf': { type: 'topdown' }, 'stock': { type: 'topdown' }, 'hk-stock': { type: 'topdown' },
-                    'stock-10days': { type: 'flat' }, 'hk-stock-10days': { type: 'flat' }, 'stock-observe': { type: 'flat' }
-                };
-                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
-                
-                originalFetchData();
-            })();
+                initialDataFetchOnly();
+
+            })(); // End of initialSetupAndFetch IIFE
         });
     </script>
 
