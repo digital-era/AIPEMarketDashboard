@@ -398,7 +398,7 @@
                 );
 
                 const results = await Promise.all(fetchPromises);
-                let lastUpdateTime = "N/A", tradeDate = "N/A";
+                let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
                 results.forEach((data, index) => {
                     const source = dataSources[index];
                     const containerId = `${source.id}-container`;
@@ -406,14 +406,18 @@
 
                     if (data && !data.error) {
                         if (Array.isArray(data) && data.length > 0) {
-                            lastUpdateTime = data[0].update_time_bjt || lastUpdateTime;
+                            lastUpdateTime1 = data[0].update_time_bjt || lastUpdateTime1;
                             tradeDate = data[0].trade_date || tradeDate;
                         } else if (data.update_time_bjt) {
-                            lastUpdateTime = data.update_time_bjt;
+                            lastUpdateTime2 = data.update_time_bjt;
                             tradeDate = data.trade_date;
                         }
                     }
                 });
+                lastUpdateTime = lastUpdateTime2;
+                if(lastUpdateTime1 > lastUpdateTime2) {
+                    lastUpdateTime = lastUpdateTime1;
+                }
                 statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
                 
                 // Re-enable button and reset state at the end of the process
@@ -729,15 +733,19 @@
                             .catch(err => ({ error: err.message, id: source.id }))
                     );
                     const results = await Promise.all(fetchPromises);
-                    let lastUpdateTime = "N/A", tradeDate = "N/A";
+                    let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
                     results.forEach((data, index) => {
                         const source = dataSources[index];
                         source.renderer(`${source.id}-container`, data, source.isSortable);
                         if (data && !data.error) {
-                            if (Array.isArray(data) && data.length > 0) { lastUpdateTime = data[0].update_time_bjt || lastUpdateTime; tradeDate = data[0].trade_date || tradeDate; } 
-                            else if (data.update_time_bjt) { lastUpdateTime = data.update_time_bjt; tradeDate = data.trade_date; }
+                            if (Array.isArray(data) && data.length > 0) { lastUpdateTime1 = data[0].update_time_bjt || lastUpdateTime1; tradeDate = data[0].trade_date || tradeDate; } 
+                            else if (data.update_time_bjt) { lastUpdateTime2 = data.update_time_bjt; tradeDate = data.trade_date; }
                         }
                     });
+                    lastUpdateTime = lastUpdateTime2;
+                    if(lastUpdateTime1 > lastUpdateTime2) {
+                        lastUpdateTime = lastUpdateTime1;
+                    }
                     statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
                     refreshButton.classList.remove('reloading');
                     refreshButton.disabled = false;
