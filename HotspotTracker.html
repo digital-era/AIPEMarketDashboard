@@ -127,17 +127,19 @@
                 </div>
             </div>
 
-            <!-- MODIFIED: A-Share Dynamic List - Only data display remains here -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+            <!-- MODIFIED: A-Share & HK Dynamic Lists Grid Container -->
+            <!-- This container will be hidden if both lists are empty. -->
+            <div id="dynamic-lists-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- A-Share Dynamic List Card - Will be hidden if its list is empty -->
+                <div id="a-share-dynamic-list-card" class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">A-Share Dynamic List</h2>
                     <div id="a-share-dynamic-data-container" class="overflow-x-auto">
                         <!-- Dynamic A-share data from API will be rendered here -->
                     </div>
                 </div>
 
-                <!-- MODIFIED: HK Dynamic List - Only data display remains here -->
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                <!-- HK Dynamic List Card - Will be hidden if its list is empty -->
+                <div id="hk-dynamic-list-card" class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">HK Dynamic List</h2>
                     <div id="hk-dynamic-data-container" class="overflow-x-auto">
                         <!-- Dynamic HK stock data from API will be rendered here -->
@@ -381,7 +383,6 @@
                     'stock-10days': { renderer: renderAFlatTable, type: 'flat' },
                     'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' },
                     'stock-observe': { renderer: renderAFlatTable, type: 'flat' },
-                    // NEW: Dynamic List rendering
                     'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' },
                     'hk-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
                 };
@@ -420,7 +421,6 @@
                 }
                 statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
                 
-                // Re-enable button and reset state at the end of the process
                 refreshButton.classList.remove('reloading');
                 refreshButton.disabled = false;
                 isRefreshing = false;
@@ -443,7 +443,6 @@
 
             function addStockToDynamicList(key, stock) {
                 const list = getDynamicList(key);
-                // Prevent adding duplicates
                 if (!list.some(s => s.code === stock.code)) {
                     list.push(stock);
                     setDynamicList(key, list);
@@ -456,6 +455,27 @@
                 list = list.filter(stock => stock.code !== code);
                 setDynamicList(key, list);
                 renderSelectedDynamicList(key);
+            }
+
+            // NEW: Function to control the visibility of dynamic list sections based on localStorage
+            function updateDynamicListVisibility() {
+                const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
+                const hkShareList = getDynamicList(LS_KEY_HK_DYNAMIC);
+                const aShareCard = document.getElementById('a-share-dynamic-list-card');
+                const hkShareCard = document.getElementById('hk-dynamic-list-card');
+                const gridContainer = document.getElementById('dynamic-lists-grid');
+
+                if (!aShareCard || !hkShareCard || !gridContainer) return; // Safety check
+
+                const showA = aShareList && aShareList.length > 0;
+                const showHk = hkShareList && hkShareList.length > 0;
+
+                // Use toggle with a boolean to add/remove the 'hidden' class
+                aShareCard.classList.toggle('hidden', !showA);
+                hkShareCard.classList.toggle('hidden', !showHk);
+
+                // Hide the entire grid container if both cards are hidden
+                gridContainer.classList.toggle('hidden', !showA && !showHk);
             }
 
             // NEW: Render selected dynamic list UI (called for elements inside modal)
@@ -518,16 +538,14 @@
                     const query = inputElement.value.trim();
                     suggestionsDiv.innerHTML = ''; // Clear previous suggestions
 
-                    if (query.length < 2) { // Require at least 2 characters for search
-                        return;
-                    }
+                    if (query.length < 2) { return; }
 
                     timeout = setTimeout(() => {
                         const lowerQuery = query.toLowerCase();
                         const filteredStocks = stockList.filter(stock =>
                             stock.name.toLowerCase().includes(lowerQuery) ||
                             stock.code.toLowerCase().includes(lowerQuery)
-                        ).slice(0, 10); // Limit suggestions to 10
+                        ).slice(0, 10);
 
                         if (filteredStocks.length > 0) {
                             const ul = document.createElement('ul');
@@ -540,24 +558,21 @@
                                 li.dataset.name = stock.name;
                                 li.addEventListener('click', () => {
                                     addStockToDynamicList(dynamicListKey, { code: stock.code, name: stock.name });
-                                    inputElement.value = ''; // Clear input after selection
-                                    suggestionsDiv.innerHTML = ''; // Clear suggestions
+                                    inputElement.value = '';
+                                    suggestionsDiv.innerHTML = '';
                                 });
                                 ul.appendChild(li);
                             });
                             suggestionsDiv.appendChild(ul);
                         }
-                    }, 300); // Debounce
+                    }, 300);
                 });
 
-                // Clear suggestions when input loses focus (with a small delay to allow click)
                 inputElement.addEventListener('blur', () => {
                     setTimeout(() => suggestionsDiv.innerHTML = '', 100); 
                 });
             }
             
-            // --- MODIFIED: The main function to trigger the entire refresh process with graceful degradation ---
-            // Now sends dynamic list parameters
             async function triggerAndFetchData() {
                 if (isRefreshing) {
                     console.log("A refresh is already in progress. Please wait.");
@@ -566,21 +581,17 @@
                 isRefreshing = true;
                 refreshButton.disabled = true;
                 refreshButton.classList.add('reloading');
-                //statusText.textContent = 'Sending refresh request to server...';
-
-                // Get dynamic lists from localStorage
+                
                 const aShareDynamicList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
                 const hkDynamicList = getDynamicList(LS_KEY_HK_DYNAMIC).map(s => s.code);
 
                 try {
                     const response = await fetch(VERCEL_TRIGGER_URL, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            dynamiclist: aShareDynamicList, // Send A-share dynamic list
-                            dynamicHKlist: hkDynamicList    // Send HK dynamic list
+                            dynamiclist: aShareDynamicList,
+                            dynamicHKlist: hkDynamicList
                         })
                     });
                     if (!response.ok) {
@@ -588,25 +599,17 @@
                         throw new Error(errorData.error || `Trigger API failed with status ${response.status}`);
                     }
                     
-                    // API Trigger successful
-                    // statusText.textContent = `Refresh triggered. Waiting for new data... (approx. ${REFRESH_DELAY_MS / 1000}s)`;
-                    
-                    // Wait for the backend process, then fetch the new files.
                     setTimeout(() => {
                         fetchAndRenderData();
                     }, REFRESH_DELAY_MS);
 
                 } catch (error) {
-                    // API Trigger FAILED
                     console.error("Failed to trigger refresh:", error);
                     statusText.textContent = `Trigger failed: ${error.message}. Attempting to fetch existing data...`;
-                    
-                    // Graceful Degradation: Immediately try to fetch whatever data is currently available
                     fetchAndRenderData();
                 }
             }
             
-            // (Unchanged)
             function setupTableSorting() {
                 document.addEventListener('click', function (e) {
                     const th = e.target.closest('th.sortable-header');
@@ -620,7 +623,6 @@
                     const currentDir = th.dataset.sortDir || 'desc';
                     const newDir = currentDir === 'asc' ? 'desc' : 'asc';
 
-                    // Update header indicators
                     table.querySelectorAll('th.sortable-header').forEach(header => {
                         header.removeAttribute('data-sort-dir');
                         header.querySelector('.sort-indicator').textContent = '';
@@ -628,7 +630,6 @@
                     th.dataset.sortDir = newDir;
                     th.querySelector('.sort-indicator').textContent = newDir === 'asc' ? '▲' : '▼';
 
-                    // Sort rows
                     rows.sort((rowA, rowB) => {
                         const valA_raw = rowA.cells[colIndex].textContent.trim();
                         const valB_raw = rowB.cells[colIndex].textContent.trim();
@@ -656,18 +657,17 @@
             // NEW: Modal functions
             function openDynamicListModal() {
                 dynamicListModal.classList.remove('hidden');
-                // Force reflow to apply initial hidden state styles before transition
                 dynamicListModal.offsetWidth; 
-                dynamicListModal.classList.add('modal-active'); // Triggers transition
-                document.body.classList.add('overflow-hidden'); // Prevent background scrolling
+                dynamicListModal.classList.add('modal-active');
+                document.body.classList.add('overflow-hidden');
             }
 
             function closeDynamicListModal() {
-                dynamicListModal.classList.remove('modal-active'); // Reverses transition
+                dynamicListModal.classList.remove('modal-active');
                 dynamicListModal.addEventListener('transitionend', function handler() {
                     dynamicListModal.classList.add('hidden');
                     dynamicListModal.removeEventListener('transitionend', handler);
-                    document.body.classList.remove('overflow-hidden'); // Re-enable background scrolling
+                    document.body.classList.remove('overflow-hidden');
                 });
             }
 
@@ -675,22 +675,23 @@
             refreshButton.addEventListener('click', triggerAndFetchData);
             
             autoRefreshToggle.addEventListener('change', (e) => {
-                clearInterval(autoRefreshInterval); // Always clear previous interval
+                clearInterval(autoRefreshInterval);
                 if (e.target.checked) {
-                    // Start the interval timer
                     autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS);
                 }
             });
 
-            // NEW: Modal event listeners
             manageDynamicListsBtn.addEventListener('click', openDynamicListModal);
             closeDynamicListModalBtn.addEventListener('click', closeDynamicListModal);
             dynamicListModal.addEventListener('click', (e) => {
-                if (e.target === dynamicListModal) { // Close when clicking outside the modal content
+                if (e.target === dynamicListModal) {
                     closeDynamicListModal();
                 }
             });
+
+            // MODIFIED: Added call to update visibility when saving.
             saveDynamicListConfigBtn.addEventListener('click', () => {
+                updateDynamicListVisibility(); // Update card visibility immediately
                 triggerAndFetchData(); // Refresh data with new dynamic lists
                 closeDynamicListModal(); // Close modal
             });
@@ -698,23 +699,21 @@
             // --- INITIALIZATION (MODIFIED) ---
             setupTableSorting();
             
-            // On first page load, load dynamic lists, setup autocomplete, then fetch existing data without triggering.
-            (async function initialSetupAndFetch() { // Changed to async IIFE
+            (async function initialSetupAndFetch() {
                 statusText.textContent = 'Loading initial data and setting up controls...';
                 refreshButton.disabled = true;
 
-                // 1. Fetch all stock data for autocomplete (now using FlowInfoBase.json and HKFlowInfoBase.json)
                 await fetchAllStocksData();
 
-                // 2. Setup autocomplete for both A-share and HK stock inputs (elements are now in modal)
                 setupAutoComplete(aShareDynamicSearchInput, aShareDynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
                 setupAutoComplete(hkDynamicSearchInput, hkDynamicSuggestionsDiv, allHKShares, LS_KEY_HK_DYNAMIC);
 
-                // 3. Render previously selected dynamic lists from localStorage (elements are now in modal)
                 renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                 renderSelectedDynamicList(LS_KEY_HK_DYNAMIC);
 
-                // 4. Render skeletons for all data containers
+                // NEW: Check and set initial visibility of dynamic list cards on page load
+                updateDynamicListVisibility();
+
                 const rendererMap = {
                     'etf': { type: 'topdown' }, 'stock': { type: 'topdown' }, 'hk-stock': { type: 'topdown' },
                     'stock-10days': { type: 'flat' }, 'hk-stock-10days': { type: 'flat' }, 'stock-observe': { type: 'flat' },
@@ -723,8 +722,6 @@
                 };
                 Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
                 
-                // 5. Finally, fetch and render the main dashboard data without triggering a backend refresh initially
-                // This provides instant content to the user.
                 const initialDataFetchOnly = async () => {
                     const fetchPromises = dataSources.map(source =>
                         fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
@@ -752,7 +749,7 @@
                 };
                 initialDataFetchOnly();
 
-            })(); // End of initialSetupAndFetch IIFE
+            })();
         });
     </script>
 
