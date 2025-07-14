@@ -49,6 +49,21 @@
         .dark .sortable-header[data-sort-dir] .sort-indicator {
              color: #e5e7eb; /* Tailwind gray-200 */
         }
+
+        /* --- NEW: Modal Specific Styles --- */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            transition: opacity 0.3s ease-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        .modal-active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
@@ -69,6 +84,10 @@
                     <label for="auto-refresh-toggle" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Auto Refresh</label>
                     <input type="checkbox" id="auto-refresh-toggle" class="form-checkbox h-5 w-5 text-indigo-600 rounded">
                 </div>
+                <!-- NEW: Button to open dynamic list configuration modal -->
+                <button id="manage-dynamic-lists-btn" type="button" title="Manage Dynamic Stock Lists" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.515-1.002 1.852-1.002 2.367 0l2.392 4.675 5.176.753c1.002.146 1.402 1.401.677 2.133l-3.755 3.659 1.092 5.155c.18.995-.873 1.775-1.782 1.25L12 18.066l-4.606 2.427c-.909.525-1.962-.255-1.782-1.25l1.092-5.155-3.755-3.659c-.725-.732-.325-1.987.677-2.133l5.176-.753L10.325 4.317z"></path></svg>
+                </button>
                 <button id="theme-toggle" type="button" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
                     <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                     <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l-.707-.707z"></path></svg>
@@ -108,32 +127,18 @@
                 </div>
             </div>
 
-            <!-- NEW: A-Share Dynamic List -->
+            <!-- MODIFIED: A-Share Dynamic List - Only data display remains here -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">A-Share Dynamic List</h2>
-                    <div class="mb-4 relative">
-                        <input type="text" id="a-share-dynamic-search" placeholder="Enter A-share code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                        <div id="a-share-dynamic-suggestions" class="absolute z-10 w-full"></div>
-                    </div>
-                    <div id="a-share-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4">
-                        <!-- Selected A-shares will be rendered here -->
-                    </div>
                     <div id="a-share-dynamic-data-container" class="overflow-x-auto">
                         <!-- Dynamic A-share data from API will be rendered here -->
                     </div>
                 </div>
 
-                <!-- NEW: HK Dynamic List -->
+                <!-- MODIFIED: HK Dynamic List - Only data display remains here -->
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">HK Dynamic List</h2>
-                    <div class="mb-4 relative">
-                        <input type="text" id="hk-dynamic-search" placeholder="Enter HK stock code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                        <div id="hk-dynamic-suggestions" class="absolute z-10 w-full"></div>
-                    </div>
-                    <div id="hk-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4">
-                        <!-- Selected HK stocks will be rendered here -->
-                    </div>
                     <div id="hk-dynamic-data-container" class="overflow-x-auto">
                         <!-- Dynamic HK stock data from API will be rendered here -->
                     </div>
@@ -142,6 +147,47 @@
         </div>
     </div>
     
+    <!-- NEW: Dynamic List Configuration Modal -->
+    <div id="dynamic-list-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-auto modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Dynamic Stock Lists</h3>
+                <button id="close-dynamic-list-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- A-Share Dynamic List Configuration (Moved Here) -->
+            <div class="mb-6">
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">A-Share Dynamic List Configuration</h4>
+                <div class="mb-4 relative">
+                    <input type="text" id="a-share-dynamic-search" placeholder="Enter A-share code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div id="a-share-dynamic-suggestions" class="absolute z-10 w-full"></div>
+                </div>
+                <div id="a-share-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4 p-2 border border-gray-200 dark:border-gray-700 rounded-md min-h-[4rem]">
+                    <!-- Selected A-shares will be rendered here -->
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>
+                </div>
+            </div>
+
+            <!-- HK Dynamic List Configuration (Moved Here) -->
+            <div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">HK Dynamic List Configuration</h4>
+                <div class="mb-4 relative">
+                    <input type="text" id="hk-dynamic-search" placeholder="Enter HK stock code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div id="hk-dynamic-suggestions" class="absolute z-10 w-full"></div>
+                </div>
+                <div id="hk-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4 p-2 border border-gray-200 dark:border-gray-700 rounded-md min-h-[4rem]">
+                    <!-- Selected HK stocks will be rendered here -->
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>
+                </div>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="save-dynamic-list-config" class="px-5 py-2.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save & Refresh Data</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // --- CONFIGURATION ---
@@ -161,7 +207,7 @@
                 { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable, isSortable: true },
                 { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable },
                 { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
-                // NEW: Dynamic List data sources
+                // Dynamic List data sources (display only, config in modal)
                 { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true },
                 { id: 'hk-dynamic-data', file: 'hk_stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true } 
             ];
@@ -175,7 +221,13 @@
             const refreshButton = document.getElementById('refresh-button');
             const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
             
-            // NEW: Dynamic List UI elements
+            // NEW: Modal UI elements
+            const manageDynamicListsBtn = document.getElementById('manage-dynamic-lists-btn');
+            const dynamicListModal = document.getElementById('dynamic-list-modal');
+            const closeDynamicListModalBtn = document.getElementById('close-dynamic-list-modal');
+            const saveDynamicListConfigBtn = document.getElementById('save-dynamic-list-config');
+
+            // Dynamic List UI elements (now inside modal)
             const aShareDynamicSearchInput = document.getElementById('a-share-dynamic-search');
             const aShareDynamicSuggestionsDiv = document.getElementById('a-share-dynamic-suggestions');
             const aShareDynamicSelectedListDiv = document.getElementById('a-share-dynamic-selected-list');
@@ -402,7 +454,7 @@
                 renderSelectedDynamicList(key);
             }
 
-            // NEW: Render selected dynamic list UI
+            // NEW: Render selected dynamic list UI (called for elements inside modal)
             function renderSelectedDynamicList(key) {
                 const listDiv = key === LS_KEY_A_SHARE_DYNAMIC ? aShareDynamicSelectedListDiv : hkDynamicSelectedListDiv;
                 const list = getDynamicList(key);
@@ -597,6 +649,24 @@
                 });
             }
 
+            // NEW: Modal functions
+            function openDynamicListModal() {
+                dynamicListModal.classList.remove('hidden');
+                // Force reflow to apply initial hidden state styles before transition
+                dynamicListModal.offsetWidth; 
+                dynamicListModal.classList.add('modal-active'); // Triggers transition
+                document.body.classList.add('overflow-hidden'); // Prevent background scrolling
+            }
+
+            function closeDynamicListModal() {
+                dynamicListModal.classList.remove('modal-active'); // Reverses transition
+                dynamicListModal.addEventListener('transitionend', function handler() {
+                    dynamicListModal.classList.add('hidden');
+                    dynamicListModal.removeEventListener('transitionend', handler);
+                    document.body.classList.remove('overflow-hidden'); // Re-enable background scrolling
+                });
+            }
+
             // --- EVENT LISTENERS (MODIFIED) ---
             refreshButton.addEventListener('click', triggerAndFetchData);
             
@@ -606,6 +676,19 @@
                     // Start the interval timer
                     autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS);
                 }
+            });
+
+            // NEW: Modal event listeners
+            manageDynamicListsBtn.addEventListener('click', openDynamicListModal);
+            closeDynamicListModalBtn.addEventListener('click', closeDynamicListModal);
+            dynamicListModal.addEventListener('click', (e) => {
+                if (e.target === dynamicListModal) { // Close when clicking outside the modal content
+                    closeDynamicListModal();
+                }
+            });
+            saveDynamicListConfigBtn.addEventListener('click', () => {
+                triggerAndFetchData(); // Refresh data with new dynamic lists
+                closeDynamicListModal(); // Close modal
             });
 
             // --- INITIALIZATION (MODIFIED) ---
@@ -619,11 +702,11 @@
                 // 1. Fetch all stock data for autocomplete (now using FlowInfoBase.json and HKFlowInfoBase.json)
                 await fetchAllStocksData();
 
-                // 2. Setup autocomplete for both A-share and HK stock inputs
+                // 2. Setup autocomplete for both A-share and HK stock inputs (elements are now in modal)
                 setupAutoComplete(aShareDynamicSearchInput, aShareDynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
                 setupAutoComplete(hkDynamicSearchInput, hkDynamicSuggestionsDiv, allHKShares, LS_KEY_HK_DYNAMIC);
 
-                // 3. Render previously selected dynamic lists from localStorage
+                // 3. Render previously selected dynamic lists from localStorage (elements are now in modal)
                 renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                 renderSelectedDynamicList(LS_KEY_HK_DYNAMIC);
 
