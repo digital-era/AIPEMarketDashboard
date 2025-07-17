@@ -750,6 +750,15 @@
                 initialDataFetchOnly();
 
             })();
+
+             // 新增：监听页面可见性变化
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && !isRefreshing) {
+                    // 当页面变为可见且当前没有在刷新时，立即触发数据获取
+                    console.log('Page became visible. Fetching latest data...');
+                    fetchAndRenderData();
+                }
+            });
         });
     </script>
 
