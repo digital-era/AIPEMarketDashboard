@@ -1,14 +1,13 @@
 // --- Global Chart Instances ---
 let timeSeriesChartInstance = null;
 let hotIndustriesChartInstance = null;
-let timeSeriesChartThisYearInstance = null; // Global instance for the 'This Year' chart
+let timeSeriesChartThisYearInstance = null;
 
 // --- Theme Management ---
 const themeToggleBtn = document.getElementById('theme-toggle');
 const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
 const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
-// Function to apply the theme
 function applyTheme(theme) {
     if (theme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -21,17 +20,14 @@ function applyTheme(theme) {
         themeToggleDarkIcon.classList.remove('hidden');
         localStorage.theme = 'light';
     }
-    // Update charts after theme change
     updateChartsTheme();
 }
 
-// Event listener for the toggle button
 themeToggleBtn.addEventListener('click', () => {
     const currentTheme = localStorage.getItem('theme') || 'light';
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
 });
 
-// Apply theme on initial load
 (function() {
     const savedTheme = localStorage.getItem('theme');
     applyTheme(savedTheme || 'dark');
@@ -48,8 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             populateSummaryCards(data);
-            
-            // Create all charts and tables with the fetched data
             createTimeSeriesChart(data.UDI_SZI_from2021);
             createThisYearChart(data.UDI_SZI_from2021);
             createHotIndustriesChart(data.DistributeHotIndustry);
@@ -62,19 +56,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-// ... (Helper functions like getOrderValue, formatValue, getColorClass are unchanged) ...
-
+// Helper functions
 function getOrderValue(value) {
-    if (typeof value !== 'number' || isNaN(value)) {
-        return -Infinity;
-    }
+    if (typeof value !== 'number' || isNaN(value)) { return -Infinity; }
     return value;
 }
 
 function formatValue(value, decimals = 2, unit = '') {
-    if (typeof value !== 'number' || isNaN(value)) {
-        return 'N/A';
-    }
+    if (typeof value !== 'number' || isNaN(value)) { return 'N/A'; }
     return `${value.toFixed(decimals)}${unit}`;
 }
 
@@ -99,10 +88,7 @@ function populateSummaryCards(data) {
     document.getElementById('worst-performer-change').innerHTML = `<span class="${getColorClass(worstPerformer['价格增长%'])}">${formatValue(worstPerformer['价格增长%'], 2, '%')}</span>`;
 }
 
-// =======================================================
-// ==================   CHARTING FUNCTIONS   ==================
-// =======================================================
-
+// Charting Functions
 function applyThemeToChart(chartInstance) {
     if (!chartInstance) return;
 
@@ -114,9 +100,7 @@ function applyThemeToChart(chartInstance) {
 
     const chartOptions = chartInstance.options;
 
-    if (chartOptions.plugins.legend) {
-        chartOptions.plugins.legend.labels.color = textColor;
-    }
+    if (chartOptions.plugins.legend) { chartOptions.plugins.legend.labels.color = textColor; }
     if (chartOptions.plugins.tooltip) {
         chartOptions.plugins.tooltip.backgroundColor = tooltipBgColor;
         chartOptions.plugins.tooltip.borderColor = tooltipBorderColor;
@@ -125,15 +109,9 @@ function applyThemeToChart(chartInstance) {
     }
     
     Object.values(chartOptions.scales).forEach(scale => {
-        if (scale.grid) {
-            scale.grid.color = gridColor;
-        }
-        if (scale.ticks) {
-            scale.ticks.color = textColor;
-        }
-        if (scale.title) {
-            scale.title.color = textColor;
-        }
+        if (scale.grid) { scale.grid.color = gridColor; }
+        if (scale.ticks) { scale.ticks.color = textColor; }
+        if (scale.title) { scale.title.color = textColor; }
     });
 
     chartInstance.update('none');
@@ -147,112 +125,40 @@ function updateChartsTheme() {
 
 function createTimeSeriesChart(chartData) {
     const ctx = document.getElementById('timeSeriesChart').getContext('2d');
-    const parsedData = chartData
-        .map(d => ({
-            date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')),
-            udi: d.Close_UDI,
-            szi: d.Close_SZI
-        }))
-        .filter(d => !isNaN(d.date.getTime()));
-
+    const parsedData = chartData.map(d => ({ date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')), udi: d.Close_UDI, szi: d.Close_SZI })).filter(d => !isNaN(d.date.getTime()));
     const labels = parsedData.map(d => d.date);
     const udiData = parsedData.map(d => (d.udi === null || isNaN(d.udi)) ? null : d.udi);
     const sziData = parsedData.map(d => (d.szi === null || isNaN(d.szi)) ? null : d.szi);
     
     timeSeriesChartInstance = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'UDI Close', data: udiData, borderColor: 'rgb(59, 130, 246)', 
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y'
-                },
-                {
-                    label: 'SZI Close', data: sziData, borderColor: 'rgb(234, 179, 8)', 
-                    backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            scales: {
-                x: { 
-                    type: 'time', 
-                    time: { 
-                        unit: 'year',
-                        displayFormats: { year: 'yyyy' },
-                        tooltipFormat: 'MMM dd, yyyy' 
-                    }, 
-                    title: { display: true, text: 'Date' } 
-                },
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } },
-                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'SZI Value' }, grid: { drawOnChartArea: false } }
-            }
-        }
+        data: { labels: labels, datasets: [{ label: 'UDI Close', data: udiData, borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y' }, { label: 'SZI Close', data: sziData, borderColor: 'rgb(234, 179, 8)', backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1' }] },
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'time', time: { unit: 'year', displayFormats: { year: 'yyyy' }, tooltipFormat: 'MMM dd, yyyy' }, title: { display: true, text: 'Date' } }, y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'SZI Value' }, grid: { drawOnChartArea: false } } } }
     });
-
     applyThemeToChart(timeSeriesChartInstance);
 }
 
 function createThisYearChart(chartData) {
     const ctx = document.getElementById('timeSeriesChartThisYear').getContext('2d');
-    
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-    const parsedData = chartData
-        .map(d => ({
-            date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')),
-            udi: d.Close_UDI,
-            szi: d.Close_SZI
-        }))
-        .filter(d => !isNaN(d.date.getTime()) && d.date >= oneYearAgo);
-
+    const parsedData = chartData.map(d => ({ date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')), udi: d.Close_UDI, szi: d.Close_SZI })).filter(d => !isNaN(d.date.getTime()) && d.date >= oneYearAgo);
     const labels = parsedData.map(d => d.date);
     const udiData = parsedData.map(d => (d.udi === null || isNaN(d.udi)) ? null : d.udi);
     const sziData = parsedData.map(d => (d.szi === null || isNaN(d.szi)) ? null : d.szi);
     
     timeSeriesChartThisYearInstance = new Chart(ctx, {
         type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'UDI Close', data: udiData, borderColor: 'rgb(59, 130, 246)', 
-                    backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y'
-                },
-                {
-                    label: 'SZI Close', data: sziData, borderColor: 'rgb(234, 179, 8)', 
-                    backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            scales: {
-                x: { 
-                    type: 'time', 
-                    time: { 
-                        unit: 'month',
-                        displayFormats: { month: 'MMM yyyy' },
-                        tooltipFormat: 'MMM dd, yyyy' 
-                    }, 
-                    title: { display: true, text: 'Date' } 
-                },
-                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } },
-                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'SZI Value' }, grid: { drawOnChartArea: false } }
-            }
-        }
+        data: { labels: labels, datasets: [{ label: 'UDI Close', data: udiData, borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y' }, { label: 'SZI Close', data: sziData, borderColor: 'rgb(234, 179, 8)', backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1' }] },
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { type: 'time', time: { unit: 'month', displayFormats: { month: 'MMM yyyy' }, tooltipFormat: 'MMM dd, yyyy' }, title: { display: true, text: 'Date' } }, y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'SZI Value' }, grid: { drawOnChartArea: false } } } }
     });
-
     applyThemeToChart(timeSeriesChartThisYearInstance);
 }
 
+/**
+ * MODIFIED: Creates the hot industries chart with optimized visual settings for better balance.
+ * @param {object[]} industryData The data for the chart.
+ */
 function createHotIndustriesChart(industryData) {
     const ctx = document.getElementById('hotIndustriesChart').getContext('2d');
     const top10Data = industryData.slice(0, 10).reverse();
@@ -265,16 +171,41 @@ function createHotIndustriesChart(industryData) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Hot Frequency Index (%)', data: dataValues,
-                backgroundColor: 'rgba(34, 211, 238, 0.6)', borderColor: 'rgba(34, 211, 238, 1)', borderWidth: 1
+                label: 'Hot Frequency Index (%)',
+                data: dataValues,
+                backgroundColor: 'rgba(34, 211, 238, 0.6)',
+                borderColor: 'rgba(34, 211, 238, 1)',
+                borderWidth: 1,
+                // NEW: Adjust bar thickness and spacing
+                barThickness: 20, // Sets a fixed thickness for each bar
+                categoryPercentage: 0.8, // Controls space between categories
             }]
         },
         options: {
-            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
             scales: {
-                x: { beginAtZero: true, title: { display: true, text: 'Index (%)' } },
-                y: { }
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Index (%)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        // NEW: Slightly larger font for better readability
+                        font: {
+                            size: 13 
+                        }
+                    }
+                }
             }
         }
     });
@@ -282,10 +213,7 @@ function createHotIndustriesChart(industryData) {
     applyThemeToChart(hotIndustriesChartInstance);
 }
 
-// =======================================================
-// ===================  TABLE FUNCTIONS  ===================
-// =======================================================
-
+// Table Functions
 function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
     tableBody.innerHTML = ''; 
@@ -297,34 +225,18 @@ function createEtfPerformanceTable(data) {
         const name = item['名称'];
         const encodedName = encodeURIComponent(name);
         const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
-        
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
-
-        let since2021Change = priceChange2021Map.get(name);
-        if (since2021Change === undefined) { since2021Change = priceChange2021Map.get(simpleName); }
-        
-        let shareChange = shareChangeMap.get(name);
-        if (shareChange === undefined) { shareChange = shareChangeMap.get(simpleName); }
+        let since2021Change = priceChange2021Map.get(name) ?? priceChange2021Map.get(simpleName);
+        let shareChange = shareChangeMap.get(name) ?? shareChangeMap.get(simpleName);
         
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
-                        ${name}
-                    </a>
-                </td>
-                <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">
-                    ${formatValue(ytdChange, 2, '%')}
-                </td>
-                <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}" data-order="${getOrderValue(since2021Change)}">
-                    ${formatValue(since2021Change, 2, '%')}
-                </td>
-                <td class="px-6 py-4 text-right ${getColorClass(shareChange)}" data-order="${getOrderValue(shareChange)}">
-                    ${formatValue(shareChange, 2, '%')}
-                </td>
-            </tr>
-        `;
+                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a></td>
+                <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">${formatValue(ytdChange, 2, '%')}</td>
+                <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}" data-order="${getOrderValue(since2021Change)}">${formatValue(since2021Change, 2, '%')}</td>
+                <td class="px-6 py-4 text-right ${getColorClass(shareChange)}" data-order="${getOrderValue(shareChange)}">${formatValue(shareChange, 2, '%')}</td>
+            </tr>`;
         tableBody.innerHTML += row;
     });
 
@@ -332,9 +244,9 @@ function createEtfPerformanceTable(data) {
         $('#etfTable').DataTable().destroy();
     }
 
-    // *** MODIFICATION HERE: Changed pageLength from 10 to 25 ***
+    // MODIFIED: Reverted pageLength to 10
     new DataTable('#etfTable', {
-        responsive: true, order: [[1, 'desc']], pageLength: 25, lengthMenu: [10, 25, 50, -1],
+        responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
         columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
         language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
     });
@@ -353,8 +265,7 @@ function createArGroupTable(arData) {
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">${item.Category}</td>
                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(score)}">${score.toFixed(4)}</td>
-            </tr>
-        `;
+            </tr>`;
         tableBody.innerHTML += row;
     });
 }
