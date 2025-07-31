@@ -156,12 +156,14 @@ function createThisYearChart(chartData) {
 }
 
 /**
- * MODIFIED: Creates the hot industries chart with optimized visual settings for better balance.
- * @param {object[]} industryData The data for the chart.
+ * MODIFIED: Creates the hot industries chart with data sorted from highest to lowest.
+ * @param {object[]} industryData The data for the chart, assumed to be pre-sorted.
  */
 function createHotIndustriesChart(industryData) {
     const ctx = document.getElementById('hotIndustriesChart').getContext('2d');
-    const top10Data = industryData.slice(0, 10).reverse();
+    // The incoming data is already sorted by hotness. We just take the top 10.
+    // Chart.js with indexAxis: 'y' will draw the first item at the top.
+    const top10Data = industryData.slice(0, 10); 
 
     const labels = top10Data.map(d => d['Industry Name']);
     const dataValues = top10Data.map(d => d['Hot Frequency Index (%)']);
@@ -176,9 +178,8 @@ function createHotIndustriesChart(industryData) {
                 backgroundColor: 'rgba(34, 211, 238, 0.6)',
                 borderColor: 'rgba(34, 211, 238, 1)',
                 borderWidth: 1,
-                // NEW: Adjust bar thickness and spacing
-                barThickness: 20, // Sets a fixed thickness for each bar
-                categoryPercentage: 0.8, // Controls space between categories
+                barThickness: 20,
+                categoryPercentage: 0.8,
             }]
         },
         options: {
@@ -186,24 +187,16 @@ function createHotIndustriesChart(industryData) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                }
+                legend: { display: false }
             },
             scales: {
                 x: {
                     beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Index (%)'
-                    }
+                    title: { display: true, text: 'Index (%)' }
                 },
                 y: {
                     ticks: {
-                        // NEW: Slightly larger font for better readability
-                        font: {
-                            size: 13 
-                        }
+                        font: { size: 13 }
                     }
                 }
             }
@@ -244,7 +237,6 @@ function createEtfPerformanceTable(data) {
         $('#etfTable').DataTable().destroy();
     }
 
-    // MODIFIED: Reverted pageLength to 10
     new DataTable('#etfTable', {
         responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
         columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
@@ -252,13 +244,24 @@ function createEtfPerformanceTable(data) {
     });
 }
 
+/**
+ * MODIFIED: Creates the AR group table with rows sorted by PotScore in descending order.
+ * @param {object[]} arData The data for the table.
+ */
 function createArGroupTable(arData) {
     const tableBody = document.getElementById('arGroupTableBody');
     tableBody.innerHTML = '';
     
+    // Find the latest date in the dataset
     const latestDate = arData.reduce((latest, current) => new Date(current.日期) > new Date(latest) ? current.日期 : latest, arData[0].日期);
+    
+    // Filter for the latest data
     const latestData = arData.filter(item => item.日期 === latestDate);
 
+    // *** NEW: Sort the latest data by PotScore in descending order ***
+    latestData.sort((a, b) => b['PotScore-New_Mean'] - a['PotScore-New_Mean']);
+
+    // Now, iterate over the sorted data to create table rows
     latestData.forEach(item => {
         const score = item['PotScore-New_Mean'];
         const row = `
