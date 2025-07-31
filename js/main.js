@@ -1,7 +1,7 @@
 // --- Global Chart Instances ---
 let timeSeriesChartInstance = null;
 let hotIndustriesChartInstance = null;
-let timeSeriesChartThisYearInstance = null; // NEW: Global instance for the 'This Year' chart
+let timeSeriesChartThisYearInstance = null; // Global instance for the 'This Year' chart
 
 // --- Theme Management ---
 const themeToggleBtn = document.getElementById('theme-toggle');
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Create all charts and tables with the fetched data
             createTimeSeriesChart(data.UDI_SZI_from2021);
-            createThisYearChart(data.UDI_SZI_from2021); // MODIFIED: Added call to create the new chart
+            createThisYearChart(data.UDI_SZI_from2021);
             createHotIndustriesChart(data.DistributeHotIndustry);
             createEtfPerformanceTable(data);
             createArGroupTable(data.ARGroup);
@@ -103,10 +103,6 @@ function populateSummaryCards(data) {
 // ==================   CHARTING FUNCTIONS   ==================
 // =======================================================
 
-/**
- * A dedicated function to apply theme colors to a chart instance.
- * @param {Chart} chartInstance The chart instance to update.
- */
 function applyThemeToChart(chartInstance) {
     if (!chartInstance) return;
 
@@ -118,7 +114,6 @@ function applyThemeToChart(chartInstance) {
 
     const chartOptions = chartInstance.options;
 
-    // Update plugins (legend, tooltip)
     if (chartOptions.plugins.legend) {
         chartOptions.plugins.legend.labels.color = textColor;
     }
@@ -129,7 +124,6 @@ function applyThemeToChart(chartInstance) {
         chartOptions.plugins.tooltip.bodyColor = textColor;
     }
     
-    // Update scales (axes)
     Object.values(chartOptions.scales).forEach(scale => {
         if (scale.grid) {
             scale.grid.color = gridColor;
@@ -142,22 +136,15 @@ function applyThemeToChart(chartInstance) {
         }
     });
 
-    chartInstance.update('none'); // Use 'none' for smoother updates without re-animation
+    chartInstance.update('none');
 }
 
-/**
- * The main theme update function. Now simpler and more robust.
- */
 function updateChartsTheme() {
     applyThemeToChart(timeSeriesChartInstance);
     applyThemeToChart(hotIndustriesChartInstance);
-    applyThemeToChart(timeSeriesChartThisYearInstance); // MODIFIED: Added the new chart instance to the theme update
+    applyThemeToChart(timeSeriesChartThisYearInstance);
 }
 
-/**
- * Creates the time series chart ("Since 2021") with all its settings.
- * @param {object[]} chartData The data for the chart.
- */
 function createTimeSeriesChart(chartData) {
     const ctx = document.getElementById('timeSeriesChart').getContext('2d');
     const parsedData = chartData
@@ -210,25 +197,19 @@ function createTimeSeriesChart(chartData) {
     applyThemeToChart(timeSeriesChartInstance);
 }
 
-/**
- * NEW: Creates the time series chart ("This Year") with filtered data.
- * @param {object[]} chartData The full data which will be filtered.
- */
 function createThisYearChart(chartData) {
     const ctx = document.getElementById('timeSeriesChartThisYear').getContext('2d');
     
-    // Calculate the date for one year ago
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
-    // Parse all data, then filter for the last year
     const parsedData = chartData
         .map(d => ({
             date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')),
             udi: d.Close_UDI,
             szi: d.Close_SZI
         }))
-        .filter(d => !isNaN(d.date.getTime()) && d.date >= oneYearAgo); // Filter for valid dates AND last year
+        .filter(d => !isNaN(d.date.getTime()) && d.date >= oneYearAgo);
 
     const labels = parsedData.map(d => d.date);
     const udiData = parsedData.map(d => (d.udi === null || isNaN(d.udi)) ? null : d.udi);
@@ -257,7 +238,6 @@ function createThisYearChart(chartData) {
                 x: { 
                     type: 'time', 
                     time: { 
-                        // Show month for a yearly view
                         unit: 'month',
                         displayFormats: { month: 'MMM yyyy' },
                         tooltipFormat: 'MMM dd, yyyy' 
@@ -273,11 +253,6 @@ function createThisYearChart(chartData) {
     applyThemeToChart(timeSeriesChartThisYearInstance);
 }
 
-
-/**
- * Creates the hot industries chart with all its settings.
- * @param {object[]} industryData The data for the chart.
- */
 function createHotIndustriesChart(industryData) {
     const ctx = document.getElementById('hotIndustriesChart').getContext('2d');
     const top10Data = industryData.slice(0, 10).reverse();
@@ -357,8 +332,9 @@ function createEtfPerformanceTable(data) {
         $('#etfTable').DataTable().destroy();
     }
 
+    // *** MODIFICATION HERE: Changed pageLength from 10 to 25 ***
     new DataTable('#etfTable', {
-        responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
+        responsive: true, order: [[1, 'desc']], pageLength: 25, lengthMenu: [10, 25, 50, -1],
         columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
         language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
     });
