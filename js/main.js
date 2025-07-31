@@ -1,6 +1,7 @@
 // --- Global Chart Instances ---
 let timeSeriesChartInstance = null;
 let hotIndustriesChartInstance = null;
+let timeSeriesChartThisYearInstance = null; // NEW: Global instance for the 'This Year' chart
 
 // --- Theme Management ---
 const themeToggleBtn = document.getElementById('theme-toggle');
@@ -33,8 +34,6 @@ themeToggleBtn.addEventListener('click', () => {
 // Apply theme on initial load
 (function() {
     const savedTheme = localStorage.getItem('theme');
-    //const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    //applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
     applyTheme(savedTheme || 'dark');
 })();
 
@@ -49,10 +48,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(data => {
             populateSummaryCards(data);
-            // We now pass the initial theme state to the chart creation functions
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            createTimeSeriesChart(data.UDI_SZI_from2021, isDarkMode);
-            createHotIndustriesChart(data.DistributeHotIndustry, isDarkMode);
+            
+            // Create all charts and tables with the fetched data
+            createTimeSeriesChart(data.UDI_SZI_from2021);
+            createThisYearChart(data.UDI_SZI_from2021); // MODIFIED: Added call to create the new chart
+            createHotIndustriesChart(data.DistributeHotIndustry);
             createEtfPerformanceTable(data);
             createArGroupTable(data.ARGroup);
         })
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 });
 
-// ... (other helper functions like getOrderValue, formatValue, getColorClass are unchanged) ...
+// ... (Helper functions like getOrderValue, formatValue, getColorClass are unchanged) ...
 
 function getOrderValue(value) {
     if (typeof value !== 'number' || isNaN(value)) {
@@ -99,14 +99,12 @@ function populateSummaryCards(data) {
     document.getElementById('worst-performer-change').innerHTML = `<span class="${getColorClass(worstPerformer['价格增长%'])}">${formatValue(worstPerformer['价格增长%'], 2, '%')}</span>`;
 }
 
-
 // =======================================================
-// ==================   MODIFIED SECTION START   ==================
+// ==================   CHARTING FUNCTIONS   ==================
 // =======================================================
 
 /**
  * A dedicated function to apply theme colors to a chart instance.
- * It surgically updates only color properties, preserving other settings.
  * @param {Chart} chartInstance The chart instance to update.
  */
 function applyThemeToChart(chartInstance) {
@@ -144,7 +142,7 @@ function applyThemeToChart(chartInstance) {
         }
     });
 
-    chartInstance.update();
+    chartInstance.update('none'); // Use 'none' for smoother updates without re-animation
 }
 
 /**
@@ -153,10 +151,11 @@ function applyThemeToChart(chartInstance) {
 function updateChartsTheme() {
     applyThemeToChart(timeSeriesChartInstance);
     applyThemeToChart(hotIndustriesChartInstance);
+    applyThemeToChart(timeSeriesChartThisYearInstance); // MODIFIED: Added the new chart instance to the theme update
 }
 
 /**
- * Creates the time series chart with all its settings.
+ * Creates the time series chart ("Since 2021") with all its settings.
  * @param {object[]} chartData The data for the chart.
  */
 function createTimeSeriesChart(chartData) {
@@ -208,9 +207,72 @@ function createTimeSeriesChart(chartData) {
         }
     });
 
-    // Apply the current theme to the newly created chart
     applyThemeToChart(timeSeriesChartInstance);
 }
+
+/**
+ * NEW: Creates the time series chart ("This Year") with filtered data.
+ * @param {object[]} chartData The full data which will be filtered.
+ */
+function createThisYearChart(chartData) {
+    const ctx = document.getElementById('timeSeriesChartThisYear').getContext('2d');
+    
+    // Calculate the date for one year ago
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    // Parse all data, then filter for the last year
+    const parsedData = chartData
+        .map(d => ({
+            date: new Date(d.Date.replace('Y', '-').replace('M-', '-').replace('D', '')),
+            udi: d.Close_UDI,
+            szi: d.Close_SZI
+        }))
+        .filter(d => !isNaN(d.date.getTime()) && d.date >= oneYearAgo); // Filter for valid dates AND last year
+
+    const labels = parsedData.map(d => d.date);
+    const udiData = parsedData.map(d => (d.udi === null || isNaN(d.udi)) ? null : d.udi);
+    const sziData = parsedData.map(d => (d.szi === null || isNaN(d.szi)) ? null : d.szi);
+    
+    timeSeriesChartThisYearInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'UDI Close', data: udiData, borderColor: 'rgb(59, 130, 246)', 
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y'
+                },
+                {
+                    label: 'SZI Close', data: sziData, borderColor: 'rgb(234, 179, 8)', 
+                    backgroundColor: 'rgba(234, 179, 8, 0.2)', borderWidth: 2, pointRadius: 0, tension: 0.1, yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { 
+                    type: 'time', 
+                    time: { 
+                        // Show month for a yearly view
+                        unit: 'month',
+                        displayFormats: { month: 'MMM yyyy' },
+                        tooltipFormat: 'MMM dd, yyyy' 
+                    }, 
+                    title: { display: true, text: 'Date' } 
+                },
+                y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'UDI Value' } },
+                y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'SZI Value' }, grid: { drawOnChartArea: false } }
+            }
+        }
+    });
+
+    applyThemeToChart(timeSeriesChartThisYearInstance);
+}
+
 
 /**
  * Creates the hot industries chart with all its settings.
@@ -242,14 +304,12 @@ function createHotIndustriesChart(industryData) {
         }
     });
     
-    // Apply the current theme to the newly created chart
     applyThemeToChart(hotIndustriesChartInstance);
 }
 
 // =======================================================
-// ===================   MODIFIED SECTION END   ===================
+// ===================  TABLE FUNCTIONS  ===================
 // =======================================================
-
 
 function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
@@ -259,13 +319,9 @@ function createEtfPerformanceTable(data) {
     const shareChangeMap = new Map(data.ShareThisYearChange.map(item => [item['基金简称'], item['Year\u4efd\u989d\u589e\u957f%']]));
 
     data.PriceThisYearChange.forEach(item => {
-        // *** MODIFICATION START ***
         const name = item['名称'];
-        // 1. Encode the ETF name for the URL
         const encodedName = encodeURIComponent(name);
-        // 2. Construct the full URL with the 'stock' parameter
         const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
-        // *** MODIFICATION END ***
         
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
@@ -279,7 +335,6 @@ function createEtfPerformanceTable(data) {
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    <!-- 3. Replace the plain text name with the link -->
                     <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
                         ${name}
                     </a>
