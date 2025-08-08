@@ -221,7 +221,8 @@
                 
                 const createSeries = (seriesData) => seriesData.map(d => ({ x: new Date(d.date).getTime(), y: parseFloat(d.value) }));
                 const series = [ { name: 'NASDAQ', data: createSeries(data.nasdaq) }, { name: 'Dow Jones', data: createSeries(data.dowjones) }, { name: 'Comex Gold', data: createSeries(data.gold) }, { name: 'Dollar Index', data: createSeries(data.dollar) } ];
-                const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'];
+                //const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'];
+                const colors = ['#3B82F6', '#9b59b6', '#10B981', '#e67e22']; 
                 const options = {
                     series: series,
                     chart: { type: 'area', height: '100%', toolbar: { show: true, autoSelected: 'pan' }, zoom: { enabled: true, autoScaleYaxis: true }, animations: { enabled: true, easing: 'easeinout', speed: 800, animateGradually: { enabled: true, delay: 150 }, dynamicAnimation: { enabled: true, speed: 350 } },
