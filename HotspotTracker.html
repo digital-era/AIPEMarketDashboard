@@ -320,22 +320,22 @@
                                     <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
+                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                                 <td class="py-2 px-4 text-right">${item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.PB != null ? item.PB.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.Amount != null ? item.Amount.toFixed(2) : '-'}</td>
-                                <td class="py-2 px-4 text-right">${item.TotalMarketCap != null ? item.TotalMarketCap.toFixed(2) : '-'}</td>
                             </tr>`;
                 }).join('');
                 
                 const headers = [
                     { label: 'Name', type: 'string' },
                     { label: 'Code', type: 'string' },
+                    { label: 'Price', type: 'number', align: 'right' },
                     { label: 'Change %', type: 'number', align: 'right' },
                     { label: 'PE(TTM)', type: 'number', align: 'right' },
                     { label: 'PB', type: 'number', align: 'right' },
-                    { label: 'Amount(亿)', type: 'number', align: 'right' },
-                    { label: 'Mkt Cap(亿)', type: 'number', align: 'right' }
+                    { label: 'Amount(亿)', type: 'number', align: 'right' }
                 ];
                 const headerHtml = headers.map(h => {
                     const alignClass = h.align === 'right' ? 'text-right' : '';
@@ -362,11 +362,12 @@
                                     <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
+                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                              </tr>`;
                 }).join('');
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>
-                                    <th class="px-4 py-3">Name</th><th class="px-4 py-3">Code</th><th class="px-4 py-3 text-right">Change %</th>
+                                    <th class="px-4 py-3">Name</th><th class="px-4 py-3">Code</th><th class="px-4 py-3 text-right">Price</th><th class="px-4 py-3 text-right">Change %</th>
                                 </tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
