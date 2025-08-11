@@ -320,8 +320,8 @@
                                     <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
-                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
+                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.PB != null ? item.PB.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right">${item.Amount != null ? item.Amount.toFixed(2) : '-'}</td>
@@ -331,8 +331,8 @@
                 const headers = [
                     { label: 'Name', type: 'string' },
                     { label: 'Code', type: 'string' },
-                    { label: 'Price', type: 'number', align: 'right' },
-                    { label: 'Change %', type: 'number', align: 'right' },
+                    { label: 'Change %', type: 'number', align: 'right' }, /* Swapped order */
+                    { label: 'Price', type: 'number', align: 'right' },     /* Swapped order */
                     { label: 'PE(TTM)', type: 'number', align: 'right' },
                     { label: 'PB', type: 'number', align: 'right' },
                     { label: 'Amount(亿)', type: 'number', align: 'right' }
@@ -363,8 +363,8 @@
                                     <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
-                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
                                 <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
+                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
                              </tr>`;
                 }).join('');
 
@@ -372,8 +372,8 @@
                 const headers = [
                     { label: 'Name', type: 'string' },
                     { label: 'Code', type: 'string' },
-                    { label: 'Price', type: 'number', align: 'right' },
-                    { label: 'Change %', type: 'number', align: 'right' }
+                    { label: 'Change %', type: 'number', align: 'right' }, /* Swapped order */
+                    { label: 'Price', type: 'number', align: 'right' }      /* Swapped order */
                 ];
 
                 const headerHtml = headers.map(h => {
