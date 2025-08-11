@@ -207,7 +207,7 @@
                 { id: 'stock', file: 'stock_data.json', renderer: renderTopDownTable },
                 { id: 'hk-stock', file: 'hk_stock_data.json', renderer: renderTopDownTable },
                 { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable, isSortable: true },
-                { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable },
+                { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable, isSortable: true }, // ADDED: isSortable: true
                 { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
                 // Dynamic List data sources (display only, config in modal)
                 { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true },
@@ -348,7 +348,8 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
-            function renderHKFlatTable(containerId, data) {
+            // MODIFIED: renderHKFlatTable to accept isSortable and create sortable headers
+            function renderHKFlatTable(containerId, data, isSortable = false) { 
                 const container = document.getElementById(containerId);
                 if (!container) return;
                 if (!data || data.error || !Array.isArray(data)) {
@@ -366,9 +367,25 @@
                                 <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
                              </tr>`;
                 }).join('');
-                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>
-                                    <th class="px-4 py-3">Name</th><th class="px-4 py-3">Code</th><th class="px-4 py-3 text-right">Price</th><th class="px-4 py-3 text-right">Change %</th>
-                                </tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
+
+                // Define headers for HK Flat Table, similar to A-Share
+                const headers = [
+                    { label: 'Name', type: 'string' },
+                    { label: 'Code', type: 'string' },
+                    { label: 'Price', type: 'number', align: 'right' },
+                    { label: 'Change %', type: 'number', align: 'right' }
+                ];
+
+                const headerHtml = headers.map(h => {
+                    const alignClass = h.align === 'right' ? 'text-right' : '';
+                    if (isSortable) {
+                        // Apply sortable-header class and data-sort-type attribute
+                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
+                    }
+                    return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
+                }).join('');
+
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
             // --- MODIFIED: This function is now renamed and ONLY fetches/renders data ---
@@ -382,7 +399,7 @@
                     'stock': { renderer: renderTopDownTable, type: 'topdown' },
                     'hk-stock': { renderer: renderTopDownTable, type: 'topdown' },
                     'stock-10days': { renderer: renderAFlatTable, type: 'flat' },
-                    'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' },
+                    'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' }, // Ensure type is 'flat' for skeleton
                     'stock-observe': { renderer: renderAFlatTable, type: 'flat' },
                     'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' },
                     'hk-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
