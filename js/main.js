@@ -224,7 +224,7 @@ function createEtfPerformanceTable(data) {
                 const baseUrl = sharedOrigin;
         } else {
                 console.log("localStorage 中未找到 sharedReferrerOrigin。");
-                const stockUrl =  'https://aipeinvestmentagent.pages.dev';
+                const baseUrl =  'https://aipeinvestmentagent.pages.dev';
         }
         const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedName}`;       
         
