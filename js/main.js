@@ -217,7 +217,9 @@ function createEtfPerformanceTable(data) {
     data.PriceThisYearChange.forEach(item => {
         const name = item['名称'];
         const encodedName = encodeURIComponent(name);
-        const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
+        //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
+        const baseUrl = window.referrerOrigin !== null ? window.referrerOrigin : 'https://aipeinvestmentagent.pages.dev';
+        const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedName}`;
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
         let since2021Change = priceChange2021Map.get(name) ?? priceChange2021Map.get(simpleName);
