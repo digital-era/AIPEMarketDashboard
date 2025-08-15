@@ -206,8 +206,10 @@ function populateTopStockInPotScoreTable(data) {
         // Encode the stock name for use in a URL
         const encodedStockName = encodeURIComponent(stockName);
         // Construct the full URL with the query parameter
-        const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;
-
+        //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;
+        const baseUrl = window.referrerOrigin !== null ? window.referrerOrigin : 'https://aipeinvestmentagent.pages.dev';
+        const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedStockName}`;
+        
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
@@ -231,7 +233,9 @@ function populateTopStockInMainFundTable(data) {
         // Encode the stock name for use in a URL
         const encodedStockName = encodeURIComponent(stockName);
         // Construct the full URL with the query parameter
-        const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;
+        //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;        
+        const baseUrl = window.referrerOrigin !== null ? window.referrerOrigin : 'https://aipeinvestmentagent.pages.dev';
+        const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedStockName}`;
 
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
