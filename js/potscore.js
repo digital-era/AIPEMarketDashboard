@@ -207,7 +207,14 @@ function populateTopStockInPotScoreTable(data) {
         const encodedStockName = encodeURIComponent(stockName);
         // Construct the full URL with the query parameter
         //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;
-        const baseUrl = window.referrerOrigin !== null ? window.referrerOrigin : 'https://aipeinvestmentagent.pages.dev';
+        const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
+        if (sharedOrigin) {
+                console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
+                const baseUrl = sharedOrigin;
+        } else {
+                console.log("localStorage 中未找到 sharedReferrerOrigin。");
+                const baseUrl = 'https://aipeinvestmentagent.pages.dev';
+        }
         const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedStockName}`;
         
         const row = `
