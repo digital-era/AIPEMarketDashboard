@@ -171,7 +171,10 @@
             
             // --- Helper functions (Unchanged) ---
             const getStockUrl = (code) => {
-                const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
+                //const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
+                const baseinitialUrl = window.referrerOrigin !== null ? window.referrerOrigin : 'https://aipeinvestmentagent.pages.dev';
+                const baseUrl = `${baseinitialUrl}/PotScoreFundAnalytics?stock=`;
+                
                 const prefixedCode = `US${code}`;
                 return `${baseUrl}${encodeURIComponent(prefixedCode)}`;
             };
