@@ -238,6 +238,7 @@ function populateTopStockInMainFundTable(data) {
     tableBody.innerHTML = '';
     data.forEach(item => {
         const stockName = item['名称'];
+        let baseUrl = 'https://aipeinvestmentagent.pages.dev';
         // Encode the stock name for use in a URL
         const encodedStockName = encodeURIComponent(stockName);
         // Construct the full URL with the query parameter
@@ -245,10 +246,10 @@ function populateTopStockInMainFundTable(data) {
         const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
         if (sharedOrigin) {
                 console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
-                const baseUrl = sharedOrigin;
+                baseUrl = sharedOrigin;
         } else {
                 console.log("localStorage 中未找到 sharedReferrerOrigin。");
-                const baseUrl = 'https://aipeinvestmentagent.pages.dev';
+                baseUrl = 'https://aipeinvestmentagent.pages.dev';
         }
         const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedStockName}`;
 
