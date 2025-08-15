@@ -216,15 +216,16 @@ function createEtfPerformanceTable(data) {
 
     data.PriceThisYearChange.forEach(item => {
         const name = item['名称'];
+        let baseUrl = 'https://aipeinvestmentagent.pages.dev';
         const encodedName = encodeURIComponent(name);
         //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
         const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
         if (sharedOrigin) {
                 console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
-                const baseUrl = sharedOrigin;
+                baseUrl = sharedOrigin;
         } else {
                 console.log("localStorage 中未找到 sharedReferrerOrigin。");
-                const baseUrl =  'https://aipeinvestmentagent.pages.dev';
+                baseUrl =  'https://aipeinvestmentagent.pages.dev';
         }
         const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedName}`;       
         
