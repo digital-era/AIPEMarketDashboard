@@ -269,13 +269,14 @@
             // (Unchanged)
             const getStockUrl = (code) => {
                 //const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
+                let baseinitialUrl = 'https://aipeinvestmentagent.pages.dev';
                 const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
                 if (sharedOrigin) {
                         console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
-                        const baseinitialUrl = sharedOrigin;
+                        baseinitialUrl = sharedOrigin;
                 } else {
                         console.log("localStorage 中未找到 sharedReferrerOrigin。");
-                        const baseinitialUrl = 'https://aipeinvestmentagent.pages.dev';
+                        baseinitialUrl = 'https://aipeinvestmentagent.pages.dev';
                 }
                 const baseUrl = `${baseinitialUrl}/PotScoreFundAnalytics?stock=`;
                 
