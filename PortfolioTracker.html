@@ -12,6 +12,9 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
 
+    <!-- NEW: Added SheetJS library for reading Excel files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         /* A few helper styles for loading state */
         @keyframes pulse { 50% { opacity: .6; } }
@@ -173,8 +176,8 @@
             const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
 
             const dataSources = [
-                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
-                // Dynamic List data sources (display only, config in modal)
+                // MODIFIED: 'stock-observe' is now handled separately.
+                // { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
                 { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true }
             ];
 
@@ -226,7 +229,6 @@
 
             // (Unchanged)
             const getStockUrl = (code) => {
-                //const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
                 let baseinitialUrl = 'https://aipeinvestmentagent.pages.dev';
                 const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
                 if (sharedOrigin) {
@@ -244,7 +246,7 @@
                 return `${baseUrl}${encodeURIComponent(codeToEncode)}`;
             };
 
-            // --- DATA RENDERING FUNCTIONS (Unchanged) ---
+            // --- DATA RENDERING FUNCTIONS ---
             const renderSkeleton = (containerId, rendererType) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -254,6 +256,66 @@
                 else container.innerHTML = skeletonTable('Top') + skeletonTable('Worst');
             };
             
+            // NEW: RENDERER FOR THE OBSERVATION LIST FROM EXCEL DATA
+            function renderObservationList(containerId, data, isSortable = false) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                if (data.error) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load observation list: ${data.error}</p>`;
+                    return;
+                }
+                if (!Array.isArray(data)) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load observation list: Invalid data format.</p>`;
+                    return;
+                }
+                if (data.length === 0) {
+                    container.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No portfolio data available.</p>`;
+                    return;
+                }
+
+                let rows = data.map(item => {
+                    const url = getStockUrl(item['股票代码']);
+                    const allocation = (item['配置比例 (%)'] != null && !isNaN(parseFloat(item['配置比例 (%)']))) ? (parseFloat(item['配置比例 (%)'])).toFixed(2) + '%' : '-';
+                    
+                    return `<tr>
+                                <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                    <a href="${url}" target="_blank" class="hover:underline">${item['股票名称'] || 'N/A'}</a>
+                                </td>
+                                <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['股票代码'] || 'N/A'}</td>
+                                <td class="py-2 px-4 text-right">${allocation}</td>
+                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">${item['修改时间'] || 'N/A'}</td>
+                                <!-- Placeholders for original fields -->
+                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
+                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
+                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
+                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
+                            </tr>`;
+                }).join('');
+
+                const headers = [
+                    { label: 'NAME', type: 'string' },
+                    { label: 'CODE', type: 'string' },
+                    { label: '配置比例 (%)', type: 'number', align: 'right' },
+                    { label: '修改时间', type: 'string', align: 'right' },
+                    { label: 'Change %', type: 'string', align: 'right' },
+                    { label: 'Price', type: 'string', align: 'right' },
+                    { label: 'PE(TTM)', type: 'string', align: 'right' },
+                    { label: 'PB', type: 'string', align: 'right' },
+                ];
+
+                const headerHtml = headers.map(h => {
+                    const alignClass = h.align === 'right' ? 'text-right' : '';
+                    if (isSortable) {
+                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
+                    }
+                    return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
+                }).join('');
+
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
+            }
+
+            // Original renderer, kept for other data sources like dynamic lists
             function renderAFlatTable(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container || !data || data.error || !Array.isArray(data)) {
@@ -278,8 +340,8 @@
                 const headers = [
                     { label: 'Name', type: 'string' },
                     { label: 'Code', type: 'string' },
-                    { label: 'Change %', type: 'number', align: 'right' }, /* Swapped order */
-                    { label: 'Price', type: 'number', align: 'right' },     /* Swapped order */
+                    { label: 'Change %', type: 'number', align: 'right' },
+                    { label: 'Price', type: 'number', align: 'right' },
                     { label: 'PE(TTM)', type: 'number', align: 'right' },
                     { label: 'PB', type: 'number', align: 'right' },
                     { label: 'Amount(亿)', type: 'number', align: 'right' }
@@ -295,19 +357,87 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
-            // --- MODIFIED: This function is now renamed and ONLY fetches/renders data ---
+            // NEW: FUNCTION TO FETCH AND PROCESS THE TWO EXCEL FILES
+            async function getPortfolioData() {
+                const file1 = {
+                    user: 'digital-era', repo: 'AIPEInvestmentAgent', branch: 'main',
+                    dir: 'data', filename: 'AIPEEarningYield.xlsx', sheet: '大智投资组合收益'
+                };
+                const file2 = {
+                    user: 'digital-era', repo: 'AIPEPortfolioTracker', branch: 'main',
+                    dir: 'data', filename: 'AIPEPortfolio.xlsx', sheet: '大智投资组合'
+                };
+
+                const buildUrl = (file) => `https://raw.githubusercontent.com/${file.user}/${file.repo}/${file.branch}/${file.dir}/${file.filename}?t=${new Date().getTime()}`;
+                
+                try {
+                    const responses = await Promise.all([fetch(buildUrl(file1)), fetch(buildUrl(file2))]);
+                    const arrayBuffers = await Promise.all(responses.map(res => {
+                        if (!res.ok) throw new Error(`Failed to fetch ${res.url}: ${res.statusText}`);
+                        return res.arrayBuffer();
+                    }));
+
+                    const workbook1 = XLSX.read(arrayBuffers[0], { type: 'array' });
+                    const sheetData1 = XLSX.utils.sheet_to_json(workbook1.Sheets[file1.sheet] || []);
+                    
+                    const workbook2 = XLSX.read(arrayBuffers[1], { type: 'array' });
+                    const sheetData2 = XLSX.utils.sheet_to_json(workbook2.Sheets[file2.sheet] || []);
+
+                    const getLatestRecords = (rows) => {
+                        const latest = new Map();
+                        for (const row of rows) {
+                            if (!row['组合名称'] || !row['股票代码'] || row['修改时间'] === undefined) continue;
+                            const key = `${row['组合名称']}|${row['股票代码']}`;
+                            const existing = latest.get(key);
+                            if (!existing || String(row['修改时间']) > String(existing['修改时间'])) {
+                                latest.set(key, row);
+                            }
+                        }
+                        return latest;
+                    };
+
+                    const latestData1 = getLatestRecords(sheetData1);
+                    const latestData2 = getLatestRecords(sheetData2);
+                    
+                    const mergedData = new Map(latestData1);
+
+                    for (const [key, record2] of latestData2.entries()) {
+                        const record1 = mergedData.get(key);
+                        if (record1) {
+                            if (String(record2['修改时间']) > String(record1['修改时间'])) {
+                                const updatedRecord = { ...record1, '配置比例 (%)': record2['配置比例 (%)'], '修改时间': record2['修改时间'] };
+                                mergedData.set(key, updatedRecord);
+                            }
+                        } else {
+                            mergedData.set(key, record2);
+                        }
+                    }
+                    
+                    return Array.from(mergedData.values());
+
+                } catch (error) {
+                    console.error("Error fetching or processing portfolio data:", error);
+                    return { error: error.message };
+                }
+            }
+
+
+            // MODIFIED: This function now handles both Excel and JSON data sources
             async function fetchAndRenderData() {
                 statusText.textContent = 'Fetching latest data files...';
                 refreshButton.classList.add('reloading');
                 refreshButton.disabled = true;
 
-                const rendererMap = {
-                    'stock-observe': { renderer: renderAFlatTable, type: 'flat' },
-                    'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
-                };
-                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
-
-                const fetchPromises = dataSources.map(source =>
+                // Render skeletons for all containers
+                renderSkeleton('stock-observe-container', 'flat');
+                dataSources.forEach(source => renderSkeleton(`${source.id}-container`, 'flat'));
+                
+                // --- Fetching Logic ---
+                // 1. Start fetching portfolio data from Excel files
+                const portfolioPromise = getPortfolioData();
+                
+                // 2. Start fetching other data from JSON files
+                const jsonFetchPromises = dataSources.map(source =>
                     fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
                         .then(response => {
                             if (!response.ok) return Promise.reject(new Error(`HTTP error ${response.status}`));
@@ -317,14 +447,21 @@
                         .catch(error => ({ error: error.message, id: source.id }))
                 );
 
-                const results = await Promise.all(fetchPromises);
+                // 3. Wait for all fetches to complete
+                const [portfolioData, ...otherResults] = await Promise.all([portfolioPromise, ...jsonFetchPromises]);
+
+                // --- Rendering Logic ---
+                // 1. Render the Observation List with its special data
+                renderObservationList('stock-observe-container', portfolioData, true);
+
+                // 2. Render other data sources as before
                 let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
-                results.forEach((data, index) => {
+                otherResults.forEach((data, index) => {
                     const source = dataSources[index];
                     const containerId = `${source.id}-container`;
                     source.renderer(containerId, data, source.isSortable);
 
-                    if (data && !data.error) {
+                     if (data && !data.error) {
                         if (Array.isArray(data) && data.length > 0) {
                             lastUpdateTime1 = data[0].update_time_bjt || lastUpdateTime1;
                             tradeDate = data[0].trade_date || tradeDate;
@@ -334,6 +471,7 @@
                         }
                     }
                 });
+
                 lastUpdateTime = lastUpdateTime2;
                 if(lastUpdateTime1 > lastUpdateTime2) {
                     lastUpdateTime = lastUpdateTime1;
@@ -344,6 +482,8 @@
                 refreshButton.disabled = false;
                 isRefreshing = false;
             }
+
+            // --- UNCHANGED FUNCTIONS BELOW ---
 
             // NEW: Functions to manage dynamic lists in localStorage
             function getDynamicList(key) {
@@ -598,39 +738,38 @@
                 triggerAndFetchData(); // Refresh data with new dynamic lists
                 closeDynamicListModal(); // Close modal
             });
-
-            // --- INITIALIZATION (MODIFIED) ---
-            setupTableSorting();
             
+            // MODIFIED to handle special initial load for Observation List
             (async function initialSetupAndFetch() {
                 statusText.textContent = 'Loading initial data and setting up controls...';
                 refreshButton.disabled = true;
 
+                setupTableSorting();
                 await fetchAllStocksData();
-
                 setupAutoComplete(aShareDynamicSearchInput, aShareDynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
-
                 renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
-
-                // NEW: Check and set initial visibility of dynamic list cards on page load
                 updateDynamicListVisibility();
 
-                const rendererMap = {
-                    'stock-observe': { type: 'flat' },
-                    'a-share-dynamic-data': { type: 'flat' }
-                };
-                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
-                
+                // Render skeletons for all containers
+                renderSkeleton('stock-observe-container', 'flat');
+                dataSources.forEach(source => renderSkeleton(`${source.id}-container`, 'flat'));
+
+                // This function just fetches existing data without triggering a backend refresh
                 const initialDataFetchOnly = async () => {
-                    const fetchPromises = dataSources.map(source =>
+                    const portfolioPromise = getPortfolioData();
+                    const jsonFetchPromises = dataSources.map(source =>
                         fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
                             .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
                             .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
                             .catch(err => ({ error: err.message, id: source.id }))
                     );
-                    const results = await Promise.all(fetchPromises);
+                    
+                    const [portfolioData, ...otherResults] = await Promise.all([portfolioPromise, ...jsonFetchPromises]);
+                    
+                    renderObservationList('stock-observe-container', portfolioData, true);
+                    
                     let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
-                    results.forEach((data, index) => {
+                    otherResults.forEach((data, index) => {
                         const source = dataSources[index];
                         source.renderer(`${source.id}-container`, data, source.isSortable);
                         if (data && !data.error) {
@@ -638,6 +777,7 @@
                             else if (data.update_time_bjt) { lastUpdateTime2 = data.update_time_bjt; tradeDate = data.trade_date; }
                         }
                     });
+
                     lastUpdateTime = lastUpdateTime2;
                     if(lastUpdateTime1 > lastUpdateTime2) {
                         lastUpdateTime = lastUpdateTime1;
@@ -646,14 +786,13 @@
                     refreshButton.classList.remove('reloading');
                     refreshButton.disabled = false;
                 };
+                
                 initialDataFetchOnly();
-
             })();
 
              // 新增：监听页面可见性变化
             document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'visible' && !isRefreshing) {
-                    // 当页面变为可见且当前没有在刷新时，立即触发数据获取
                     console.log('Page became visible. Fetching latest data...');
                     fetchAndRenderData();
                 }
