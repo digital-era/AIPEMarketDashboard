@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Observation List - Market Data</title>
+    <title>Portfolio  Tracker - Market Data Dashboard</title>
     
     <!-- Google Fonts & Your Existing CSS -->
     <link rel="preconnect" href="https://rsms.me/">
@@ -23,8 +23,15 @@
         .dark .skeleton {
             background-color: #374151; /* dark mode skeleton color */
         }
+        .reloading {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
         
-        /* Styles for sortable table headers */
+        /* --- NEW: Styles for sortable table headers --- */
         .sortable-header {
             cursor: pointer;
             -webkit-user-select: none; /* Safari */
@@ -42,6 +49,21 @@
         .dark .sortable-header[data-sort-dir] .sort-indicator {
              color: #e5e7eb; /* Tailwind gray-200 */
         }
+
+        /* --- NEW: Modal Specific Styles --- */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black background */
+            transition: opacity 0.3s ease-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+        .modal-active .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300">
@@ -49,24 +71,126 @@
     <div class="container mx-auto p-4 sm:p-6 lg:p-8">
         
         <!-- Header -->
-        <header class="mb-8">
+        <header class="mb-8 flex justify-between items-start">
             <div>
                 <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Market Data Dashboard</h1>
-                <p id="status-text" class="text-lg text-gray-600 dark:text-dark-subtle mt-1">Observation List</p>
+                <p id="status-text" class="text-lg text-gray-600 dark:text-dark-subtle mt-1">Hotspot Tracker Page</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                 <button id="refresh-button" title="Manual Refresh" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
+                    <svg class="w-5 h-5 reloading" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20 4s-2-2-6-2-8 4-8 4S2 14 6 18s8-4 8-4"></path></svg>
+                </button>
+                <div class="flex items-center">
+                    <label for="auto-refresh-toggle" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Auto Refresh</label>
+                    <input type="checkbox" id="auto-refresh-toggle" class="form-checkbox h-5 w-5 text-indigo-600 rounded">
+                </div>
+                <!-- NEW: Button to open dynamic list configuration modal -->
+                <button id="manage-dynamic-lists-btn" type="button" title="Manage Dynamic Stock Lists" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.515-1.002 1.852-1.002 2.367 0l2.392 4.675 5.176.753c1.002.146 1.402 1.401.677 2.133l-3.755 3.659 1.092 5.155c.18.995-.873 1.775-1.782 1.25L12 18.066l-4.606 2.427c-.909.525-1.962-.255-1.782-1.25l1.092-5.155-3.755-3.659c-.725-.732-.325-1.987.677-2.133l5.176-.753L10.325 4.317z"></path></svg>
+                </button>
+                <button id="theme-toggle" type="button" class="p-2.5 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none rounded-lg">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.121-3.536a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zM4.05 16.95a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zM2 10a1 1 0 011-1h1a1 1 0 110 2H3a1 1 0 01-1-1zm15-1h-1a1 1 0 110-2h1a1 1 0 110 2zm-6.95-6.95a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l-.707-.707z"></path></svg>
+                </button>
             </div>
         </header>
 
+        <!-- Navigation Menu -->
+        <nav class="mb-8">
+            <div class="border-b border-gray-200 dark:border-gray-700">
+                <ul class="flex -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+                    <li class="mr-2"><a href="index.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Market Overview</a></li>
+                    <li class="mr-2"><a href="PotScoreMainFund.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">PotScore MainFund</a></li>
+                    <li class="mr-2"><a href="HotspotTracker.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Hotspot Tracker</a></li>
+                    <li class="mr-2"><a href="PortfolioTracker.html" class="inline-block p-4 text-indigo-600 border-b-2 border-indigo-600 rounded-t-lg active dark:text-indigo-400 dark:border-indigo-400" aria-current="page">Portfolio Tracker</a></li>
+                    <li class="mr-2"><a href="USMarket.html" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">US Market</a></li>  
+                </ul>
+            </div>
+        </nav>
+
         <!-- Main Content Grid -->
         <div class="space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">ETF Hotspot</h2><div id="etf-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div></div>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">A-Share Hotspot</h2><div id="stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div></div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">Hong Kong Stock Hotspot</h2><div id="hk-stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div></div>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (HK Stock)</h2><div id="hk-stock-10days-container" class="overflow-x-auto"></div></div>
+            </div>
+            <div class="grid grid-cols-1">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (A-Share)</h2><div id="stock-10days-container" class="overflow-x-auto"></div></div>
+            </div>
             <div class="grid grid-cols-1">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">Observation List</h2>
                     <div id="stock-observe-container" class="overflow-x-auto"></div>
                 </div>
             </div>
+
+            <!-- MODIFIED: A-Share & HK Dynamic Lists Grid Container -->
+            <!-- This container will be hidden if both lists are empty. -->
+            <div id="dynamic-lists-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- A-Share Dynamic List Card - Will be hidden if its list is empty -->
+                <div id="a-share-dynamic-list-card" class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4">A-Share Dynamic List</h2>
+                    <div id="a-share-dynamic-data-container" class="overflow-x-auto">
+                        <!-- Dynamic A-share data from API will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- HK Dynamic List Card - Will be hidden if its list is empty -->
+                <div id="hk-dynamic-list-card" class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 class="text-xl font-semibold mb-4">HK Dynamic List</h2>
+                    <div id="hk-dynamic-data-container" class="overflow-x-auto">
+                        <!-- Dynamic HK stock data from API will be rendered here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
+    <!-- NEW: Dynamic List Configuration Modal -->
+    <div id="dynamic-list-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-2xl mx-auto modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Manage Dynamic Stock Lists</h3>
+                <button id="close-dynamic-list-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <!-- A-Share Dynamic List Configuration (Moved Here) -->
+            <div class="mb-6">
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">A-Share Dynamic List Configuration</h4>
+                <div class="mb-4 relative">
+                    <input type="text" id="a-share-dynamic-search" placeholder="Enter A-share code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div id="a-share-dynamic-suggestions" class="absolute z-10 w-full"></div>
+                </div>
+                <div id="a-share-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4 p-2 border border-gray-200 dark:border-gray-700 rounded-md min-h-[4rem]">
+                    <!-- Selected A-shares will be rendered here -->
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>
+                </div>
+            </div>
+
+            <!-- HK Dynamic List Configuration (Moved Here) -->
+            <div>
+                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">HK Dynamic List Configuration</h4>
+                <div class="mb-4 relative">
+                    <input type="text" id="hk-dynamic-search" placeholder="Enter HK stock code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
+                    <div id="hk-dynamic-suggestions" class="absolute z-10 w-full"></div>
+                </div>
+                <div id="hk-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4 p-2 border border-gray-200 dark:border-gray-700 rounded-md min-h-[4rem]">
+                    <!-- Selected HK stocks will be rendered here -->
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>
+                </div>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="save-dynamic-list-config" class="px-5 py-2.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save & Refresh Data</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // --- CONFIGURATION ---
@@ -74,28 +198,86 @@
             const GITHUB_REPO = 'AIPEHotTracker';
             const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
             
-            // Simplified data sources to only include the observation list
+            // --- API Trigger configuration ---
+            const VERCEL_TRIGGER_URL = 'https://aipe-hot-tracker.vercel.app/api/trigger';
+            const REFRESH_DELAY_MS = 270000; // 4.5 minutes wait time for backend processing
+            const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
+
             const dataSources = [
-                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true }
+                { id: 'etf', file: 'etf_data.json', renderer: renderTopDownTable },
+                { id: 'stock', file: 'stock_data.json', renderer: renderTopDownTable },
+                { id: 'hk-stock', file: 'hk_stock_data.json', renderer: renderTopDownTable },
+                { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable, isSortable: true },
+                { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable, isSortable: true }, // ADDED: isSortable: true
+                { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
+                // Dynamic List data sources (display only, config in modal)
+                { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true },
+                { id: 'hk-dynamic-data', file: 'hk_stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true } 
             ];
+
+            let autoRefreshInterval;
+            // --- State variable to prevent concurrent refreshes ---
+            let isRefreshing = false;
 
             // --- UI ELEMENTS ---
             const statusText = document.getElementById('status-text');
+            const refreshButton = document.getElementById('refresh-button');
+            const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
+            
+            // NEW: Modal UI elements
+            const manageDynamicListsBtn = document.getElementById('manage-dynamic-lists-btn');
+            const dynamicListModal = document.getElementById('dynamic-list-modal');
+            const closeDynamicListModalBtn = document.getElementById('close-dynamic-list-modal');
+            const saveDynamicListConfigBtn = document.getElementById('save-dynamic-list-config');
 
-            // --- THEME SETUP LOGIC ---
-            // This sets the theme on initial load based on localStorage, but removes the toggle button functionality.
-            if (localStorage.getItem('color-theme') === 'light' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            // Dynamic List UI elements (now inside modal)
+            const aShareDynamicSearchInput = document.getElementById('a-share-dynamic-search');
+            const aShareDynamicSuggestionsDiv = document.getElementById('a-share-dynamic-suggestions');
+            const aShareDynamicSelectedListDiv = document.getElementById('a-share-dynamic-selected-list');
+
+            const hkDynamicSearchInput = document.getElementById('hk-dynamic-search');
+            const hkDynamicSuggestionsDiv = document.getElementById('hk-dynamic-suggestions');
+            const hkDynamicSelectedListDiv = document.getElementById('hk-dynamic-selected-list');
+
+            // --- Global data for autocomplete ---
+            let allAShares = []; // Example: [{ code: '000001', name: '平安银行' }, ...]
+            let allHKShares = []; // Example: [{ code: '00700', name: '腾讯控股' }, ...]
+
+            // --- Local Storage Keys ---
+            const LS_KEY_A_SHARE_DYNAMIC = 'aShareDynamicList';
+            const LS_KEY_HK_DYNAMIC = 'hkDynamicList';
+
+
+            // --- THEME TOGGLE LOGIC (Unchanged) ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+            if (localStorage.getItem('color-theme') === 'light') {
                 document.documentElement.classList.remove('dark');
+                themeToggleDarkIcon.classList.remove('hidden');
             } else {
                 document.documentElement.classList.add('dark');
+                themeToggleLightIcon.classList.remove('hidden');
             }
+            themeToggleBtn.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                themeToggleDarkIcon.classList.toggle('hidden');
+                themeToggleLightIcon.classList.toggle('hidden');
+                const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('color-theme', theme);
+            });
 
-            // Function to generate stock URL
+            // (Unchanged)
             const getStockUrl = (code) => {
+                //const baseUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=`;
                 let baseinitialUrl = 'https://aipeinvestmentagent.pages.dev';
                 const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
                 if (sharedOrigin) {
+                        console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
                         baseinitialUrl = sharedOrigin;
+                } else {
+                        console.log("localStorage 中未找到 sharedReferrerOrigin。");
+                        baseinitialUrl = 'https://aipeinvestmentagent.pages.dev';
                 }
                 const baseUrl = `${baseinitialUrl}/PotScoreFundAnalytics?stock=`;
                 
@@ -105,23 +287,42 @@
                 return `${baseUrl}${encodeURIComponent(codeToEncode)}`;
             };
 
-            // --- DATA RENDERING FUNCTIONS ---
-            const renderSkeleton = (containerId) => {
+            // --- DATA RENDERING FUNCTIONS (Unchanged) ---
+            const renderSkeleton = (containerId, rendererType) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
                 const skeletonRow = `<tr><td class="py-2.5 px-4"><div class="h-4 skeleton w-full"></div></td><td class="py-2.5 px-4"><div class="h-4 skeleton w-3/4"></div></td></tr>`.repeat(5);
-                const skeletonTable = `<div class="w-full"><table class="w-full"><tbody>${skeletonRow}</tbody></table></div>`;
-                container.innerHTML = skeletonTable;
+                const skeletonTable = (title) => `<div class="w-full"><h3 class="text-lg font-medium mb-2 opacity-0">${title}</h3><table class="w-full"><tbody>${skeletonRow}</tbody></table></div>`;
+                if (rendererType === 'flat') container.innerHTML = skeletonTable('');
+                else container.innerHTML = skeletonTable('Top') + skeletonTable('Worst');
             };
+            
+            function renderTopDownTable(containerId, data) {
+                const container = document.getElementById(containerId);
+                if (!container || !data || data.error) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown error'}</p>`; return;
+                }
+                const createTableHTML = (list, title) => {
+                    if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500 dark:text-gray-400">No data.</p></div>`;
+                    let rows = list.map(item => {
+                        const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
+                        const url = getStockUrl(item['代码']);
+                        return `<tr>
+                                    <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                        <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
+                                    </td>
+                                    <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
+                                </tr>`;
+                    }).join('');
+                    return `<div class="w-full"><h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div></div>`;
+                };
+                container.innerHTML = createTableHTML(data.top_up_20, 'Top Performers') + createTableHTML(data.top_down_20, 'Worst Performers');
+            }
             
             function renderAFlatTable(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container || !data || data.error || !Array.isArray(data)) {
                     container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid data'}</p>`; return;
-                }
-                 if (data.length === 0) {
-                    container.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">No data available in the observation list.</p>';
-                    return;
                 }
                 let rows = data.map(item => {
                      const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
@@ -142,8 +343,8 @@
                 const headers = [
                     { label: 'Name', type: 'string' },
                     { label: 'Code', type: 'string' },
-                    { label: 'Change %', type: 'number', align: 'right' },
-                    { label: 'Price', type: 'number', align: 'right' },
+                    { label: 'Change %', type: 'number', align: 'right' }, /* Swapped order */
+                    { label: 'Price', type: 'number', align: 'right' },     /* Swapped order */
                     { label: 'PE(TTM)', type: 'number', align: 'right' },
                     { label: 'PB', type: 'number', align: 'right' },
                     { label: 'Amount(亿)', type: 'number', align: 'right' }
@@ -158,38 +359,284 @@
 
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
+
+            // MODIFIED: renderHKFlatTable to accept isSortable and create sortable headers
+            function renderHKFlatTable(containerId, data, isSortable = false) { 
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                if (!data || data.error || !Array.isArray(data)) {
+                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid data'}</p>`; return;
+                }
+                let rows = data.map(item => {
+                     const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
+                     const url = getStockUrl(item['代码']);
+                     return `<tr>
+                                <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                    <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
+                                </td>
+                                <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
+                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
+                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
+                             </tr>`;
+                }).join('');
+
+                // Define headers for HK Flat Table, similar to A-Share
+                const headers = [
+                    { label: 'Name', type: 'string' },
+                    { label: 'Code', type: 'string' },
+                    { label: 'Change %', type: 'number', align: 'right' }, /* Swapped order */
+                    { label: 'Price', type: 'number', align: 'right' }      /* Swapped order */
+                ];
+
+                const headerHtml = headers.map(h => {
+                    const alignClass = h.align === 'right' ? 'text-right' : '';
+                    if (isSortable) {
+                        // Apply sortable-header class and data-sort-type attribute
+                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
+                    }
+                    return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
+                }).join('');
+
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
+            }
             
+            // --- MODIFIED: This function is now renamed and ONLY fetches/renders data ---
             async function fetchAndRenderData() {
-                statusText.textContent = 'Fetching latest data file...';
+                statusText.textContent = 'Fetching latest data files...';
+                refreshButton.classList.add('reloading');
+                refreshButton.disabled = true;
 
-                // Render skeleton loader
-                renderSkeleton('stock-observe-container');
+                const rendererMap = {
+                    'etf': { renderer: renderTopDownTable, type: 'topdown' },
+                    'stock': { renderer: renderTopDownTable, type: 'topdown' },
+                    'hk-stock': { renderer: renderTopDownTable, type: 'topdown' },
+                    'stock-10days': { renderer: renderAFlatTable, type: 'flat' },
+                    'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' }, // Ensure type is 'flat' for skeleton
+                    'stock-observe': { renderer: renderAFlatTable, type: 'flat' },
+                    'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' },
+                    'hk-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
+                };
+                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
 
-                const source = dataSources[0]; // We only have one source
+                const fetchPromises = dataSources.map(source =>
+                    fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
+                        .then(response => {
+                            if (!response.ok) return Promise.reject(new Error(`HTTP error ${response.status}`));
+                            return response.text();
+                        })
+                        .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
+                        .catch(error => ({ error: error.message, id: source.id }))
+                );
+
+                const results = await Promise.all(fetchPromises);
+                let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
+                results.forEach((data, index) => {
+                    const source = dataSources[index];
+                    const containerId = `${source.id}-container`;
+                    source.renderer(containerId, data, source.isSortable);
+
+                    if (data && !data.error) {
+                        if (Array.isArray(data) && data.length > 0) {
+                            lastUpdateTime1 = data[0].update_time_bjt || lastUpdateTime1;
+                            tradeDate = data[0].trade_date || tradeDate;
+                        } else if (data.update_time_bjt) {
+                            lastUpdateTime2 = data.update_time_bjt;
+                            tradeDate = data.trade_date;
+                        }
+                    }
+                });
+                lastUpdateTime = lastUpdateTime2;
+                if(lastUpdateTime1 > lastUpdateTime2) {
+                    lastUpdateTime = lastUpdateTime1;
+                }
+                statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
                 
+                refreshButton.classList.remove('reloading');
+                refreshButton.disabled = false;
+                isRefreshing = false;
+            }
+
+            // NEW: Functions to manage dynamic lists in localStorage
+            function getDynamicList(key) {
                 try {
-                    const response = await fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error ${response.status}`);
-                    }
-                    const text = await response.text();
-                    const data = JSON.parse(text.replace(/NaN/g, 'null'));
+                    const stored = localStorage.getItem(key);
+                    return stored ? JSON.parse(stored) : [];
+                } catch (e) {
+                    console.error(`Error parsing dynamic list from localStorage for key ${key}:`, e);
+                    return [];
+                }
+            }
 
-                    // Render the data
-                    source.renderer(`${source.id}-container`, data, source.isSortable);
+            function setDynamicList(key, list) {
+                localStorage.setItem(key, JSON.stringify(list));
+            }
 
-                    // Update status text
-                    let lastUpdateTime = "N/A", tradeDate = "N/A";
-                    if (data && !data.error && Array.isArray(data) && data.length > 0) {
-                        lastUpdateTime = data[0].update_time_bjt || "N/A";
-                        tradeDate = data[0].trade_date || "N/A";
+            function addStockToDynamicList(key, stock) {
+                const list = getDynamicList(key);
+                if (!list.some(s => s.code === stock.code)) {
+                    list.push(stock);
+                    setDynamicList(key, list);
+                    renderSelectedDynamicList(key);
+                }
+            }
+
+            function removeStockFromDynamicList(key, code) {
+                let list = getDynamicList(key);
+                list = list.filter(stock => stock.code !== code);
+                setDynamicList(key, list);
+                renderSelectedDynamicList(key);
+            }
+
+            // NEW: Function to control the visibility of dynamic list sections based on localStorage
+            function updateDynamicListVisibility() {
+                const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
+                const hkShareList = getDynamicList(LS_KEY_HK_DYNAMIC);
+                const aShareCard = document.getElementById('a-share-dynamic-list-card');
+                const hkShareCard = document.getElementById('hk-dynamic-list-card');
+                const gridContainer = document.getElementById('dynamic-lists-grid');
+
+                if (!aShareCard || !hkShareCard || !gridContainer) return; // Safety check
+
+                const showA = aShareList && aShareList.length > 0;
+                const showHk = hkShareList && hkShareList.length > 0;
+
+                // Use toggle with a boolean to add/remove the 'hidden' class
+                aShareCard.classList.toggle('hidden', !showA);
+                hkShareCard.classList.toggle('hidden', !showHk);
+
+                // Hide the entire grid container if both cards are hidden
+                gridContainer.classList.toggle('hidden', !showA && !showHk);
+            }
+
+            // NEW: Render selected dynamic list UI (called for elements inside modal)
+            function renderSelectedDynamicList(key) {
+                const listDiv = key === LS_KEY_A_SHARE_DYNAMIC ? aShareDynamicSelectedListDiv : hkDynamicSelectedListDiv;
+                const list = getDynamicList(key);
+                listDiv.innerHTML = ''; // Clear previous entries
+                if (list.length === 0) {
+                    listDiv.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>';
+                    return;
+                }
+                list.forEach(stock => {
+                    const span = document.createElement('span');
+                    span.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-700 dark:text-indigo-100';
+                    span.innerHTML = `
+                        ${stock.name} (${stock.code})
+                        <button type="button" class="ml-2 -mr-0.5 h-4 w-4 inline-flex items-center justify-center rounded-full text-indigo-500 hover:bg-indigo-200 hover:text-indigo-900 dark:hover:bg-indigo-600 dark:hover:text-indigo-50" data-code="${stock.code}">
+                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    `;
+                    span.querySelector('button').addEventListener('click', (e) => {
+                        removeStockFromDynamicList(key, e.currentTarget.dataset.code);
+                    });
+                    listDiv.appendChild(span);
+                });
+            }
+
+            // MODIFIED: Fetch all stock data for autocomplete using FlowInfoBase.json and HKFlowInfoBase.json
+            async function fetchAllStocksData() {
+                try {
+                    const [aShareRes, hkShareRes] = await Promise.all([
+                        fetch(`${DATA_PATH}/FlowInfoBase.json?t=${new Date().getTime()}`),
+                        fetch(`${DATA_PATH}/HKFlowInfoBase.json?t=${new Date().getTime()}`)
+                    ]);
+
+                    if (aShareRes.ok) {
+                        const data = await aShareRes.json();
+                        allAShares = data.map(item => ({ code: item['代码'], name: item['名称'] }));
+                    } else {
+                        console.error('Failed to load FlowInfoBase.json', await aShareRes.text());
                     }
-                     statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
+
+                    if (hkShareRes.ok) {
+                        const data = await hkShareRes.json();
+                        allHKShares = data.map(item => ({ code: item['代码'], name: item['名称'] }));
+                    } else {
+                        console.error('Failed to load HKFlowInfoBase.json', await hkShareRes.text());
+                    }
 
                 } catch (error) {
-                    const data = { error: error.message, id: source.id };
-                    source.renderer(`${source.id}-container`, data, source.isSortable);
-                    statusText.textContent = `Data fetch failed.`;
+                    console.error("Error fetching all stock data for autocomplete:", error);
+                }
+            }
+
+            // NEW: Autocomplete/Search Logic
+            function setupAutoComplete(inputElement, suggestionsDiv, stockList, dynamicListKey) {
+                let timeout = null;
+                inputElement.addEventListener('input', () => {
+                    clearTimeout(timeout);
+                    const query = inputElement.value.trim();
+                    suggestionsDiv.innerHTML = ''; // Clear previous suggestions
+
+                    if (query.length < 2) { return; }
+
+                    timeout = setTimeout(() => {
+                        const lowerQuery = query.toLowerCase();
+                        const filteredStocks = stockList.filter(stock =>
+                            stock.name.toLowerCase().includes(lowerQuery) ||
+                            stock.code.toLowerCase().includes(lowerQuery)
+                        ).slice(0, 10);
+
+                        if (filteredStocks.length > 0) {
+                            const ul = document.createElement('ul');
+                            ul.className = 'bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto';
+                            filteredStocks.forEach(stock => {
+                                const li = document.createElement('li');
+                                li.className = 'px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer text-gray-900 dark:text-gray-100';
+                                li.textContent = `${stock.name} (${stock.code})`;
+                                li.dataset.code = stock.code;
+                                li.dataset.name = stock.name;
+                                li.addEventListener('click', () => {
+                                    addStockToDynamicList(dynamicListKey, { code: stock.code, name: stock.name });
+                                    inputElement.value = '';
+                                    suggestionsDiv.innerHTML = '';
+                                });
+                                ul.appendChild(li);
+                            });
+                            suggestionsDiv.appendChild(ul);
+                        }
+                    }, 300);
+                });
+
+                inputElement.addEventListener('blur', () => {
+                    setTimeout(() => suggestionsDiv.innerHTML = '', 100); 
+                });
+            }
+            
+            async function triggerAndFetchData() {
+                if (isRefreshing) {
+                    console.log("A refresh is already in progress. Please wait.");
+                    return;
+                }
+                isRefreshing = true;
+                refreshButton.disabled = true;
+                refreshButton.classList.add('reloading');
+                
+                const aShareDynamicList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
+                const hkDynamicList = getDynamicList(LS_KEY_HK_DYNAMIC).map(s => s.code);
+
+                try {
+                    const response = await fetch(VERCEL_TRIGGER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            dynamiclist: aShareDynamicList,
+                            dynamicHKlist: hkDynamicList
+                        })
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `Trigger API failed with status ${response.status}`);
+                    }
+                    
+                    setTimeout(() => {
+                        fetchAndRenderData();
+                    }, REFRESH_DELAY_MS);
+
+                } catch (error) {
+                    console.error("Failed to trigger refresh:", error);
+                    statusText.textContent = `Trigger failed: ${error.message}. Attempting to fetch existing data...`;
+                    fetchAndRenderData();
                 }
             }
             
@@ -206,12 +653,10 @@
                     const currentDir = th.dataset.sortDir || 'desc';
                     const newDir = currentDir === 'asc' ? 'desc' : 'asc';
 
-                    // Reset other headers
                     table.querySelectorAll('th.sortable-header').forEach(header => {
                         header.removeAttribute('data-sort-dir');
                         header.querySelector('.sort-indicator').textContent = '';
                     });
-                    // Set current header
                     th.dataset.sortDir = newDir;
                     th.querySelector('.sort-indicator').textContent = newDir === 'asc' ? '▲' : '▼';
 
@@ -239,16 +684,113 @@
                 });
             }
 
-            // --- INITIALIZATION ---
-            function initialize() {
-                statusText.textContent = 'Loading initial data...';
-                setupTableSorting();
-                fetchAndRenderData();
+            // NEW: Modal functions
+            function openDynamicListModal() {
+                dynamicListModal.classList.remove('hidden');
+                dynamicListModal.offsetWidth; 
+                dynamicListModal.classList.add('modal-active');
+                document.body.classList.add('overflow-hidden');
             }
 
-            initialize();
+            function closeDynamicListModal() {
+                dynamicListModal.classList.remove('modal-active');
+                dynamicListModal.addEventListener('transitionend', function handler() {
+                    dynamicListModal.classList.add('hidden');
+                    dynamicListModal.removeEventListener('transitionend', handler);
+                    document.body.classList.remove('overflow-hidden');
+                });
+            }
+
+            // --- EVENT LISTENERS (MODIFIED) ---
+            refreshButton.addEventListener('click', triggerAndFetchData);
+            
+            autoRefreshToggle.addEventListener('change', (e) => {
+                clearInterval(autoRefreshInterval);
+                if (e.target.checked) {
+                    autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS);
+                }
+            });
+
+            manageDynamicListsBtn.addEventListener('click', openDynamicListModal);
+            closeDynamicListModalBtn.addEventListener('click', closeDynamicListModal);
+            dynamicListModal.addEventListener('click', (e) => {
+                if (e.target === dynamicListModal) {
+                    closeDynamicListModal();
+                }
+            });
+
+            // MODIFIED: Added call to update visibility when saving.
+            saveDynamicListConfigBtn.addEventListener('click', () => {
+                updateDynamicListVisibility(); // Update card visibility immediately
+                triggerAndFetchData(); // Refresh data with new dynamic lists
+                closeDynamicListModal(); // Close modal
+            });
+
+            // --- INITIALIZATION (MODIFIED) ---
+            setupTableSorting();
+            
+            (async function initialSetupAndFetch() {
+                statusText.textContent = 'Loading initial data and setting up controls...';
+                refreshButton.disabled = true;
+
+                await fetchAllStocksData();
+
+                setupAutoComplete(aShareDynamicSearchInput, aShareDynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
+                setupAutoComplete(hkDynamicSearchInput, hkDynamicSuggestionsDiv, allHKShares, LS_KEY_HK_DYNAMIC);
+
+                renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
+                renderSelectedDynamicList(LS_KEY_HK_DYNAMIC);
+
+                // NEW: Check and set initial visibility of dynamic list cards on page load
+                updateDynamicListVisibility();
+
+                const rendererMap = {
+                    'etf': { type: 'topdown' }, 'stock': { type: 'topdown' }, 'hk-stock': { type: 'topdown' },
+                    'stock-10days': { type: 'flat' }, 'hk-stock-10days': { type: 'flat' }, 'stock-observe': { type: 'flat' },
+                    'a-share-dynamic-data': { type: 'flat' }, 
+                    'hk-dynamic-data': { type: 'flat' }
+                };
+                Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
+                
+                const initialDataFetchOnly = async () => {
+                    const fetchPromises = dataSources.map(source =>
+                        fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
+                            .then(res => res.ok ? res.text() : Promise.reject(new Error(`HTTP ${res.status}`)))
+                            .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
+                            .catch(err => ({ error: err.message, id: source.id }))
+                    );
+                    const results = await Promise.all(fetchPromises);
+                    let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
+                    results.forEach((data, index) => {
+                        const source = dataSources[index];
+                        source.renderer(`${source.id}-container`, data, source.isSortable);
+                        if (data && !data.error) {
+                            if (Array.isArray(data) && data.length > 0) { lastUpdateTime1 = data[0].update_time_bjt || lastUpdateTime1; tradeDate = data[0].trade_date || tradeDate; } 
+                            else if (data.update_time_bjt) { lastUpdateTime2 = data.update_time_bjt; tradeDate = data.trade_date; }
+                        }
+                    });
+                    lastUpdateTime = lastUpdateTime2;
+                    if(lastUpdateTime1 > lastUpdateTime2) {
+                        lastUpdateTime = lastUpdateTime1;
+                    }
+                    statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
+                    refreshButton.classList.remove('reloading');
+                    refreshButton.disabled = false;
+                };
+                initialDataFetchOnly();
+
+            })();
+
+             // 新增：监听页面可见性变化
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && !isRefreshing) {
+                    // 当页面变为可见且当前没有在刷新时，立即触发数据获取
+                    console.log('Page became visible. Fetching latest data...');
+                    fetchAndRenderData();
+                }
+            });
         });
     </script>
 
 </body>
-</html>```
+</html>
