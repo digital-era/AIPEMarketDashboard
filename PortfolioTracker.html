@@ -398,8 +398,8 @@
                         const workbook1 = XLSX.read(arrayBuffer1, { type: 'array' });
                         const sheetData1 = XLSX.utils.sheet_to_json(workbook1.Sheets[file1.sheet] || []);
                         combinedData.push(...sheetData1);
-                        if (sheetData1.length > 0 && sheetData1[0]['投资组合名称']) {
-                            portfolioName = sheetData1[0]['投资组合名称'];
+                        if (sheetData1.length > 0 && sheetData1[0]['组合名称']) {
+                            portfolioName = sheetData1[0]['组合名称'];
                         }
                     } else {
                         console.warn(`Could not fetch primary file ${file1.filename}.`);
