@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio  Tracker - Market Data Dashboard</title>
+    <title>Portfolio Tracker - Market Data Dashboard</title>
     
     <!-- Google Fonts & Your Existing CSS -->
     <link rel="preconnect" href="https://rsms.me/">
@@ -110,17 +110,6 @@
 
         <!-- Main Content Grid -->
         <div class="space-y-8">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">ETF Hotspot</h2><div id="etf-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div></div>
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">A-Share Hotspot</h2><div id="stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div></div>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">Hong Kong Stock Hotspot</h2><div id="hk-stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div></div>
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (HK Stock)</h2><div id="hk-stock-10days-container" class="overflow-x-auto"></div></div>
-            </div>
-            <div class="grid grid-cols-1">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border"><h2 class="text-xl font-semibold mb-4">10-Day Hotspot Tracking (A-Share)</h2><div id="stock-10days-container" class="overflow-x-auto"></div></div>
-            </div>
             <div class="grid grid-cols-1">
                 <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">Observation List</h2>
@@ -128,22 +117,14 @@
                 </div>
             </div>
 
-            <!-- MODIFIED: A-Share & HK Dynamic Lists Grid Container -->
-            <!-- This container will be hidden if both lists are empty. -->
-            <div id="dynamic-lists-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- MODIFIED: A-Share Dynamic Lists Grid Container -->
+            <!-- This container will be hidden if the list is empty. -->
+            <div id="dynamic-lists-grid" class="grid grid-cols-1 gap-8">
                 <!-- A-Share Dynamic List Card - Will be hidden if its list is empty -->
                 <div id="a-share-dynamic-list-card" class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
                     <h2 class="text-xl font-semibold mb-4">A-Share Dynamic List</h2>
                     <div id="a-share-dynamic-data-container" class="overflow-x-auto">
                         <!-- Dynamic A-share data from API will be rendered here -->
-                    </div>
-                </div>
-
-                <!-- HK Dynamic List Card - Will be hidden if its list is empty -->
-                <div id="hk-dynamic-list-card" class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
-                    <h2 class="text-xl font-semibold mb-4">HK Dynamic List</h2>
-                    <div id="hk-dynamic-data-container" class="overflow-x-auto">
-                        <!-- Dynamic HK stock data from API will be rendered here -->
                     </div>
                 </div>
             </div>
@@ -173,18 +154,6 @@
                 </div>
             </div>
 
-            <!-- HK Dynamic List Configuration (Moved Here) -->
-            <div>
-                <h4 class="text-xl font-semibold mb-3 text-gray-800 dark:text-gray-200">HK Dynamic List Configuration</h4>
-                <div class="mb-4 relative">
-                    <input type="text" id="hk-dynamic-search" placeholder="Enter HK stock code or name to add..." class="w-full p-2.5 rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-indigo-500 focus:border-indigo-500">
-                    <div id="hk-dynamic-suggestions" class="absolute z-10 w-full"></div>
-                </div>
-                <div id="hk-dynamic-selected-list" class="flex flex-wrap gap-2 mb-4 p-2 border border-gray-200 dark:border-gray-700 rounded-md min-h-[4rem]">
-                    <!-- Selected HK stocks will be rendered here -->
-                    <p class="text-sm text-gray-500 dark:text-gray-400">No stocks added yet.</p>
-                </div>
-            </div>
             <div class="flex justify-end mt-6">
                 <button id="save-dynamic-list-config" class="px-5 py-2.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">Save & Refresh Data</button>
             </div>
@@ -204,15 +173,9 @@
             const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
 
             const dataSources = [
-                { id: 'etf', file: 'etf_data.json', renderer: renderTopDownTable },
-                { id: 'stock', file: 'stock_data.json', renderer: renderTopDownTable },
-                { id: 'hk-stock', file: 'hk_stock_data.json', renderer: renderTopDownTable },
-                { id: 'stock-10days', file: 'stock_10days_data.json', renderer: renderAFlatTable, isSortable: true },
-                { id: 'hk-stock-10days', file: 'hk_stock_10days_data.json', renderer: renderHKFlatTable, isSortable: true }, // ADDED: isSortable: true
                 { id: 'stock-observe', file: 'stock_observe_data.json', renderer: renderAFlatTable, isSortable: true },
                 // Dynamic List data sources (display only, config in modal)
-                { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true },
-                { id: 'hk-dynamic-data', file: 'hk_stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true } 
+                { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true }
             ];
 
             let autoRefreshInterval;
@@ -235,17 +198,11 @@
             const aShareDynamicSuggestionsDiv = document.getElementById('a-share-dynamic-suggestions');
             const aShareDynamicSelectedListDiv = document.getElementById('a-share-dynamic-selected-list');
 
-            const hkDynamicSearchInput = document.getElementById('hk-dynamic-search');
-            const hkDynamicSuggestionsDiv = document.getElementById('hk-dynamic-suggestions');
-            const hkDynamicSelectedListDiv = document.getElementById('hk-dynamic-selected-list');
-
             // --- Global data for autocomplete ---
             let allAShares = []; // Example: [{ code: '000001', name: '平安银行' }, ...]
-            let allHKShares = []; // Example: [{ code: '00700', name: '腾讯控股' }, ...]
 
             // --- Local Storage Keys ---
             const LS_KEY_A_SHARE_DYNAMIC = 'aShareDynamicList';
-            const LS_KEY_HK_DYNAMIC = 'hkDynamicList';
 
 
             // --- THEME TOGGLE LOGIC (Unchanged) ---
@@ -297,28 +254,6 @@
                 else container.innerHTML = skeletonTable('Top') + skeletonTable('Worst');
             };
             
-            function renderTopDownTable(containerId, data) {
-                const container = document.getElementById(containerId);
-                if (!container || !data || data.error) {
-                    container.innerHTML = `<p class="text-red-500">Failed to load data: ${data?.error || 'Unknown error'}</p>`; return;
-                }
-                const createTableHTML = (list, title) => {
-                    if (!list || list.length === 0) return `<div class="w-full"><h3 class="text-lg font-medium mb-2">${title}</h3><p class="text-sm text-gray-500 dark:text-gray-400">No data.</p></div>`;
-                    let rows = list.map(item => {
-                        const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                        const url = getStockUrl(item['代码']);
-                        return `<tr>
-                                    <td class="py-2 px-1 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                        <a href="${url}" target="_blank" class="hover:underline">${item['名称']} <span class="text-xs text-gray-400">${item['代码']}</span></a>
-                                    </td>
-                                    <td class="py-2 px-1 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
-                                </tr>`;
-                    }).join('');
-                    return `<div class="w-full"><h3 class="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2">${title}</h3><div class="overflow-hidden rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div></div>`;
-                };
-                container.innerHTML = createTableHTML(data.top_up_20, 'Top Performers') + createTableHTML(data.top_down_20, 'Worst Performers');
-            }
-            
             function renderAFlatTable(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container || !data || data.error || !Array.isArray(data)) {
@@ -359,46 +294,6 @@
 
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
-
-            // MODIFIED: renderHKFlatTable to accept isSortable and create sortable headers
-            function renderHKFlatTable(containerId, data, isSortable = false) { 
-                const container = document.getElementById(containerId);
-                if (!container) return;
-                if (!data || data.error || !Array.isArray(data)) {
-                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid data'}</p>`; return;
-                }
-                let rows = data.map(item => {
-                     const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                     const url = getStockUrl(item['代码']);
-                     return `<tr>
-                                <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                    <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
-                                </td>
-                                <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
-                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
-                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
-                             </tr>`;
-                }).join('');
-
-                // Define headers for HK Flat Table, similar to A-Share
-                const headers = [
-                    { label: 'Name', type: 'string' },
-                    { label: 'Code', type: 'string' },
-                    { label: 'Change %', type: 'number', align: 'right' }, /* Swapped order */
-                    { label: 'Price', type: 'number', align: 'right' }      /* Swapped order */
-                ];
-
-                const headerHtml = headers.map(h => {
-                    const alignClass = h.align === 'right' ? 'text-right' : '';
-                    if (isSortable) {
-                        // Apply sortable-header class and data-sort-type attribute
-                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
-                    }
-                    return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
-                }).join('');
-
-                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
-            }
             
             // --- MODIFIED: This function is now renamed and ONLY fetches/renders data ---
             async function fetchAndRenderData() {
@@ -407,14 +302,8 @@
                 refreshButton.disabled = true;
 
                 const rendererMap = {
-                    'etf': { renderer: renderTopDownTable, type: 'topdown' },
-                    'stock': { renderer: renderTopDownTable, type: 'topdown' },
-                    'hk-stock': { renderer: renderTopDownTable, type: 'topdown' },
-                    'stock-10days': { renderer: renderAFlatTable, type: 'flat' },
-                    'hk-stock-10days': { renderer: renderHKFlatTable, type: 'flat' }, // Ensure type is 'flat' for skeleton
                     'stock-observe': { renderer: renderAFlatTable, type: 'flat' },
-                    'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' },
-                    'hk-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
+                    'a-share-dynamic-data': { renderer: renderAFlatTable, type: 'flat' }
                 };
                 Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
 
@@ -490,27 +379,23 @@
             // NEW: Function to control the visibility of dynamic list sections based on localStorage
             function updateDynamicListVisibility() {
                 const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
-                const hkShareList = getDynamicList(LS_KEY_HK_DYNAMIC);
                 const aShareCard = document.getElementById('a-share-dynamic-list-card');
-                const hkShareCard = document.getElementById('hk-dynamic-list-card');
                 const gridContainer = document.getElementById('dynamic-lists-grid');
 
-                if (!aShareCard || !hkShareCard || !gridContainer) return; // Safety check
+                if (!aShareCard || !gridContainer) return; // Safety check
 
                 const showA = aShareList && aShareList.length > 0;
-                const showHk = hkShareList && hkShareList.length > 0;
 
                 // Use toggle with a boolean to add/remove the 'hidden' class
                 aShareCard.classList.toggle('hidden', !showA);
-                hkShareCard.classList.toggle('hidden', !showHk);
-
-                // Hide the entire grid container if both cards are hidden
-                gridContainer.classList.toggle('hidden', !showA && !showHk);
+                
+                // Hide the entire grid container if card is hidden
+                gridContainer.classList.toggle('hidden', !showA);
             }
 
             // NEW: Render selected dynamic list UI (called for elements inside modal)
             function renderSelectedDynamicList(key) {
-                const listDiv = key === LS_KEY_A_SHARE_DYNAMIC ? aShareDynamicSelectedListDiv : hkDynamicSelectedListDiv;
+                const listDiv = aShareDynamicSelectedListDiv;
                 const list = getDynamicList(key);
                 listDiv.innerHTML = ''; // Clear previous entries
                 if (list.length === 0) {
@@ -533,13 +418,10 @@
                 });
             }
 
-            // MODIFIED: Fetch all stock data for autocomplete using FlowInfoBase.json and HKFlowInfoBase.json
+            // MODIFIED: Fetch all stock data for autocomplete using FlowInfoBase.json
             async function fetchAllStocksData() {
                 try {
-                    const [aShareRes, hkShareRes] = await Promise.all([
-                        fetch(`${DATA_PATH}/FlowInfoBase.json?t=${new Date().getTime()}`),
-                        fetch(`${DATA_PATH}/HKFlowInfoBase.json?t=${new Date().getTime()}`)
-                    ]);
+                    const aShareRes = await fetch(`${DATA_PATH}/FlowInfoBase.json?t=${new Date().getTime()}`);
 
                     if (aShareRes.ok) {
                         const data = await aShareRes.json();
@@ -547,14 +429,6 @@
                     } else {
                         console.error('Failed to load FlowInfoBase.json', await aShareRes.text());
                     }
-
-                    if (hkShareRes.ok) {
-                        const data = await hkShareRes.json();
-                        allHKShares = data.map(item => ({ code: item['代码'], name: item['名称'] }));
-                    } else {
-                        console.error('Failed to load HKFlowInfoBase.json', await hkShareRes.text());
-                    }
-
                 } catch (error) {
                     console.error("Error fetching all stock data for autocomplete:", error);
                 }
@@ -613,7 +487,6 @@
                 refreshButton.classList.add('reloading');
                 
                 const aShareDynamicList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
-                const hkDynamicList = getDynamicList(LS_KEY_HK_DYNAMIC).map(s => s.code);
 
                 try {
                     const response = await fetch(VERCEL_TRIGGER_URL, {
@@ -621,7 +494,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             dynamiclist: aShareDynamicList,
-                            dynamicHKlist: hkDynamicList
+                            dynamicHKlist: [] // Send empty array as HK list is removed
                         })
                     });
                     if (!response.ok) {
@@ -736,19 +609,15 @@
                 await fetchAllStocksData();
 
                 setupAutoComplete(aShareDynamicSearchInput, aShareDynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
-                setupAutoComplete(hkDynamicSearchInput, hkDynamicSuggestionsDiv, allHKShares, LS_KEY_HK_DYNAMIC);
 
                 renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
-                renderSelectedDynamicList(LS_KEY_HK_DYNAMIC);
 
                 // NEW: Check and set initial visibility of dynamic list cards on page load
                 updateDynamicListVisibility();
 
                 const rendererMap = {
-                    'etf': { type: 'topdown' }, 'stock': { type: 'topdown' }, 'hk-stock': { type: 'topdown' },
-                    'stock-10days': { type: 'flat' }, 'hk-stock-10days': { type: 'flat' }, 'stock-observe': { type: 'flat' },
-                    'a-share-dynamic-data': { type: 'flat' }, 
-                    'hk-dynamic-data': { type: 'flat' }
+                    'stock-observe': { type: 'flat' },
+                    'a-share-dynamic-data': { type: 'flat' }
                 };
                 Object.keys(rendererMap).forEach(key => renderSkeleton(`${key}-container`, rendererMap[key].type));
                 
