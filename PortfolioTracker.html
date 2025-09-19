@@ -258,6 +258,7 @@
             };
             
             // NEW: RENDERER FOR THE OBSERVATION LIST FROM EXCEL DATA
+                        // MODIFIED: RENDERER FOR THE OBSERVATION LIST WITH MERGED DYNAMIC DATA
             function renderObservationList(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -278,19 +279,20 @@
                 let rows = data.map(item => {
                     const url = getStockUrl(item['股票代码']);
                     const allocation = (item['配置比例 (%)'] != null && !isNaN(parseFloat(item['配置比例 (%)']))) ? (parseFloat(item['配置比例 (%)'])).toFixed(2) + '%' : '-';
+                    const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
                     
                     return `<tr>
                                 <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                    <a href="${url}" target="_blank" class="hover:underline">${item['股票名称'] || 'N/A'}</a>
+                                    <a href="${url}" target="_blank" class="hover:underline">${item['股票名称'] || item['名称'] || 'N/A'}</a>
                                 </td>
                                 <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['股票代码'] || 'N/A'}</td>
                                 <td class="py-2 px-4 text-right">${allocation}</td>
                                 <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">${item['修改时间'] || 'N/A'}</td>
-                                <!-- Placeholders for original fields -->
-                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
-                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
-                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
-                                <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
+                                <!-- Dynamic fields are now populated -->
+                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
+                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
+                                <td class="py-2 px-4 text-right">${item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td>
+                                <td class="py-2 px-4 text-right">${item.PB != null ? item.PB.toFixed(2) : '-'}</td>
                             </tr>`;
                 }).join('');
 
@@ -299,58 +301,17 @@
                     { label: 'CODE', type: 'string' },
                     { label: '配置比例 (%)', type: 'number', align: 'right' },
                     { label: '修改时间', type: 'string', align: 'right' },
-                    { label: 'Change %', type: 'string', align: 'right' },
-                    { label: 'Price', type: 'string', align: 'right' },
-                    { label: 'PE(TTM)', type: 'string', align: 'right' },
-                    { label: 'PB', type: 'string', align: 'right' },
-                ];
-
-                const headerHtml = headers.map(h => {
-                    const alignClass = h.align === 'right' ? 'text-right' : '';
-                    if (isSortable) {
-                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
-                    }
-                    return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
-                }).join('');
-
-                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
-            }
-
-            // Original renderer, kept for other data sources like dynamic lists
-            function renderAFlatTable(containerId, data, isSortable = false) {
-                const container = document.getElementById(containerId);
-                if (!container || !data || data.error || !Array.isArray(data)) {
-                    container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid data'}</p>`; return;
-                }
-                let rows = data.map(item => {
-                     const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
-                     const url = getStockUrl(item['代码']);
-                     return `<tr>
-                                <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                                    <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
-                                </td>
-                                <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
-                                <td class="py-2 px-4 text-right ${percentClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td>
-                                <td class="py-2 px-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td>
-                                <td class="py-2 px-4 text-right">${item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td>
-                                <td class="py-2 px-4 text-right">${item.PB != null ? item.PB.toFixed(2) : '-'}</td>
-                                <td class="py-2 px-4 text-right">${item.Amount != null ? item.Amount.toFixed(2) : '-'}</td>
-                            </tr>`;
-                }).join('');
-                
-                const headers = [
-                    { label: 'Name', type: 'string' },
-                    { label: 'Code', type: 'string' },
                     { label: 'Change %', type: 'number', align: 'right' },
                     { label: 'Price', type: 'number', align: 'right' },
                     { label: 'PE(TTM)', type: 'number', align: 'right' },
                     { label: 'PB', type: 'number', align: 'right' },
-                    { label: 'Amount(亿)', type: 'number', align: 'right' }
                 ];
+
                 const headerHtml = headers.map(h => {
                     const alignClass = h.align === 'right' ? 'text-right' : '';
+                    const sortType = h.type || 'string'; // Default to string sort
                     if (isSortable) {
-                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
+                        return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${sortType}">${h.label}<span class="sort-indicator"></span></th>`;
                     }
                     return `<th class="px-4 py-3 ${alignClass}">${h.label}</th>`;
                 }).join('');
@@ -443,6 +404,7 @@
 
 
             // MODIFIED: This function now handles both Excel and JSON data sources
+                        // MODIFIED: This function now handles both Excel and JSON data sources
             async function fetchAndRenderData() {
                 statusText.textContent = 'Fetching latest data files...';
                 refreshButton.classList.add('reloading');
@@ -450,58 +412,76 @@
 
                 // Render skeletons for all containers
                 renderSkeleton('stock-observe-container', 'flat');
-                dataSources.forEach(source => renderSkeleton(`${source.id}-container`, 'flat'));
+                // The other skeleton render is now part of the promise handling below
+                // dataSources.forEach(source => renderSkeleton(`${source.id}-container`, 'flat'));
                 
                 // --- Fetching Logic ---
                 // 1. Start fetching portfolio data from Excel files
                 const portfolioPromise = getPortfolioData();
                 
                 // 2. Start fetching other data from JSON files
-                const jsonFetchPromises = dataSources.map(source =>
-                    fetch(`${DATA_PATH}/${source.file}?t=${new Date().getTime()}`)
-                        .then(response => {
-                            if (!response.ok) return Promise.reject(new Error(`HTTP error ${response.status}`));
-                            return response.text();
-                        })
-                        .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
-                        .catch(error => ({ error: error.message, id: source.id }))
-                );
+                // We assume the first dataSource is the one containing all dynamic data for merging
+                const dynamicDataPromise = fetch(`${DATA_PATH}/${dataSources[0].file}?t=${new Date().getTime()}`)
+                    .then(response => {
+                        if (!response.ok) return Promise.reject(new Error(`HTTP error ${response.status}`));
+                        return response.text();
+                    })
+                    .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
+                    .catch(error => ({ error: error.message, id: dataSources[0].id }));
 
                 // 3. Wait for all fetches to complete
-                const [portfolioResult, ...otherResults] = await Promise.all([portfolioPromise, ...jsonFetchPromises]);
+                const [portfolioResult, dynamicData] = await Promise.all([portfolioPromise, dynamicDataPromise]);
                 const { portfolioData, portfolioName } = portfolioResult;
 
+                // --- Data Merging Logic (NEW) ---
+                let enrichedPortfolioData = [];
+                if (portfolioData && !portfolioData.error && dynamicData && !dynamicData.error) {
+                    // Create a lookup map for faster access to dynamic data
+                    const dynamicDataMap = new Map(dynamicData.map(item => [String(item['代码']), item]));
+                    
+                    // Enrich the portfolio data with dynamic information
+                    enrichedPortfolioData = portfolioData.map(portfolioItem => {
+                        const stockCode = String(portfolioItem['股票代码']);
+                        const marketData = dynamicDataMap.get(stockCode);
+                        
+                        // Merge market data into the portfolio item
+                        if (marketData) {
+                            return { ...portfolioItem, ...marketData };
+                        }
+                        return portfolioItem; // Return original if no market data found
+                    });
+                } else {
+                    // Handle cases where one of the fetches failed
+                    enrichedPortfolioData = portfolioData.error ? portfolioData : portfolioData;
+                }
+
                 // --- Rendering Logic ---
-                // 1. Render the Observation List with its special data and dynamic title
+                // 1. Render the Observation List with the new ENRICHED data and dynamic title
                 const titleElement = document.getElementById('observation-list-title');
                 if (titleElement && portfolioName) {
                     titleElement.textContent = portfolioName;
                 }
-                renderObservationList('stock-observe-container', portfolioData, true);
+                renderObservationList('stock-observe-container', enrichedPortfolioData, true);
 
 
-                // 2. Render other data sources as before
-                let lastUpdateTime = "N/A", lastUpdateTime1 = "N/A", lastUpdateTime2 = "N/A", tradeDate = "N/A";
-                otherResults.forEach((data, index) => {
-                    const source = dataSources[index];
-                    const containerId = `${source.id}-container`;
-                    source.renderer(containerId, data, source.isSortable);
-
-                     if (data && !data.error) {
-                        if (Array.isArray(data) && data.length > 0) {
-                            lastUpdateTime1 = data[0].update_time_bjt || lastUpdateTime1;
-                            tradeDate = data[0].trade_date || tradeDate;
-                        } else if (data.update_time_bjt) {
-                            lastUpdateTime2 = data.update_time_bjt;
-                            tradeDate = data.trade_date;
+                // 2. Render other data sources as before (e.g., A-Share Dynamic List)
+                let lastUpdateTime = "N/A", tradeDate = "N/A";
+                dataSources.forEach((source, index) => {
+                    // We already fetched and used the first source (dynamicData)
+                    // You might want to adjust this if you have more than one JSON source
+                    if (index === 0) {
+                        const containerId = `${source.id}-container`;
+                        source.renderer(containerId, dynamicData, source.isSortable);
+                        
+                        if (dynamicData && !dynamicData.error) {
+                            if (Array.isArray(dynamicData) && dynamicData.length > 0) {
+                                lastUpdateTime = dynamicData[0].update_time_bjt || lastUpdateTime;
+                                tradeDate = dynamicData[0].trade_date || tradeDate;
+                            }
                         }
                     }
                 });
 
-                lastUpdateTime = lastUpdateTime2;
-                if(lastUpdateTime1 > lastUpdateTime2) {
-                    lastUpdateTime = lastUpdateTime1;
-                }
                 statusText.textContent = `Last updated (BJT): ${lastUpdateTime} | Trade Date: ${tradeDate}`;
                 
                 refreshButton.classList.remove('reloading');
