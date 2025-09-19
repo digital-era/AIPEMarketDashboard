@@ -176,11 +176,6 @@
             const REFRESH_DELAY_MS = 270000; // 4.5 minutes wait time for backend processing
             const AUTO_REFRESH_INTERVAL_MS = 300000; // 5 minutes (5 * 60 * 1000)
             
-            // --- DATA SOURCES (REMOVED 'stock-observe') ---
-            const dataSources = [
-                { id: 'a-share-dynamic-data', file: 'stock_dynamic_data.json', renderer: renderAFlatTable, isSortable: true }
-            ];
-
             let autoRefreshInterval;
             // --- State variable to prevent concurrent refreshes ---
             let isRefreshing = false;
@@ -302,7 +297,6 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
-            // --- MODIFIED: Added special handling for 'cash' code 100000 ---
             function renderObservationList(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -382,7 +376,6 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
-            // --- MODIFIED: Reverted to strict timestamp filtering per user feedback ---
             async function getPortfolioData() {
                 const file1 = { 
                     user: 'digital-era', repo: 'AIPEInvestmentAgent', branch: 'main',
@@ -426,15 +419,12 @@
                         return { portfolioData: [], portfolioName: portfolioName };
                     }
                     
-                    // Step 1: Find the single latest modification time across all records.
                     const maxTimestamp = combinedData.reduce((max, row) => {
                         return (row['修改时间'] != null && row['修改时间'] > max) ? row['修改时间'] : max;
                     }, 0);
 
-                    // Step 2: Filter the combined list to keep only records matching that latest timestamp.
                     const latestRecords = combinedData.filter(row => row['修改时间'] === maxTimestamp);
 
-                    // Step 3: Deduplicate the filtered list to ensure one entry per stock code.
                     const uniqueLatestRecords = [];
                     const seenCodes = new Set();
                     for (const record of latestRecords) {
@@ -453,7 +443,6 @@
                 }
             }
             
-            // --- REFACTORED DATA FETCHING LOGIC (Unchanged from previous version) ---
             async function fetchExistingDataOnly() {
                 statusText.textContent = 'Fetching existing data...';
                 refreshButton.classList.add('reloading');
@@ -469,15 +458,17 @@
                 const { portfolioData, portfolioName } = portfolioResult;
                 
                 let enrichedPortfolioData = [];
-                if (portfolioData && !portfolioData.error && allDynamicData && !allDynamicData.error) {
-                    const dynamicDataMap = new Map(allDynamicData.map(item => [String(item['代码']), item]));
-                    enrichedPortfolioData = portfolioData.map(portfolioItem => {
-                        const stockCode = String(portfolioItem['股票代码']);
-                        const marketData = dynamicDataMap.get(stockCode);
-                        return marketData ? { ...portfolioItem, ...marketData } : portfolioItem;
-                    });
-                } else {
-                    enrichedPortfolioData = portfolioData; 
+                if (portfolioData && !portfolioData.error) {
+                    if (allDynamicData && !allDynamicData.error) {
+                        const dynamicDataMap = new Map(allDynamicData.map(item => [String(item['代码']), item]));
+                        enrichedPortfolioData = portfolioData.map(portfolioItem => {
+                            const stockCode = String(portfolioItem['股票代码']);
+                            const marketData = dynamicDataMap.get(stockCode);
+                            return marketData ? { ...portfolioItem, ...marketData } : portfolioItem;
+                        });
+                    } else {
+                        enrichedPortfolioData = portfolioData; 
+                    }
                 }
                 
                 const titleElement = document.getElementById('observation-list-title');
@@ -487,12 +478,14 @@
                 renderObservationList('stock-observe-container', enrichedPortfolioData, true);
 
                 const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
-                if (aShareList.length > 0 && allDynamicData && !allDynamicData.error) {
-                    const aShareCodes = new Set(aShareList.map(s => s.code));
-                    const dynamicDataForAShareList = allDynamicData.filter(item => aShareCodes.has(String(item['代码'])));
-                    renderAFlatTable('a-share-dynamic-data-container', dynamicDataForAShareList, true);
-                } else if (aShareList.length > 0) {
-                     renderAFlatTable('a-share-dynamic-data-container', [], true);
+                if (aShareList.length > 0) {
+                    if(allDynamicData && !allDynamicData.error) {
+                        const aShareCodes = new Set(aShareList.map(s => s.code));
+                        const dynamicDataForAShareList = allDynamicData.filter(item => aShareCodes.has(String(item['代码'])));
+                        renderAFlatTable('a-share-dynamic-data-container', dynamicDataForAShareList, true);
+                    } else {
+                        renderAFlatTable('a-share-dynamic-data-container', [], true);
+                    }
                 }
                 
                 let lastUpdateTime = "N/A", tradeDate = "N/A";
@@ -506,7 +499,6 @@
                 isRefreshing = false;
             }
 
-            // --- MODIFIED: Added filtering for 'cash' code 100000 before API call ---
             async function triggerAndFetchData() {
                 if (isRefreshing) {
                     console.log("A refresh is already in progress. Please wait.");
@@ -528,12 +520,11 @@
                     const aShareDynamicListCodes = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
                     
                     const allCodesSet = new Set([...portfolioCodes, ...aShareDynamicListCodes]);
-                    // Filter out the special "cash" code before sending to API
                     const allCodesToRefresh = Array.from(allCodesSet).filter(code => code !== '100000');
                     
-                    if (allCodesToRefresh.length === 0) {
+                    if (portfolioData.length > 0 && allCodesToRefresh.length === 0) {
                         statusText.textContent = 'No stocks to refresh. Rendering static data.';
-                        renderObservationList('stock-observe-container', portfolioData, true); // Render portfolio data without dynamic info
+                        renderObservationList('stock-observe-container', portfolioData, true);
                         renderAFlatTable('a-share-dynamic-data-container', [], true);
                         isRefreshing = false;
                         refreshButton.classList.remove('reloading');
@@ -631,7 +622,7 @@
             }
 
             function updateDynamicListVisibility() {
-                const aShareList = getDynamicList(LS_KEY_A_ SHARE_DYNAMIC);
+                const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                 const aShareCard = document.getElementById('a-share-dynamic-list-card');
                 const gridContainer = document.getElementById('dynamic-lists-grid');
 
@@ -806,7 +797,6 @@
                 closeDynamicListModal();
             });
             
-            // MODIFIED: Simplified initial setup and fetch logic
             (async function initialSetupAndFetch() {
                 statusText.textContent = 'Loading initial data and setting up controls...';
                 refreshButton.disabled = true;
@@ -823,7 +813,6 @@
                 await fetchExistingDataOnly();
             })();
 
-            // MODIFIED: Page visibility change now does a less intensive refresh
             document.addEventListener('visibilitychange', function() {
                 if (document.visibilityState === 'visible' && !isRefreshing) {
                     console.log('Page became visible. Fetching existing data...');
