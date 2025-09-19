@@ -302,6 +302,7 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
+            // --- MODIFIED: Added special handling for 'cash' code 100000 ---
             function renderObservationList(containerId, data, isSortable = false) {
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -320,6 +321,26 @@
                 }
 
                 let rows = data.map(item => {
+                    const stockCodeStr = String(item['股票代码'] || '');
+
+                    // Special handling for the "cash" entry (code '100000')
+                    if (stockCodeStr === '100000') {
+                        const allocation = (item['配置比例 (%)'] != null && !isNaN(parseFloat(item['配置比例 (%)']))) ? (parseFloat(item['配置比例 (%)'])).toFixed(2) + '%' : '-';
+                        return `<tr>
+                                    <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                                        ${item['股票名称'] || '现金'}
+                                    </td>
+                                    <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['股票代码']}</td>
+                                    <td class="py-2 px-4 text-right">${allocation}</td>
+                                    <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">${item['修改时间'] || 'N/A'}</td>
+                                    <td class="py-2 px-4 text-right text-gray-500 dark:text-gray-400">-</td>
+                                    <td class="py-2 px-4 text-right">1.00</td>
+                                    <td class="py-2 px-4 text-right">-</td>
+                                    <td class="py-2 px-4 text-right">-</td>
+                                </tr>`;
+                    }
+                    
+                    // Original logic for all other stocks
                     const url = getStockUrl(item['股票代码']);
                     const allocation = (item['配置比例 (%)'] != null && !isNaN(parseFloat(item['配置比例 (%)']))) ? (parseFloat(item['配置比例 (%)'])).toFixed(2) + '%' : '-';
                     const percentClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500';
@@ -361,7 +382,7 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
             
-            // MODIFIED AND IMPROVED: getPortfolioData function with robust merging logic
+            // --- MODIFIED: Reverted to strict timestamp filtering per user feedback ---
             async function getPortfolioData() {
                 const file1 = { 
                     user: 'digital-era', repo: 'AIPEInvestmentAgent', branch: 'main',
@@ -405,20 +426,25 @@
                         return { portfolioData: [], portfolioName: portfolioName };
                     }
                     
-                    const latestRecordsMap = new Map();
-                    for (const record of combinedData) {
-                        const stockCode = record['股票代码'];
-                        if (!stockCode) continue;
+                    // Step 1: Find the single latest modification time across all records.
+                    const maxTimestamp = combinedData.reduce((max, row) => {
+                        return (row['修改时间'] != null && row['修改时间'] > max) ? row['修改时间'] : max;
+                    }, 0);
 
-                        const existingRecord = latestRecordsMap.get(stockCode);
-                        if (!existingRecord || (record['修改时间'] != null && record['修改时间'] >= (existingRecord['修改时间'] || 0))) {
-                            latestRecordsMap.set(stockCode, { ...existingRecord, ...record });
-                        } else {
-                            latestRecordsMap.set(stockCode, { ...record, ...existingRecord });
+                    // Step 2: Filter the combined list to keep only records matching that latest timestamp.
+                    const latestRecords = combinedData.filter(row => row['修改时间'] === maxTimestamp);
+
+                    // Step 3: Deduplicate the filtered list to ensure one entry per stock code.
+                    const uniqueLatestRecords = [];
+                    const seenCodes = new Set();
+                    for (const record of latestRecords) {
+                        const stockCode = record['股票代码'];
+                        if (stockCode && !seenCodes.has(stockCode)) {
+                            uniqueLatestRecords.push(record);
+                            seenCodes.add(stockCode);
                         }
                     }
-
-                    const uniqueLatestRecords = Array.from(latestRecordsMap.values());
+                    
                     return { portfolioData: uniqueLatestRecords, portfolioName: portfolioName };
 
                 } catch (error) {
@@ -427,9 +453,7 @@
                 }
             }
             
-            // --- NEW AND REFACTORED DATA FETCHING LOGIC ---
-
-            // NEW: Fetches only existing data files. Used for initial load and tab visibility change.
+            // --- REFACTORED DATA FETCHING LOGIC (Unchanged from previous version) ---
             async function fetchExistingDataOnly() {
                 statusText.textContent = 'Fetching existing data...';
                 refreshButton.classList.add('reloading');
@@ -482,7 +506,7 @@
                 isRefreshing = false;
             }
 
-            // NEW: The main function to trigger a full backend refresh and render all data.
+            // --- MODIFIED: Added filtering for 'cash' code 100000 before API call ---
             async function triggerAndFetchData() {
                 if (isRefreshing) {
                     console.log("A refresh is already in progress. Please wait.");
@@ -499,13 +523,17 @@
                 try {
                     const { portfolioData, portfolioName } = await getPortfolioData();
                     if (portfolioData.error) throw new Error(`Failed to get portfolio: ${portfolioData.error}`);
+                    
                     const portfolioCodes = portfolioData.map(item => String(item['股票代码']));
                     const aShareDynamicListCodes = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
-                    const allCodesToRefresh = [...new Set([...portfolioCodes, ...aShareDynamicListCodes])];
+                    
+                    const allCodesSet = new Set([...portfolioCodes, ...aShareDynamicListCodes]);
+                    // Filter out the special "cash" code before sending to API
+                    const allCodesToRefresh = Array.from(allCodesSet).filter(code => code !== '100000');
                     
                     if (allCodesToRefresh.length === 0) {
-                        statusText.textContent = 'No stocks to refresh.';
-                        renderObservationList('stock-observe-container', [], true);
+                        statusText.textContent = 'No stocks to refresh. Rendering static data.';
+                        renderObservationList('stock-observe-container', portfolioData, true); // Render portfolio data without dynamic info
                         renderAFlatTable('a-share-dynamic-data-container', [], true);
                         isRefreshing = false;
                         refreshButton.classList.remove('reloading');
@@ -603,7 +631,7 @@
             }
 
             function updateDynamicListVisibility() {
-                const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
+                const aShareList = getDynamicList(LS_KEY_A_ SHARE_DYNAMIC);
                 const aShareCard = document.getElementById('a-share-dynamic-list-card');
                 const gridContainer = document.getElementById('dynamic-lists-grid');
 
