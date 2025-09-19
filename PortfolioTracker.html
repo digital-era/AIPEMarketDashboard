@@ -359,6 +359,7 @@
             }
             
             // MODIFIED: FUNCTION TO FETCH AND PROCESS THE TWO EXCEL FILES WITH ENHANCED LOGIC
+                       // MODIFIED: FUNCTION TO FETCH AND PROCESS THE TWO EXCEL FILES WITH ENHANCED LOGIC
             async function getPortfolioData() {
                 const file1 = { // AIPEEarningYield.xlsx (Primary)
                     user: 'digital-era', repo: 'AIPEInvestmentAgent', branch: 'main',
@@ -371,75 +372,68 @@
 
                 const buildUrl = (file) => `https://raw.githubusercontent.com/${file.user}/${file.repo}/${file.branch}/${file.dir}/${file.filename}?t=${new Date().getTime()}`;
                 
-                let sheetData1 = [];
-                let sheetData2 = [];
+                let combinedData = [];
                 let portfolioName = null;
 
                 try {
                     // Step 1: Fetch and process the primary file (AIPEEarningYield.xlsx)
                     const res1 = await fetch(buildUrl(file1));
                     if (!res1.ok) {
-                        throw new Error(`Failed to fetch primary file ${file1.filename}: ${res1.statusText}`);
-                    }
-                    const arrayBuffer1 = await res1.arrayBuffer();
-                    const workbook1 = XLSX.read(arrayBuffer1, { type: 'array' });
-                    sheetData1 = XLSX.utils.sheet_to_json(workbook1.Sheets[file1.sheet] || []);
-                    
-                    // Extract portfolio name from the first valid row of the primary file
-                    if (sheetData1.length > 0 && sheetData1[0]['投资组合名称']) {
-                        portfolioName = sheetData1[0]['投资组合名称'];
-                    }
-
-                    // Step 2: Try to fetch and process the secondary file (AIPEPortfolio.xlsx)
-                    try {
-                        const res2 = await fetch(buildUrl(file2));
-                        if (res2.ok) {
-                            const arrayBuffer2 = await res2.arrayBuffer();
-                            const workbook2 = XLSX.read(arrayBuffer2, { type: 'array' });
-                            sheetData2 = XLSX.utils.sheet_to_json(workbook2.Sheets[file2.sheet] || []);
-                        } else {
-                            console.warn(`Could not fetch secondary file ${file2.filename}. Proceeding with primary file data only.`);
+                        console.warn(`Could not fetch primary file ${file1.filename}. It will be skipped.`);
+                    } else {
+                        const arrayBuffer1 = await res1.arrayBuffer();
+                        const workbook1 = XLSX.read(arrayBuffer1, { type: 'array' });
+                        const sheetData1 = XLSX.utils.sheet_to_json(workbook1.Sheets[file1.sheet] || []);
+                        combinedData.push(...sheetData1);
+                        
+                        // Extract portfolio name from the first valid row of the primary file
+                        if (sheetData1.length > 0 && sheetData1[0]['投资组合名称']) {
+                            portfolioName = sheetData1[0]['投资组合名称'];
                         }
-                    } catch (secondaryError) {
-                        console.warn(`Error fetching secondary file ${file2.filename}:`, secondaryError);
-                        // Proceed without sheetData2
                     }
 
-                    // Step 3: Merge the data
-                    const getLatestRecords = (rows) => {
-                        const latest = new Map();
-                        for (const row of rows) {
-                            // Use a consistent key, e.g., '组合名称' if available, otherwise use extracted portfolioName
-                            const groupName = row['组合名称'] || portfolioName;
-                            if (!groupName || !row['股票代码'] || row['修改时间'] === undefined) continue;
-                            const key = `${groupName}|${row['股票代码']}`;
-                            const existing = latest.get(key);
-                            if (!existing || String(row['修改时间']) > String(existing['修改时间'])) {
-                                latest.set(key, row);
-                            }
-                        }
-                        return latest;
-                    };
-
-                    const latestData1 = getLatestRecords(sheetData1);
-                    const latestData2 = getLatestRecords(sheetData2);
+                    // Step 2: Fetch and process the secondary file (AIPEPortfolio.xlsx)
+                    const res2 = await fetch(buildUrl(file2));
+                    if (!res2.ok) {
+                        console.warn(`Could not fetch secondary file ${file2.filename}. It will be skipped.`);
+                    } else {
+                        const arrayBuffer2 = await res2.arrayBuffer();
+                        const workbook2 = XLSX.read(arrayBuffer2, { type: 'array' });
+                        const sheetData2 = XLSX.utils.sheet_to_json(workbook2.Sheets[file2.sheet] || []);
+                        combinedData.push(...sheetData2);
+                    }
                     
-                    const mergedData = new Map(latestData1);
+                    // Step 3: Find the latest modification time from the combined data
+                    if (combinedData.length === 0) {
+                        // If both files failed to load, return an empty result
+                        return { portfolioData: [], portfolioName: portfolioName };
+                    }
 
-                    for (const [key, record2] of latestData2.entries()) {
-                        const record1 = mergedData.get(key);
-                        if (record1) {
-                            if (String(record2['修改时间']) > String(record1['修改时间'])) {
-                                const updatedRecord = { ...record1, '配置比例 (%)': record2['配置比例 (%)'], '修改时间': record2['修改时间'] };
-                                mergedData.set(key, updatedRecord);
-                            }
-                        } else {
-                            mergedData.set(key, record2);
+                    let maxTimestamp = combinedData.reduce((max, row) => {
+                        const currentTime = row['修改时间'];
+                        // Ensure the current time is valid and greater than the max found so far
+                        if (currentTime != null && currentTime > max) {
+                            return currentTime;
+                        }
+                        return max;
+                    }, 0); // Start with a sensible default like 0 or the first valid timestamp
+
+                    // Step 4: Filter the records to keep only those with the latest timestamp
+                    const latestRecords = combinedData.filter(row => row['修改时间'] === maxTimestamp);
+
+                    // Step 5: Deduplicate records based on stock code, in case the exact same record exists in both files
+                    const uniqueLatestRecords = [];
+                    const seenCodes = new Set();
+                    for (const record of latestRecords) {
+                        const stockCode = record['股票代码'];
+                        if (stockCode && !seenCodes.has(stockCode)) {
+                            uniqueLatestRecords.push(record);
+                            seenCodes.add(stockCode);
                         }
                     }
                     
-                    // Return both data and the extracted name
-                    return { portfolioData: Array.from(mergedData.values()), portfolioName: portfolioName };
+                    // Return the filtered data and the extracted name
+                    return { portfolioData: uniqueLatestRecords, portfolioName: portfolioName };
 
                 } catch (error) {
                     console.error("Error fetching or processing portfolio data:", error);
