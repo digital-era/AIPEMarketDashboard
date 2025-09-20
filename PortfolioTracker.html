@@ -298,21 +298,16 @@
                 ui.statusText.textContent = 'Fetching existing data...';
                 ui.refreshButton.classList.add('reloading'); ui.refreshButton.disabled = true;
     
-                // FIXED: Fetch both A-share and HK-share dynamic data
-                const aShareDynamicUrl = `${DATA_PATH}/stock_dynamic_data_portfolio.json?t=${Date.now()}`;
-                const hkShareDynamicUrl = `${DATA_PATH}/hk_stock_dynamic_data_portfolio.json?t=${Date.now()}`;
-
-                const [aShareRes, hkShareRes] = await Promise.all([
-                    fetch(aShareDynamicUrl),
-                    fetch(hkShareDynamicUrl)
-                ]);
-
-                const aShareData = aShareRes.ok ? await aShareRes.json() : [];
-                const hkShareData = hkShareRes.ok ? await hkShareRes.json() : [];
-
-                if (isInitialLoad && !aShareRes.ok && !hkShareRes.ok) {
-                    ui.statusText.textContent = 'Initial data not found. Triggering a refresh...';
-                    triggerAndFetchData(); return;
+                // FIXED: Fetch all dynamic data from the single, correct file.
+                const dynamicDataUrl = `${DATA_PATH}/stock_dynamic_data_portfolio.json?t=${Date.now()}`;
+                const response = await fetch(dynamicDataUrl).catch(e => ({ ok: false }));
+                const combinedDynamicData = response.ok ? await response.json() : [];
+                
+                // If the single data file is missing on initial load, then trigger a refresh.
+                if (isInitialLoad && !response.ok) { 
+                    ui.statusText.textContent = 'Initial data not found. Triggering a refresh...'; 
+                    triggerAndFetchData(); 
+                    return; 
                 }
                 
                 const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ getPortfolioData('大智投资组合收益', '大智投资组合'), getPortfolioData('大成投资组合收益', '大成投资组合'), getPortfolioData('我的投资组合收益', '我的投资组合'), fetchModelPortfolioData('大智模型'), fetchModelPortfolioData('大成模型'), fetchBreakthroughTargets() ]);
