@@ -206,7 +206,56 @@
             // --- DATA FETCHING ---
             async function getPortfolioData(yieldSheetName, portfolioSheetName) { const file1 = { user: 'digital-era', repo: 'AIPEInvestmentAgent', dir: 'data', filename: 'AIPEEarningYield.xlsx', sheet: yieldSheetName }; const file2 = { user: 'digital-era', repo: 'AIPEPortfolioTracker', dir: 'data', filename: 'AIPEPortfolio.xlsx', sheet: portfolioSheetName }; const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`; let combinedData = [], portfolioName = null; try { const [res1, res2] = await Promise.all([fetch(buildUrl(file1)), fetch(buildUrl(file2))]); if (res1.ok) { const d = XLSX.utils.sheet_to_json(XLSX.read(await res1.arrayBuffer()).Sheets[file1.sheet] || []); if (Array.isArray(d)) { combinedData.push(...d); if (d.length > 0 && d[0]['组合名称']) portfolioName = d[0]['组合名称']; } } if (res2.ok) { const d = XLSX.utils.sheet_to_json(XLSX.read(await res2.arrayBuffer()).Sheets[file2.sheet] || []); if (Array.isArray(d)) combinedData.push(...d); } if (combinedData.length === 0) return { portfolioData: [], portfolioName }; let maxTimestamp = 0; for (const row of combinedData) { const ts = row['修改时间']; if (ts != null && !isNaN(parseFloat(ts)) && ts > maxTimestamp) { maxTimestamp = ts; } } if (maxTimestamp === 0) { console.warn(`No valid timestamps found for ${portfolioSheetName}.`); return { portfolioData: [], portfolioName }; } const latest = combinedData.filter(r => r['修改时间'] === maxTimestamp); const unique = Array.from(new Map(latest.map(item => [item['股票代码'], item])).values()); return { portfolioData: unique, portfolioName }; } catch (error) { console.error(`Error fetching portfolio for ${portfolioSheetName}:`, error); return { portfolioData: { error: error.message }, portfolioName: null }; } }
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
-            async function fetchBreakthroughTargets() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\\d{2}-\\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: "标的策略 file not found." }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!reports) return { data: [] }; const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{6})\)/; const factorsRe = /因子数值 .*?: (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p=>parseFloat(p.split(': ')[1])).every(v=>!isNaN(v)&&v>0); if (allPositive) acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } return acc; }, []); return { data: stocks }; } catch (error) { return { error: error.message }; } }
+
+            async function fetchBreakthroughTargets() {
+                const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/';
+                try {
+                    const res = await fetch(API_URL);
+                    if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`);
+                    const files = await res.json();
+                    const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/;
+                    const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0];
+                    if (!latest) return { error: "标的策略 file not found." };
+                    const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`);
+                    if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`);
+                    const json = await dataRes.json();
+                    const reports = json?.步骤2_交易策略分析?.买入信号标的报告;
+                    
+                    if (!Array.isArray(reports)) {
+                        console.warn("'买入信号标的报告' not found or is not an array in the JSON file.");
+                        return { data: [] };
+                    }
+
+                    const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{6})\)/;
+                    // 【关键修改】使用更精确的正则表达式来提取因子数值
+                    const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/;
+
+                    const stocks = reports.reduce((acc, text) => {
+                        const nameCodeMatch = text.match(nameCodeRe);
+                        const factorsMatch = text.match(factorsRe);
+
+                        if (nameCodeMatch && factorsMatch) {
+                            // 现在 factorsMatch[1] 能正确捕获到完整的因子字符串
+                            // 例如: "主力净流入-净占比: 9.1100, PotScore: 0.7800, 超大单净流入-净额: 46678148"
+                            const allPositive = factorsMatch[1].split(', ').map(p => {
+                                const parts = p.split(': ');
+                                // 确保分割后有两部分，避免出错
+                                return parts.length > 1 ? parseFloat(parts[1]) : NaN; 
+                            }).every(v => !isNaN(v) && v > 0);
+                            
+                            if (allPositive) {
+                                acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] });
+                            }
+                        }
+                        return acc;
+                    }, []);
+
+                    return { data: stocks };
+                } catch (error) {
+                    console.error("Error fetching or parsing breakthrough targets:", error);
+                    return { error: error.message };
+                }
+            }
             
             // --- CORE LOGIC ---
             async function fetchExistingDataOnly(isInitialLoad = false) {
