@@ -384,7 +384,7 @@
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
 
-            // --- NEW: Dazhi Model Portfolio Rendering Function ---
+            // --- MODIFIED: Dazhi Model Portfolio Rendering Function ---
             function renderDazhiModelPortfolio(containerId, data, title) {
                 const titleElement = document.getElementById('dazhi-model-title');
                 if (titleElement && title) {
@@ -421,9 +421,13 @@
 
                 const rowsHtml = data.map(item => {
                     const url = getStockUrl(item['代码']);
-                    const changeStr = item['涨跌幅(%)'] || '0%';
-                    const changeNum = parseFloat(changeStr.replace('%', ''));
+                    
+                    // Prioritize dynamic data, fallback to static data from JSON
+                    const price = item.Price != null ? item.Price : item['最近一日价格'];
+                    const changeNum = item.Percent != null ? item.Percent : parseFloat((item['涨跌幅(%)'] || '0').replace('%', ''));
+                    
                     const changeClass = changeNum >= 0 ? 'text-green-500' : 'text-red-500';
+                    const changeDisplay = !isNaN(changeNum) ? `${changeNum.toFixed(2)}%` : (item['涨跌幅(%)'] || '-');
 
                     return `<tr>
                         <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
@@ -431,8 +435,8 @@
                         </td>
                         <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
                         <td class="py-2 px-4 text-right">${item['最优权重(%)']}</td>
-                        <td class="py-2 px-4 text-right">${item['最近一日价格'] != null ? item['最近一日价格'].toFixed(2) : '-'}</td>
-                        <td class="py-2 px-4 text-right ${changeClass}">${item['涨跌幅(%)']}</td>
+                        <td class="py-2 px-4 text-right">${price != null ? price.toFixed(2) : '-'}</td>
+                        <td class="py-2 px-4 text-right ${changeClass}">${changeDisplay}</td>
                         <td class="py-2 px-4 text-right">${item['PotScore']}</td>
                         <td class="py-2 px-4 text-right">${item['总净流入占比_5日总和(%)']}</td>
                         <td class="py-2 px-4 text-right">${item['主力净流入-净占比(%)']}</td>
@@ -509,7 +513,7 @@
                 }
             }
             
-            // --- NEW: Function to fetch Dazhi Model data ---
+            // --- MODIFIED: Function to fetch Dazhi Model data ---
             async function fetchDazhiModelData() {
                 const GITHUB_API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/';
                 try {
@@ -549,10 +553,11 @@
                         return { error: "Invalid or missing data structure in the JSON file." };
                     }
                     
-                    const title = jsonData?.结果?.最优投资组合配置?.标题 || "大智模型组合";
+                    // MODIFICATION: Generate title with fixed prefix and dynamic date
                     const updateDate = latestFile.name.match(regex)[1];
+                    const title = `大智组合模型 (${updateDate})`;
 
-                    return { data: portfolioData, title: `${title} (${updateDate})` };
+                    return { data: portfolioData, title: title };
 
                 } catch (error) {
                     console.error('Error fetching Dazhi Model data:', error);
@@ -574,27 +579,31 @@
 
                 const [portfolioResult, dazhiResult, allDynamicData] = await Promise.all([portfolioPromise, dazhiModelPromise, dynamicDataPromise]);
                 
-                // Render Dazhi Model Portfolio
+                // Create a map for easy lookup of dynamic data
+                const dynamicDataMap = (allDynamicData && !allDynamicData.error) 
+                    ? new Map(allDynamicData.map(item => [String(item['代码']), item]))
+                    : new Map();
+
+                // Enrich and Render Dazhi Model Portfolio
                 if (dazhiResult.error) {
                     document.getElementById('dazhi-model-container').innerHTML = `<p class="text-red-500">Load failed: ${dazhiResult.error}</p>`;
                 } else {
-                    renderDazhiModelPortfolio('dazhi-model-container', dazhiResult.data, dazhiResult.title);
+                    const enrichedDazhiData = dazhiResult.data.map(item => {
+                        const marketData = dynamicDataMap.get(String(item['代码']));
+                        return marketData ? { ...item, ...marketData } : item;
+                    });
+                    renderDazhiModelPortfolio('dazhi-model-container', enrichedDazhiData, dazhiResult.title);
                 }
 
-                // Render Observation List
+                // Enrich and Render Observation List
                 const { portfolioData, portfolioName } = portfolioResult;
                 let enrichedPortfolioData = [];
                 if (portfolioData && !portfolioData.error) {
-                    if (allDynamicData && !allDynamicData.error) {
-                        const dynamicDataMap = new Map(allDynamicData.map(item => [String(item['代码']), item]));
-                        enrichedPortfolioData = portfolioData.map(portfolioItem => {
-                            const stockCode = String(portfolioItem['股票代码']);
-                            const marketData = dynamicDataMap.get(stockCode);
-                            return marketData ? { ...portfolioItem, ...marketData } : portfolioItem;
-                        });
-                    } else {
-                        enrichedPortfolioData = portfolioData; 
-                    }
+                     enrichedPortfolioData = portfolioData.map(portfolioItem => {
+                        const stockCode = String(portfolioItem['股票代码']);
+                        const marketData = dynamicDataMap.get(stockCode);
+                        return marketData ? { ...portfolioItem, ...marketData } : portfolioItem;
+                    });
                 }
                 
                 const titleElement = document.getElementById('observation-list-title');
@@ -606,13 +615,11 @@
                 // Render Dynamic List
                 const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                 if (aShareList.length > 0) {
-                    if(allDynamicData && !allDynamicData.error) {
-                        const aShareCodes = new Set(aShareList.map(s => s.code));
-                        const dynamicDataForAShareList = allDynamicData.filter(item => aShareCodes.has(String(item['代码'])));
-                        renderAFlatTable('a-share-dynamic-data-container', dynamicDataForAShareList, true);
-                    } else {
-                        renderAFlatTable('a-share-dynamic-data-container', [], true);
-                    }
+                    const aShareCodes = new Set(aShareList.map(s => s.code));
+                    const dynamicDataForAShareList = (allDynamicData && !allDynamicData.error) 
+                        ? allDynamicData.filter(item => aShareCodes.has(String(item['代码'])))
+                        : [];
+                    renderAFlatTable('a-share-dynamic-data-container', dynamicDataForAShareList, true);
                 }
                 
                 let lastUpdateTime = "N/A", tradeDate = "N/A";
@@ -647,23 +654,19 @@
                     const [dazhiResult, { portfolioData, portfolioName }] = await Promise.all([dazhiModelPromise, portfolioPromise]);
 
                     if (portfolioData.error) throw new Error(`Failed to get portfolio: ${portfolioData.error}`);
-
-                    // Render Dazhi model data immediately
-                    if (dazhiResult.error) {
-                        document.getElementById('dazhi-model-container').innerHTML = `<p class="text-red-500">Load failed: ${dazhiResult.error}</p>`;
-                    } else {
-                        renderDazhiModelPortfolio('dazhi-model-container', dazhiResult.data, dazhiResult.title);
-                    }
                     
+                    // Get all stock codes to be refreshed
                     const portfolioCodes = portfolioData.map(item => String(item['股票代码']));
                     const aShareDynamicListCodes = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
+                    const dazhiModelCodes = dazhiResult.data ? dazhiResult.data.map(item => String(item['代码'])) : [];
                     
-                    const allCodesSet = new Set([...portfolioCodes, ...aShareDynamicListCodes]);
+                    const allCodesSet = new Set([...portfolioCodes, ...aShareDynamicListCodes, ...dazhiModelCodes]);
                     const allCodesToRefresh = Array.from(allCodesSet).filter(code => code !== '100000');
                     
                     if (allCodesToRefresh.length === 0) {
                         statusText.textContent = 'No dynamic stocks to refresh. Rendering static data.';
                         renderObservationList('stock-observe-container', portfolioData, true);
+                        if(dazhiResult.data) renderDazhiModelPortfolio('dazhi-model-container', dazhiResult.data, dazhiResult.title);
                         renderAFlatTable('a-share-dynamic-data-container', [], true);
                         isRefreshing = false;
                         refreshButton.classList.remove('reloading');
@@ -689,8 +692,20 @@
                     const dynamicDataResponse = await fetch(`${DATA_PATH}/stock_dynamic_data.json?t=${new Date().getTime()}`);
                     if (!dynamicDataResponse.ok) throw new Error(`Failed to fetch dynamic data file: ${dynamicDataResponse.status}`);
                     const allDynamicData = await dynamicDataResponse.json();
-
                     const dynamicDataMap = new Map(allDynamicData.map(item => [String(item['代码']), item]));
+
+                    // Enrich and Render Dazhi Model Portfolio
+                    if (dazhiResult.error) {
+                        document.getElementById('dazhi-model-container').innerHTML = `<p class="text-red-500">Load failed: ${dazhiResult.error}</p>`;
+                    } else {
+                        const enrichedDazhiData = dazhiResult.data.map(item => {
+                            const marketData = dynamicDataMap.get(String(item['代码']));
+                            return marketData ? { ...item, ...marketData } : item;
+                        });
+                        renderDazhiModelPortfolio('dazhi-model-container', enrichedDazhiData, dazhiResult.title);
+                    }
+
+                    // Enrich and Render Observation List
                     const enrichedPortfolioData = portfolioData.map(portfolioItem => {
                         const stockCode = String(portfolioItem['股票代码']);
                         const marketData = dynamicDataMap.get(stockCode);
@@ -703,6 +718,7 @@
                     }
                     renderObservationList('stock-observe-container', enrichedPortfolioData, true);
 
+                    // Render Dynamic List
                     const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                     if (aShareList.length > 0) {
                         const aShareCodes = new Set(aShareList.map(s => s.code));
