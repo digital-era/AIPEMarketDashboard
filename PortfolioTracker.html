@@ -314,14 +314,17 @@
                 ui.refreshButton.classList.remove('reloading'); ui.refreshButton.disabled = false; isRefreshing = false;
             }
             
-            async function triggerAndFetchData() { 
+                       async function triggerAndFetchData() { 
                 if (isRefreshing) return; 
                 isRefreshing = true; 
                 ui.refreshButton.disabled = true; 
                 ui.refreshButton.classList.add('reloading'); 
                 ui.statusText.textContent = 'Preparing to refresh...';
                 console.log('[Debug] triggerAndFetchData started. Collecting codes from all sources...');
-                [ui.dazhiObserveContainer, ui.dachengObserveContainer, ui.myPortfolioContainer, ui.dazhiModelContainer, ui.dachengModelContainer, ui.breakthroughDataContainer].forEach(renderSkeleton); 
+
+                // 【关键修改】删除了下面这行代码，以在刷新期间保留旧数据
+                // [ui.dazhiObserveContainer, ui.dachengObserveContainer, ui.myPortfolioContainer, ui.dazhiModelContainer, ui.dachengModelContainer, ui.breakthroughDataContainer].forEach(renderSkeleton); 
+
                 try { 
                     const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ getPortfolioData('大智投资组合收益', '大智投资组合'), getPortfolioData('大成投资组合收益', '大成投资组合'), getPortfolioData('我的投资组合收益', '我的投资组合'), fetchModelPortfolioData('大智模型'), fetchModelPortfolioData('大成模型'), fetchBreakthroughTargets() ]); 
                     
