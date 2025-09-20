@@ -175,7 +175,7 @@
         </div>
     </div>
 
-    <script>
+     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // --- CONFIG & STATE ---
             const GITHUB_USER = 'digital-era'; 
@@ -219,7 +219,6 @@
                     fetchModelPortfolioData('大智模型'), 
                     fetchModelPortfolioData('大成模型'), 
                     fetchBreakthroughTargets(), 
-                    // 修改点 1: 修改了请求的 JSON 文件名
                     fetch(`${DATA_PATH}/stock_dynamic_data_portfolio.json?t=${Date.now()}`).then(res => res.ok ? res.json() : { error: `HTTP ${res.status}` }).catch(e => ({ error: e.message })) 
                 ]);
                 const dynamicMap = (dynamicData && !dynamicData.error) ? new Map(dynamicData.map(i => [String(i['代码']), i])) : new Map();
@@ -251,18 +250,32 @@
                 [ui.dazhiObserveContainer, ui.dachengObserveContainer, ui.myPortfolioContainer, ui.dazhiModelContainer, ui.dachengModelContainer, ui.breakthroughDataContainer].forEach(renderSkeleton); 
                 try { 
                     const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ getPortfolioData('大智投资组合收益', '大智投资组合'), getPortfolioData('大成投资组合收益', '大成投资组合'), getPortfolioData('我的投资组合收益', '我的投资组合'), fetchModelPortfolioData('大智模型'), fetchModelPortfolioData('大成模型'), fetchBreakthroughTargets() ]); 
-                    const getCodes = (result, key) => (result.data || result.portfolioData || []).map(i => String(i[key])); 
+                    
+                    // =========================================================
+                    //  核心修改点 
+                    // =========================================================
+                    // 修改 getCodes 辅助函数，使其能安全处理错误或非数组情况
+                    const getCodes = (result, key) => {
+                        const dataList = result.data || result.portfolioData;
+                        if (Array.isArray(dataList)) {
+                            return dataList.map(item => String(item[key]));
+                        }
+                        return []; // 如果数据不是数组（例如是错误对象），返回空数组
+                    };
+                    // =========================================================
+                    //  核心修改点
+                    // =========================================================
+    
                     const userCodes = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code); 
                     const allCodes = new Set([...getCodes(dazhiPortfolio, '股票代码'), ...getCodes(dachengPortfolio, '股票代码'), ...getCodes(myPortfolio, '股票代码'), ...getCodes(dazhiModel, '代码'), ...getCodes(dachengModel, '代码'), ...getCodes(breakthrough, '代码'), ...userCodes]); 
                     const codesToRefresh = Array.from(allCodes).filter(c => c && c !== '100000'); 
                     
                     if (codesToRefresh.length === 0) { 
-                        ui.statusText.textContent = 'No stocks to refresh.'; 
-                        await fetchExistingDataOnly(); 
+                        ui.statusText.textContent = 'No stocks to refresh. Check if portfolios are defined.'; 
+                        await fetchExistingDataOnly(); // 即使没有要刷新的，也尝试加载一次现有数据显示
                         return; 
                     } 
                     
-                    // 修改点 2: 对股票代码进行分类
                     const cnList = [];
                     const hkList = [];
                     const etfList = [];
@@ -280,7 +293,6 @@
     
                     ui.statusText.textContent = `Triggering backend for ${codesToRefresh.length} stocks...`; 
                     
-                    // 修改点 3: 使用分类后的代码列表构造 API 请求
                     const res = await fetch(VERCEL_TRIGGER_URL, { 
                         method: 'POST', 
                         headers: {'Content-Type':'application/json'}, 
