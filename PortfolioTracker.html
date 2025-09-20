@@ -203,11 +203,73 @@
             const renderBreakthroughTable = (container, data) => { if (!container) return; if (!data || data.error || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid format'}</p>`; return; } if (data.length === 0) { container.innerHTML = `<p class="text-gray-500">No data available.</p>`; return; } const rows = data.map(item => { const codeStr = String(item['代码']); const isHkStock = codeStr.length === 5 && /^\d+$/.test(codeStr); const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; const url = getStockUrl(item['代码']); return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['代码']}</td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td> <td class="py-2 pl-2 pr-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${!isHkStock && item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${!isHkStock && item.PB != null ? item.PB.toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${!isHkStock && item.Amount != null ? item.Amount.toFixed(2) : '-'}</td> </tr>`; }).join(''); const headers = [{l:'Name'},{l:'Code'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'},{l:'Amount(亿)',a:'right'}].map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headers}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody></table></div>`; };
             const renderObservationList = (container, data) => { if (!container) return; if (data.error || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: ${data.error||'Invalid format'}</p>`; return; } if (data.length === 0) { container.innerHTML = `<p class="text-gray-500">No portfolio data.</p>`; return; } let rows = data.map(item => { if (String(item['股票代码'])==='100000') { return `<tr><td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap">${item['股票名称']||'现金'}</td><td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td><td class="py-2 pl-2 pr-4 text-right">${(parseFloat(item['配置比例 (%)'])||0).toFixed(2)}%</td><td class="py-2 pl-2 pr-4 text-right text-gray-500 dark:text-gray-400">${item['修改时间']||'N/A'}</td><td class="py-2 pl-2 pr-4 text-right">-</td><td class="py-2 pl-2 pr-4 text-right">1.00</td><td class="py-2 pl-2 pr-4 text-right">-</td><td class="py-2 pl-2 pr-4 text-right">-</td></tr>`; } const url = getStockUrl(item['股票代码']); const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; return `<tr><td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td><td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td><td class="py-2 pl-2 pr-4 text-right">${(parseFloat(item['配置比例 (%)'])||0).toFixed(2)}%</td><td class="py-2 pl-2 pr-4 text-right text-gray-500 dark:text-gray-400">${item['修改时间']||'N/A'}</td><td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent!=null?item.Percent.toFixed(2):'-'}%</td><td class="py-2 pl-2 pr-4 text-right">${item.Price!=null?item.Price.toFixed(2):'-'}</td><td class="py-2 pl-2 pr-4 text-right">${item.PE_TTM!=null?item.PE_TTM.toFixed(2):'-'}</td><td class="py-2 pl-2 pr-4 text-right">${item.PB!=null?item.PB.toFixed(2):'-'}</td></tr>`; }).join(''); const headers = [{l:'NAME'},{l:'CODE'},{l:'配置比例 (%)',a:'right'},{l:'修改时间',a:'right'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'}]; const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody></table></div>`; };
             const renderModelPortfolio = (container, titleElement, data, title) => { if (titleElement) titleElement.textContent = title || "组合模型"; if (!container) return; if (!data || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: Invalid format.</p>`; return; } if (data.length === 0) { container.innerHTML = `<p class="text-gray-500">No data.</p>`; return; } const headers = [{l:'名称'},{l:'代码'},{l:'最优权重',a:'right'},{l:'价格',a:'right'},{l:'涨跌幅',a:'right'},{l:'PotScore',a:'right'},{l:'5日净流入',a:'right'},{l:'主力净流入',a:'right'}]; const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); const rowsHtml = data.map(item => { const url = getStockUrl(item['代码']); const price = item.Price!=null?item.Price:item['最近一日价格']; const changeNum = item.Percent!=null?item.Percent:parseFloat((item['涨跌幅(%)']||'0').replace('%','')); const pClass = changeNum>=0?'text-green-500':'text-red-500'; const changeDisplay = !isNaN(changeNum)?`${changeNum.toFixed(2)}%`:(item['涨跌幅(%)']||'-'); return `<tr><td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a></td><td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['代码']}</td><td class="py-2 pl-2 pr-4 text-right">${item['最优权重(%)']}</td><td class="py-2 pl-2 pr-4 text-right">${price!=null?price.toFixed(2):'-'}</td><td class="py-2 pl-2 pr-4 text-right ${pClass}">${changeDisplay}</td><td class="py-2 pl-2 pr-4 text-right">${item['PotScore'] != null ? item['PotScore'].toFixed(2) : '-'}</td><td class="py-2 pl-2 pr-4 text-right">${item['总净流入占比_5日总和(%)']}</td><td class="py-2 pl-2 pr-4 text-right">${item['主力净流入-净占比(%)']}</td></tr>`; }).join(''); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rowsHtml}</tbody></table></div>`; };
+            // 【请用这个函数整体替换掉旧的 fetchBreakthroughTargets 函数】
+            async function fetchBreakthroughTargets() {
+                const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/';
+                try {
+                    const res = await fetch(API_URL);
+                    if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`);
+                    
+                    const files = await res.json();
+                    const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/;
+                    const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0];
             
+                    if (!latest) {
+                        console.warn("标的策略_*.json file not found.");
+                        return { data: [] };
+                    }
+            
+                    const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`);
+                    if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`);
+            
+                    const json = await dataRes.json();
+                    const reports = json?.步骤2_交易策略分析?.买入信号标的报告;
+            
+                    if (!Array.isArray(reports)) {
+                        console.warn("'买入信号标的报告' not found or is not an array.");
+                        return { data: [] };
+                    }
+                    
+                    const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/;
+                    const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/;
+            
+                    const stocks = reports.reduce((acc, text) => {
+                        try {
+                            const nameCodeMatch = text.match(nameCodeRe);
+                            const factorsMatch = text.match(factorsRe);
+            
+                            if (nameCodeMatch && factorsMatch && factorsMatch[1]) {
+                                const factorsString = factorsMatch[1].trim();
+                                if (factorsString) {
+                                     const allPositive = factorsString.split(',')
+                                        .map(part => {
+                                            const valuePart = part.split(':')[1];
+                                            // Check if valuePart is valid before parsing
+                                            return valuePart ? parseFloat(valuePart.trim()) : NaN;
+                                        })
+                                        .every(value => !isNaN(value) && value > 0);
+            
+                                    if (allPositive) {
+                                        acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] });
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            // If a single report string is malformed, log it and continue with others.
+                            console.warn('Could not parse a breakthrough report string:', text, e);
+                        }
+                        return acc;
+                    }, []);
+            
+                    return { data: stocks };
+                } catch (error) {
+                    console.error("Error fetching or parsing breakthrough targets:", error);
+                    return { error: error.message };
+                }
+            }
             // --- DATA FETCHING ---
             async function getPortfolioData(yieldSheetName, portfolioSheetName) { const file1 = { user: 'digital-era', repo: 'AIPEInvestmentAgent', dir: 'data', filename: 'AIPEEarningYield.xlsx', sheet: yieldSheetName }; const file2 = { user: 'digital-era', repo: 'AIPEPortfolioTracker', dir: 'data', filename: 'AIPEPortfolio.xlsx', sheet: portfolioSheetName }; const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`; let combinedData = [], portfolioName = null; try { const [res1, res2] = await Promise.all([fetch(buildUrl(file1)), fetch(buildUrl(file2))]); if (res1.ok) { const d = XLSX.utils.sheet_to_json(XLSX.read(await res1.arrayBuffer()).Sheets[file1.sheet] || []); if (Array.isArray(d)) { combinedData.push(...d); if (d.length > 0 && d[0]['组合名称']) portfolioName = d[0]['组合名称']; } } if (res2.ok) { const d = XLSX.utils.sheet_to_json(XLSX.read(await res2.arrayBuffer()).Sheets[file2.sheet] || []); if (Array.isArray(d)) combinedData.push(...d); } if (combinedData.length === 0) return { portfolioData: [], portfolioName }; let maxTimestamp = 0; for (const row of combinedData) { const ts = row['修改时间']; if (ts != null && !isNaN(parseFloat(ts)) && ts > maxTimestamp) { maxTimestamp = ts; } } if (maxTimestamp === 0) { console.warn(`No valid timestamps found for ${portfolioSheetName}.`); return { portfolioData: [], portfolioName }; } const latest = combinedData.filter(r => r['修改时间'] === maxTimestamp); const unique = Array.from(new Map(latest.map(item => [item['股票代码'], item])).values()); return { portfolioData: unique, portfolioName }; } catch (error) { console.error(`Error fetching portfolio for ${portfolioSheetName}:`, error); return { portfolioData: { error: error.message }, portfolioName: null }; } }
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
-            async function fetchBreakthroughTargets() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\\d{2}-\\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) return { data: [] }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!Array.isArray(reports)) { return { data: [] }; } const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/; const factorsRe = /因子数值 \(\d{4}-\\d{2}-\\d{2}\): (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p => { const parts = p.split(': '); return parts.length > 1 ? parseFloat(parts[1]) : NaN; }).every(v => !isNaN(v) && v > 0); if (allPositive) { acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } } return acc; }, []); return { data: stocks }; } catch (error) { console.error("Error fetching or parsing breakthrough targets:", error); return { error: error.message }; } }
             
             // --- CORE LOGIC ---
             async function fetchExistingDataOnly(isInitialLoad = false) {
