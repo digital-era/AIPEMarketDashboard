@@ -121,6 +121,14 @@
                 </div>
             </div>
 
+            <!-- NEW: Dazhi Model Portfolio Card -->
+            <div class="grid grid-cols-1">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-2xl shadow-md border border-gray-200 dark:border-dark-border">
+                    <h2 id="dazhi-model-title" class="text-xl font-semibold mb-4">大智模型组合</h2>
+                    <div id="dazhi-model-container" class="overflow-x-auto"></div>
+                </div>
+            </div>
+
             <!-- MODIFIED: A-Share Dynamic Lists Grid Container -->
             <!-- This container will be hidden if the list is empty. -->
             <div id="dynamic-lists-grid" class="grid grid-cols-1 gap-8">
@@ -375,6 +383,64 @@
 
                 container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rows}</tbody></table></div>`;
             }
+
+            // --- NEW: Dazhi Model Portfolio Rendering Function ---
+            function renderDazhiModelPortfolio(containerId, data, title) {
+                const titleElement = document.getElementById('dazhi-model-title');
+                if (titleElement && title) {
+                    titleElement.textContent = title;
+                }
+
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                if (!data || !Array.isArray(data)) {
+                    container.innerHTML = `<p class="text-red-500">Failed to load data: Invalid format.</p>`;
+                    return;
+                }
+                if (data.length === 0) {
+                    container.innerHTML = `<p class="text-gray-500 dark:text-gray-400">No portfolio data available.</p>`;
+                    return;
+                }
+
+                const headers = [
+                    { key: '名称', label: '名称', type: 'string' },
+                    { key: '代码', label: '代码', type: 'string' },
+                    { key: '最优权重(%)', label: '最优权重', type: 'number', align: 'right' },
+                    { key: '最近一日价格', label: '价格', type: 'number', align: 'right' },
+                    { key: '涨跌幅(%)', label: '涨跌幅', type: 'number', align: 'right' },
+                    { key: 'PotScore', label: 'PotScore', type: 'number', align: 'right' },
+                    { key: '总净流入占比_5日总和(%)', label: '5日净流入', type: 'number', align: 'right' },
+                    { key: '主力净流入-净占比(%)', label: '主力净流入', type: 'number', align: 'right' },
+                ];
+
+                const headerHtml = headers.map(h => {
+                    const alignClass = h.align === 'right' ? 'text-right' : '';
+                    return `<th class="px-4 py-3 ${alignClass} sortable-header hover:bg-gray-200 dark:hover:bg-gray-600" data-sort-type="${h.type}">${h.label}<span class="sort-indicator"></span></th>`;
+                }).join('');
+
+                const rowsHtml = data.map(item => {
+                    const url = getStockUrl(item['代码']);
+                    const changeStr = item['涨跌幅(%)'] || '0%';
+                    const changeNum = parseFloat(changeStr.replace('%', ''));
+                    const changeClass = changeNum >= 0 ? 'text-green-500' : 'text-red-500';
+
+                    return `<tr>
+                        <td class="py-2 px-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                            <a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a>
+                        </td>
+                        <td class="py-2 px-4 text-gray-500 dark:text-gray-400">${item['代码']}</td>
+                        <td class="py-2 px-4 text-right">${item['最优权重(%)']}</td>
+                        <td class="py-2 px-4 text-right">${item['最近一日价格'] != null ? item['最近一日价格'].toFixed(2) : '-'}</td>
+                        <td class="py-2 px-4 text-right ${changeClass}">${item['涨跌幅(%)']}</td>
+                        <td class="py-2 px-4 text-right">${item['PotScore']}</td>
+                        <td class="py-2 px-4 text-right">${item['总净流入占比_5日总和(%)']}</td>
+                        <td class="py-2 px-4 text-right">${item['主力净流入-净占比(%)']}</td>
+                    </tr>`;
+                }).join('');
+
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y dark:divide-gray-700">${rowsHtml}</tbody></table></div>`;
+            }
             
             async function getPortfolioData() {
                 const file1 = { 
@@ -443,20 +509,80 @@
                 }
             }
             
+            // --- NEW: Function to fetch Dazhi Model data ---
+            async function fetchDazhiModelData() {
+                const GITHUB_API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/';
+                try {
+                    const response = await fetch(GITHUB_API_URL);
+                    if (!response.ok) throw new Error(`GitHub API failed: ${response.status}`);
+                    
+                    const files = await response.json();
+                    
+                    const regex = /^大智模型_(\d{4}-\d{2}-\d{2})\.json$/;
+                    let latestFile = null;
+                    let latestDate = null;
+
+                    for (const file of files) {
+                        if (file.type === 'file') {
+                            const match = file.name.match(regex);
+                            if (match) {
+                                const fileDate = new Date(match[1]);
+                                if (!latestDate || fileDate > latestDate) {
+                                    latestDate = fileDate;
+                                    latestFile = file;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!latestFile) {
+                        return { error: "No '大智模型_YYYY-MM-DD.json' file found." };
+                    }
+
+                    const dataResponse = await fetch(`${latestFile.download_url}?t=${new Date().getTime()}`);
+                    if (!dataResponse.ok) throw new Error(`Failed to download file ${latestFile.name}: ${dataResponse.status}`);
+                    
+                    const jsonData = await dataResponse.json();
+                    
+                    const portfolioData = jsonData?.结果?.最优投资组合配置?.配置详情;
+                    if (!portfolioData || !Array.isArray(portfolioData)) {
+                        return { error: "Invalid or missing data structure in the JSON file." };
+                    }
+                    
+                    const title = jsonData?.结果?.最优投资组合配置?.标题 || "大智模型组合";
+                    const updateDate = latestFile.name.match(regex)[1];
+
+                    return { data: portfolioData, title: `${title} (${updateDate})` };
+
+                } catch (error) {
+                    console.error('Error fetching Dazhi Model data:', error);
+                    return { error: error.message };
+                }
+            }
+
             async function fetchExistingDataOnly() {
                 statusText.textContent = 'Fetching existing data...';
                 refreshButton.classList.add('reloading');
                 refreshButton.disabled = true;
 
                 const portfolioPromise = getPortfolioData();
+                const dazhiModelPromise = fetchDazhiModelData();
                 const dynamicDataPromise = fetch(`${DATA_PATH}/stock_dynamic_data.json?t=${new Date().getTime()}`)
                     .then(response => response.ok ? response.text() : Promise.reject(new Error(`HTTP error ${response.status}`)))
                     .then(text => JSON.parse(text.replace(/NaN/g, 'null')))
                     .catch(error => ({ error: error.message }));
 
-                const [portfolioResult, allDynamicData] = await Promise.all([portfolioPromise, dynamicDataPromise]);
-                const { portfolioData, portfolioName } = portfolioResult;
+                const [portfolioResult, dazhiResult, allDynamicData] = await Promise.all([portfolioPromise, dazhiModelPromise, dynamicDataPromise]);
                 
+                // Render Dazhi Model Portfolio
+                if (dazhiResult.error) {
+                    document.getElementById('dazhi-model-container').innerHTML = `<p class="text-red-500">Load failed: ${dazhiResult.error}</p>`;
+                } else {
+                    renderDazhiModelPortfolio('dazhi-model-container', dazhiResult.data, dazhiResult.title);
+                }
+
+                // Render Observation List
+                const { portfolioData, portfolioName } = portfolioResult;
                 let enrichedPortfolioData = [];
                 if (portfolioData && !portfolioData.error) {
                     if (allDynamicData && !allDynamicData.error) {
@@ -477,6 +603,7 @@
                 }
                 renderObservationList('stock-observe-container', enrichedPortfolioData, true);
 
+                // Render Dynamic List
                 const aShareList = getDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                 if (aShareList.length > 0) {
                     if(allDynamicData && !allDynamicData.error) {
@@ -510,11 +637,23 @@
                 statusText.textContent = 'Preparing to refresh...';
 
                 renderSkeleton('stock-observe-container');
+                renderSkeleton('dazhi-model-container');
                 renderSkeleton('a-share-dynamic-data-container');
 
                 try {
-                    const { portfolioData, portfolioName } = await getPortfolioData();
+                    // Fetch static/semi-static data first
+                    const dazhiModelPromise = fetchDazhiModelData();
+                    const portfolioPromise = getPortfolioData();
+                    const [dazhiResult, { portfolioData, portfolioName }] = await Promise.all([dazhiModelPromise, portfolioPromise]);
+
                     if (portfolioData.error) throw new Error(`Failed to get portfolio: ${portfolioData.error}`);
+
+                    // Render Dazhi model data immediately
+                    if (dazhiResult.error) {
+                        document.getElementById('dazhi-model-container').innerHTML = `<p class="text-red-500">Load failed: ${dazhiResult.error}</p>`;
+                    } else {
+                        renderDazhiModelPortfolio('dazhi-model-container', dazhiResult.data, dazhiResult.title);
+                    }
                     
                     const portfolioCodes = portfolioData.map(item => String(item['股票代码']));
                     const aShareDynamicListCodes = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code);
@@ -522,8 +661,8 @@
                     const allCodesSet = new Set([...portfolioCodes, ...aShareDynamicListCodes]);
                     const allCodesToRefresh = Array.from(allCodesSet).filter(code => code !== '100000');
                     
-                    if (portfolioData.length > 0 && allCodesToRefresh.length === 0) {
-                        statusText.textContent = 'No stocks to refresh. Rendering static data.';
+                    if (allCodesToRefresh.length === 0) {
+                        statusText.textContent = 'No dynamic stocks to refresh. Rendering static data.';
                         renderObservationList('stock-observe-container', portfolioData, true);
                         renderAFlatTable('a-share-dynamic-data-container', [], true);
                         isRefreshing = false;
@@ -808,6 +947,7 @@
                 updateDynamicListVisibility();
 
                 renderSkeleton('stock-observe-container');
+                renderSkeleton('dazhi-model-container');
                 renderSkeleton('a-share-dynamic-data-container');
 
                 await fetchExistingDataOnly();
