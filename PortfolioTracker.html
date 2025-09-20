@@ -318,8 +318,8 @@
                 const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ getPortfolioData('大智投资组合收益', '大智投资组合'), getPortfolioData('大成投资组合收益', '大成投资组合'), getPortfolioData('我的投资组合收益', '我的投资组合'), fetchModelPortfolioData('大智模型'), fetchModelPortfolioData('大成模型'), fetchBreakthroughTargets() ]);
     
                 const combinedDynamicData = [...aShareData, ...hkShareData];
-                const dynamicMap = new Map(combinedDynamicData.map(i => [String(i['代码']), i]));
-                const enrich = (data, codeKey) => data.map(item => ({...item, ...dynamicMap.get(String(item[codeKey]))}));
+                const dynamicMap = new Map(combinedDynamicData.map(i => [String(i['代码']).replace('HK', ''), i]));
+                const enrich = (data, codeKey) => data.map(item => ({...item, ...dynamicMap.get(String(item[codeKey]).replace('HK', ''))}));
     
                 if (dazhiPortfolio.portfolioData) { document.getElementById('dazhi-observation-list-title').textContent = dazhiPortfolio.portfolioName || '大智 (稳健智远)'; renderObservationList(ui.dazhiObserveContainer, enrich(dazhiPortfolio.portfolioData, '股票代码')); }
                 if (dachengPortfolio.portfolioData) { document.getElementById('dacheng-observation-list-title').textContent = dachengPortfolio.portfolioName || '大成 (锐进先锋)'; renderObservationList(ui.dachengObserveContainer, enrich(dachengPortfolio.portfolioData, '股票代码')); }
@@ -375,7 +375,7 @@
                         } else if (isEtf) {
                             etfList.push(codeStr);
                         } else {
-                            cnList.push(codeStr);
+                            cnList.push('HK' + codeStr);
                         }
                     });
     
