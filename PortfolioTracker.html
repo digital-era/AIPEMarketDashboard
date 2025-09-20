@@ -314,16 +314,13 @@
                 ui.refreshButton.classList.remove('reloading'); ui.refreshButton.disabled = false; isRefreshing = false;
             }
             
-                       async function triggerAndFetchData() { 
+            async function triggerAndFetchData() { 
                 if (isRefreshing) return; 
                 isRefreshing = true; 
                 ui.refreshButton.disabled = true; 
                 ui.refreshButton.classList.add('reloading'); 
                 ui.statusText.textContent = 'Preparing to refresh...';
                 console.log('[Debug] triggerAndFetchData started. Collecting codes from all sources...');
-
-                // 【关键修改】删除了下面这行代码，以在刷新期间保留旧数据
-                // [ui.dazhiObserveContainer, ui.dachengObserveContainer, ui.myPortfolioContainer, ui.dazhiModelContainer, ui.dachengModelContainer, ui.breakthroughDataContainer].forEach(renderSkeleton); 
 
                 try { 
                     const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ getPortfolioData('大智投资组合收益', '大智投资组合'), getPortfolioData('大成投资组合收益', '大成投资组合'), getPortfolioData('我的投资组合收益', '我的投资组合'), fetchModelPortfolioData('大智模型'), fetchModelPortfolioData('大成模型'), fetchBreakthroughTargets() ]); 
@@ -350,11 +347,30 @@
                     } 
                     
                     const cnList = [], hkList = [], etfList = [];
+                    
+                    // 【关键修改】在这里应用新的ETF识别规则
                     codesToRefresh.forEach(code => {
                         const codeStr = String(code);
-                        if (codeStr.toUpperCase().startsWith('HK')) { hkList.push(codeStr); } 
-                        else if (codeStr.toUpperCase().startsWith('ETF')) { etfList.push(codeStr); } 
-                        else { cnList.push(codeStr); }
+
+                        // 1. 定义新的ETF判断逻辑
+                        const isEtf = (
+                            codeStr.startsWith('58') || 
+                            codeStr.startsWith('56') || 
+                            code.startsWith('55') || // 【修正】这里应该是codeStr
+                            codeStr.startsWith('51') || 
+                            codeStr.startsWith('15')
+                        );
+
+                        // 2. 更新分类逻辑
+                        if (codeStr.toUpperCase().startsWith('HK')) {
+                            hkList.push(codeStr);
+                        } 
+                        else if (isEtf) { // 使用新的判断变量
+                            etfList.push(codeStr);
+                        } 
+                        else {
+                            cnList.push(codeStr);
+                        }
                     });
     
                     const apiPayload = { dynamiclist: cnList, dynamicHKlist: hkList, dynamicETFlist: etfList };
