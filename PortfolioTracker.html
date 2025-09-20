@@ -178,7 +178,15 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // --- CONFIG & STATE ---
-            const GITHUB_USER = 'digital-era'; const GITHUB_REPO = 'AIPEHotTracker'; const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`; const VERCEL_TRIGGER_URL = 'https://aipe-hot-tracker.vercel.app/api/trigger'; const REFRESH_DELAY_MS = 270000; const AUTO_REFRESH_INTERVAL_MS = 300000; let autoRefreshInterval; let isRefreshing = false; let allAShares = []; const LS_KEY_A_SHARE_DYNAMIC = 'aShareDynamicList';
+            const GITHUB_USER = 'digital-era'; 
+            const GITHUB_REPO = 'AIPEHotTracker'; 
+            const DATA_PATH = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`; 
+            const VERCEL_TRIGGER_URL = 'https://aipe-portfolio-tracker.vercel.app/api/trigger'; 
+            const REFRESH_DELAY_MS = 270000; const AUTO_REFRESH_INTERVAL_MS = 300000; 
+            let autoRefreshInterval; 
+            let isRefreshing = false; 
+            let allAShares = []; 
+            const LS_KEY_A_SHARE_DYNAMIC = 'aShareDynamicList';
     
             // --- UI ELEMENTS ---
             const ui = { statusText: document.getElementById('status-text'), refreshButton: document.getElementById('refresh-button'), autoRefreshToggle: document.getElementById('auto-refresh-toggle'), manageListsBtn: document.getElementById('manage-dynamic-lists-btn'), modal: document.getElementById('dynamic-list-modal'), closeModalBtn: document.getElementById('close-dynamic-list-modal'), saveConfigBtn: document.getElementById('save-dynamic-list-config'), dynamicSearchInput: document.getElementById('a-share-dynamic-search'), dynamicSuggestionsDiv: document.getElementById('a-share-dynamic-suggestions'), dynamicSelectedListDiv: document.getElementById('a-share-dynamic-selected-list'), dazhiObserveContainer: document.getElementById('dazhi-observe-container'), dachengObserveContainer: document.getElementById('dacheng-observe-container'), myPortfolioContainer: document.getElementById('my-portfolio-container'), dazhiModelContainer: document.getElementById('dazhi-model-container'), dachengModelContainer: document.getElementById('dacheng-model-container'), breakthroughListCard: document.getElementById('breakthrough-list-card'), breakthroughDataContainer: document.getElementById('breakthrough-data-container'), dynamicListsGrid: document.getElementById('dynamic-lists-grid'), };
