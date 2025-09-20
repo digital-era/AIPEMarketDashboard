@@ -209,18 +209,42 @@
             async function fetchBreakthroughTargets() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\\d{2}-\\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: "标的策略 file not found." }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!reports) return { data: [] }; const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{6})\)/; const factorsRe = /因子数值 .*?: (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p=>parseFloat(p.split(': ')[1])).every(v=>!isNaN(v)&&v>0); if (allPositive) acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } return acc; }, []); return { data: stocks }; } catch (error) { return { error: error.message }; } }
             
             // --- CORE LOGIC ---
-            async function fetchExistingDataOnly() {
+            async function fetchExistingDataOnly(isInitialLoad = false) {
+                console.log(`[Debug] fetchExistingDataOnly called. isInitialLoad: ${isInitialLoad}`);
                 ui.statusText.textContent = 'Fetching existing data...';
                 ui.refreshButton.classList.add('reloading'); ui.refreshButton.disabled = true;
-                const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough, dynamicData] = await Promise.all([ 
+    
+                const dynamicDataUrl = `${DATA_PATH}/stock_dynamic_data_portfolio.json?t=${Date.now()}`;
+                let dynamicDataResponse;
+                try {
+                    const response = await fetch(dynamicDataUrl);
+                    dynamicDataResponse = {
+                        ok: response.ok,
+                        status: response.status,
+                        data: response.ok ? await response.json() : null
+                    };
+                } catch (e) {
+                    dynamicDataResponse = { ok: false, status: 0, data: { error: e.message } };
+                }
+    
+                // [新增逻辑] 如果是首次加载且动态数据文件404，则自动触发一次刷新
+                if (isInitialLoad && !dynamicDataResponse.ok && dynamicDataResponse.status === 404) {
+                    console.warn('[Debug] Initial load detected a 404 for dynamic data. Automatically triggering a refresh.');
+                    ui.statusText.textContent = 'Initial data not found. Triggering a refresh...';
+                    triggerAndFetchData(); // 调用刷新函数
+                    return; // 提前退出，让 triggerAndFetchData接管流程
+                }
+                
+                const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ 
                     getPortfolioData('大智投资组合收益', '大智投资组合'), 
                     getPortfolioData('大成投资组合收益', '大成投资组合'),
                     getPortfolioData('我的投资组合收益', '我的投资组合'),
                     fetchModelPortfolioData('大智模型'), 
                     fetchModelPortfolioData('大成模型'), 
-                    fetchBreakthroughTargets(), 
-                    fetch(`${DATA_PATH}/stock_dynamic_data_portfolio.json?t=${Date.now()}`).then(res => res.ok ? res.json() : { error: `HTTP ${res.status}` }).catch(e => ({ error: e.message })) 
+                    fetchBreakthroughTargets()
                 ]);
+    
+                const dynamicData = dynamicDataResponse.data || { error: `HTTP ${dynamicDataResponse.status}` };
                 const dynamicMap = (dynamicData && !dynamicData.error) ? new Map(dynamicData.map(i => [String(i['代码']), i])) : new Map();
                 const enrich = (data, codeKey) => data.map(item => ({...item, ...dynamicMap.get(String(item[codeKey]))}));
     
@@ -237,7 +261,7 @@
                 ui.breakthroughListCard.classList.toggle('hidden', !showCard); ui.dynamicListsGrid.classList.toggle('hidden', !showCard);
                 renderAFlatTable(ui.breakthroughDataContainer, enrich(combinedList, '代码'));
     
-                if (dynamicData && !dynamicData.error && dynamicData.length > 0) { ui.statusText.textContent = `Last updated (BJT): ${dynamicData[0].update_time_bjt || 'N/A'} | Trade Date: ${dynamicData[0].trade_date || 'N/A'}`; } else { ui.statusText.textContent = 'Data loaded. Market data feed might be unavailable.'; }
+                if (dynamicData && !dynamicData.error && Array.isArray(dynamicData) && dynamicData.length > 0) { ui.statusText.textContent = `Last updated (BJT): ${dynamicData[0].update_time_bjt || 'N/A'} | Trade Date: ${dynamicData[0].trade_date || 'N/A'}`; } else { ui.statusText.textContent = 'Data loaded. Market data feed might be unavailable.'; }
                 ui.refreshButton.classList.remove('reloading'); ui.refreshButton.disabled = false; isRefreshing = false;
             }
             
@@ -247,60 +271,48 @@
                 ui.refreshButton.disabled = true; 
                 ui.refreshButton.classList.add('reloading'); 
                 ui.statusText.textContent = 'Preparing to refresh...';
+                console.log('[Debug] triggerAndFetchData started. Collecting codes from all sources...');
                 [ui.dazhiObserveContainer, ui.dachengObserveContainer, ui.myPortfolioContainer, ui.dazhiModelContainer, ui.dachengModelContainer, ui.breakthroughDataContainer].forEach(renderSkeleton); 
                 try { 
                     const [dazhiPortfolio, dachengPortfolio, myPortfolio, dazhiModel, dachengModel, breakthrough] = await Promise.all([ getPortfolioData('大智投资组合收益', '大智投资组合'), getPortfolioData('大成投资组合收益', '大成投资组合'), getPortfolioData('我的投资组合收益', '我的投资组合'), fetchModelPortfolioData('大智模型'), fetchModelPortfolioData('大成模型'), fetchBreakthroughTargets() ]); 
                     
-                    // =========================================================
-                    //  核心修改点 
-                    // =========================================================
-                    // 修改 getCodes 辅助函数，使其能安全处理错误或非数组情况
                     const getCodes = (result, key) => {
                         const dataList = result.data || result.portfolioData;
                         if (Array.isArray(dataList)) {
                             return dataList.map(item => String(item[key]));
                         }
-                        return []; // 如果数据不是数组（例如是错误对象），返回空数组
+                        return [];
                     };
-                    // =========================================================
-                    //  核心修改点
-                    // =========================================================
     
                     const userCodes = getDynamicList(LS_KEY_A_SHARE_DYNAMIC).map(s => s.code); 
                     const allCodes = new Set([...getCodes(dazhiPortfolio, '股票代码'), ...getCodes(dachengPortfolio, '股票代码'), ...getCodes(myPortfolio, '股票代码'), ...getCodes(dazhiModel, '代码'), ...getCodes(dachengModel, '代码'), ...getCodes(breakthrough, '代码'), ...userCodes]); 
                     const codesToRefresh = Array.from(allCodes).filter(c => c && c !== '100000'); 
                     
+                    console.log(`[Debug] Collected ${codesToRefresh.length} unique codes to refresh:`, codesToRefresh);
+                    
                     if (codesToRefresh.length === 0) { 
-                        ui.statusText.textContent = 'No stocks to refresh. Check if portfolios are defined.'; 
-                        await fetchExistingDataOnly(); // 即使没有要刷新的，也尝试加载一次现有数据显示
+                        ui.statusText.textContent = 'No stocks found to refresh. Check if portfolio files are available.'; 
+                        console.warn('[Debug] API trigger skipped because no codes were found.');
+                        await fetchExistingDataOnly();
                         return; 
                     } 
                     
-                    const cnList = [];
-                    const hkList = [];
-                    const etfList = [];
-    
+                    const cnList = [], hkList = [], etfList = [];
                     codesToRefresh.forEach(code => {
                         const codeStr = String(code);
-                        if (codeStr.toUpperCase().startsWith('HK')) {
-                            hkList.push(codeStr);
-                        } else if (codeStr.toUpperCase().startsWith('ETF')) {
-                            etfList.push(codeStr);
-                        } else {
-                            cnList.push(codeStr);
-                        }
+                        if (codeStr.toUpperCase().startsWith('HK')) { hkList.push(codeStr); } 
+                        else if (codeStr.toUpperCase().startsWith('ETF')) { etfList.push(codeStr); } 
+                        else { cnList.push(codeStr); }
                     });
     
+                    const apiPayload = { dynamiclist: cnList, dynamicHKlist: hkList, dynamicETFlist: etfList };
+                    console.log('[Debug] Triggering Vercel API with payload:', apiPayload);
                     ui.statusText.textContent = `Triggering backend for ${codesToRefresh.length} stocks...`; 
                     
                     const res = await fetch(VERCEL_TRIGGER_URL, { 
                         method: 'POST', 
                         headers: {'Content-Type':'application/json'}, 
-                        body: JSON.stringify({ 
-                            dynamiclist: cnList, 
-                            dynamicHKlist: hkList,
-                            dynamicETFlist: etfList
-                        }) 
+                        body: JSON.stringify(apiPayload) 
                     }); 
                     
                     if (!res.ok) throw new Error((await res.json()).error || `Trigger API failed`); 
@@ -347,7 +359,8 @@
                 setupAutoComplete(ui.dynamicSearchInput, ui.dynamicSuggestionsDiv, allAShares, LS_KEY_A_SHARE_DYNAMIC);
                 renderSelectedDynamicList(LS_KEY_A_SHARE_DYNAMIC);
                 [ui.dazhiObserveContainer, ui.dachengObserveContainer, ui.myPortfolioContainer, ui.dazhiModelContainer, ui.dachengModelContainer, ui.breakthroughDataContainer].forEach(renderSkeleton);
-                await fetchExistingDataOnly();
+                // [新增逻辑] 传递 isInitialLoad=true
+                await fetchExistingDataOnly(true);
             })();
             document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !isRefreshing) fetchExistingDataOnly(); });
         });
