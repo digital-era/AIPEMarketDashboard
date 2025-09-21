@@ -340,7 +340,86 @@
             function closeModal() { ui.modal.classList.remove('modal-active'); ui.modal.addEventListener('transitionend', () => ui.modal.classList.add('hidden'), { once: true }); document.body.classList.remove('overflow-hidden'); }
             
             async function triggerPortfolioUpdate(excelBase64) { const UPDATE_API_URL = 'https://aipe-portfolio-tracker.vercel.app/api/update-portfolio'; const originalIconHTML = ui.updateConfigBtn.innerHTML; ui.updateConfigBtn.disabled = true; ui.updateConfigBtn.innerHTML = `<svg class="w-5 h-5 reloading" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20 4s-2-2-6-2-8 4-8 4S2 14 6 18s8-4 8-4"></path></svg>`; try { const response = await fetch(UPDATE_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ portfolioData: excelBase64 }) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || `Server Error: ${response.status}`); } const result = await response.json(); alert('组合配置更新成功！'); console.log('Update success:', result); } catch (error) { console.error('Failed to update portfolio:', error); alert(`组合配置更新失败: ${error.message}`); } finally { ui.updateConfigBtn.disabled = false; ui.updateConfigBtn.innerHTML = originalIconHTML; } }
-            function generateAndTriggerUpdate() { const getTimestamp = () => { const d = new Date(); const pad = (n) => n.toString().padStart(2, '0'); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`; }; const timestamp = getTimestamp(); const wb = XLSX.utils.book_new(); const dazhiSheetData = dazhiPortfolioState.data.map(item => ({ '组合名称': dazhiPortfolioState.name, '股票代码': item['股票代码'], '股票名称': item['股票名称'], '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0, '修改时间': timestamp })); const dazhiWs = XLSX.utils.json_to_sheet(dazhiSheetData); XLSX.utils.book_append_sheet(wb, dazhiWs, '大智投资组合'); const dachengSheetData = dachengPortfolioState.data.map(item => ({ '组合名称': dachengPortfolioState.name, '股票代码': item['股票代码'], '股票名称': item['股票名称'], '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0, '修改时间': timestamp })); const dachengWs = XLSX.utils.json_to_sheet(dachengSheetData); XLSX.utils.book_append_sheet(wb, dachengWs, '大成投资组合'); const myPortfolioSheetData = myPortfolioState.data.map(item => ({ '组合名称': myPortfolioState.name, '股票代码': item['股票代码'], '股票名称': item['股票名称'], '来源': item['来源'] || '', '建议比例 (%)': item['建议比例 (%)'] != null ? parseFloat(item['建议比例 (%)']) : '', '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0, '修改时间': timestamp })); const myPortfolioWs = XLSX.utils.json_to_sheet(myPortfolioSheetData); XLSX.utils.book_append_sheet(wb, myPortfolioWs, '我的投资组合'); XLSX.writeFile(wb, "AIPEPortfolio_updated.xlsx"); const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' }); triggerPortfolioUpdate(excelBase64); }
+            async function generateAndTriggerUpdate() {
+                const getTimestamp = () => {
+                    const d = new Date();
+                    const pad = (n) => n.toString().padStart(2, '0');
+                    return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}`;
+                };
+                const timestamp = getTimestamp();
+                const wb = XLSX.utils.book_new();
+
+                // (1) 过滤股票代码="100000" 的现金项
+                const filterCash = (item) => item['股票代码'] !== '100000';
+
+                const dazhiSheetData = dazhiPortfolioState.data
+                    .filter(filterCash) // 过滤现金项
+                    .map(item => ({
+                        '组合名称': dazhiPortfolioState.name,
+                        '股票代码': item['股票代码'],
+                        '股票名称': item['股票名称'],
+                        '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0,
+                        '修改时间': timestamp
+                    }));
+                const dazhiWs = XLSX.utils.json_to_sheet(dazhiSheetData);
+                XLSX.utils.book_append_sheet(wb, dazhiWs, '大智投资组合');
+
+                const dachengSheetData = dachengPortfolioState.data
+                    .filter(filterCash) // 过滤现金项
+                    .map(item => ({
+                        '组合名称': dachengPortfolioState.name,
+                        '股票代码': item['股票代码'],
+                        '股票名称': item['股票名称'],
+                        '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0,
+                        '修改时间': timestamp
+                    }));
+                const dachengWs = XLSX.utils.json_to_sheet(dachengSheetData);
+                XLSX.utils.book_append_sheet(wb, dachengWs, '大成投资组合');
+
+                // (2) 我的投资组合页面，'来源'、'建议比例 (%)'如果为空，要通过股票代码反向查找
+                const processedMyPortfolioData = myPortfolioState.data
+                    .filter(filterCash) // 过滤现金项
+                    .map(item => {
+                        let source = item['来源'] || '';
+                        let suggestedPercent = item['建议比例 (%)'] != null ? parseFloat(item['建议比例 (%)']) : '';
+
+                        if (!source || suggestedPercent === '') { // 如果来源或建议比例为空
+                            const stockCode = item['股票代码'];
+
+                            // 在大智投资组合中查找
+                            const dazhiMatch = dazhiPortfolioState.data.find(d => d['股票代码'] === stockCode);
+                            if (dazhiMatch) {
+                                source = '大智';
+                                suggestedPercent = parseFloat(dazhiMatch['配置比例 (%)']) || 0;
+                            } else {
+                                // 在大成投资组合中查找
+                                const dachengMatch = dachengPortfolioState.data.find(d => d['股票代码'] === stockCode);
+                                if (dachengMatch) {
+                                    source = '大成';
+                                    suggestedPercent = parseFloat(dachengMatch['配置比例 (%)']) || 0;
+                                }
+                            }
+                        }
+
+                        return {
+                            '组合名称': myPortfolioState.name,
+                            '股票代码': item['股票代码'],
+                            '股票名称': item['股票名称'],
+                            '来源': source,
+                            '建议比例 (%)': suggestedPercent, // 保持为数字或空字符串，XLSX.utils.json_to_sheet会处理
+                            '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0,
+                            '修改时间': timestamp
+                        };
+                    });
+
+                const myPortfolioWs = XLSX.utils.json_to_sheet(processedMyPortfolioData);
+                XLSX.utils.book_append_sheet(wb, myPortfolioWs, '我的投资组合');
+
+                // 生成 Excel 文件并触发更新
+                XLSX.writeFile(wb, "AIPEPortfolio_updated.xlsx");
+                const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+                await triggerPortfolioUpdate(excelBase64); // 注意这里是 await
+            }
             
             ui.refreshButton.addEventListener('click', triggerAndFetchData);
             ui.autoRefreshToggle.addEventListener('change', (e) => { clearInterval(autoRefreshInterval); if (e.target.checked) autoRefreshInterval = setInterval(triggerAndFetchData, AUTO_REFRESH_INTERVAL_MS); });
