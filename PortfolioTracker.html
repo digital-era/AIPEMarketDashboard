@@ -319,15 +319,13 @@
 
                         if (portfolioSheetName === '我的投资组合') {
                             const mySheet = workbook.Sheets['我的投资组合'];
-                            if (mySheet) {
-                                myPortfolioHistory.push(...XLSX.utils.sheet_to_json(mySheet));
-                            }
+                            if (mySheet) myPortfolioHistory.push(...XLSX.utils.sheet_to_json(mySheet));
                         }
                     }
                     
                     if (allRawRecords.length === 0) return { portfolioData: [], portfolioName: null };
 
-                    // --- 步骤 2, 3, 4: 保持不变，筛选出最新批次的数据 ---
+                    // --- 步骤 2, 3, 4: 保持不变 ---
                     let maxTimestampString = '0'; 
                     allRawRecords.forEach(record => {
                         const currentTimeString = String(record['修改时间'] || '0');
@@ -356,18 +354,26 @@
                         });
 
                         finalDataMap.forEach((record, code) => {
-                            if (!record['来源'] || record['建议比例 (%)'] == null) {
+                            // **最终修正核心1：修正判断条件**
+                            const needsFill = !record['来源'] || record['建议比例 (%)'] == null || record['建议比例 (%)'] === '';
+                            
+                            if (needsFill) {
                                 const history = historyMap.get(code);
                                 if (history) {
-                                    // **最终修正核心：查找同时包含两个有效字段的最近记录**
-                                    const bestCandidate = history.find(histRec => histRec['来源'] && histRec['建议比例 (%)'] != null);
+                                    // **最终修正核心2：使用更严格的查找条件**
+                                    const bestCandidate = history.find(histRec => 
+                                        histRec['来源'] && 
+                                        histRec['建议比例 (%)'] != null && 
+                                        histRec['建议比例 (%)'] !== ''
+                                    );
 
                                     if (bestCandidate) {
-                                        // 使用找到的这条“完整”记录来同时更新两个字段
+                                        // 使用找到的这条“数据完整”的记录来同时更新
                                         if (!record['来源']) {
                                             record['来源'] = bestCandidate['来源'];
                                         }
-                                        if (record['建议比例 (%)'] == null) {
+                                        // 再次检查，以防只有其中一个需要填充
+                                        if (record['建议比例 (%)'] == null || record['建议比例 (%)'] === '') {
                                             record['建议比例 (%)'] = bestCandidate['建议比例 (%)'];
                                         }
                                     }
@@ -382,7 +388,7 @@
 
                 } catch (error) {
                     console.error(`Error in getPortfolioData for sheets "${yieldSheetName}" and "${portfolioSheetName}":`, error);
-                    return { portfolioData: { error: error.message }, portfolioName: null };
+                    return { portfolioData: { error: message }, portfolioName: null };
                 }
             }
             
