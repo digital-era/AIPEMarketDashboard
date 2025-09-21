@@ -279,7 +279,7 @@
             const renderModelPortfolio = (container, data, portfolioType) => { if (!container) return; if (!data || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: Invalid format.</p>`; return; } const rowsHtml = data.map(item => { const url = getStockUrl(item['代码']); const price = item.Price!=null?item.Price:item['最近一日价格']; const changeNum = item.Percent!=null?item.Percent:parseFloat((item['涨跌幅(%)']||'0').replace('%','')); const pClass = changeNum>=0?'text-green-500':'text-red-500'; const changeDisplay = !isNaN(changeNum)?`${changeNum.toFixed(2)}%`:(item['涨跌幅(%)']||'-'); return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['代码']}</td> <td class="py-2 pl-2 pr-4 text-right">${item['最优权重(%)']}</td> <td class="py-2 px-2 text-center"> <button class="action-btn add-from-model" data-portfolio-type="${portfolioType}" data-code="${item['代码']}" data-name="${item['名称']}" data-weight="${item['最优权重(%)']}" title="添加到观察组合"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> </button> </td> <td class="py-2 pl-2 pr-4 text-right">${price!=null?price.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${changeDisplay}</td> <td class="py-2 pl-2 pr-4 text-right">${item['PotScore'] != null ? item['PotScore'].toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item['总净流入占比_5日总和(%)']}</td> <td class="py-2 pl-2 pr-4 text-right">${item['主力净流入-净占比(%)']}</td> </tr>`; }).join(''); const headers = [{l:'名称'},{l:'代码'},{l:'最优权重',a:'right'},{l:'操作'},{l:'价格',a:'right'},{l:'涨跌幅',a:'right'},{l:'PotScore',a:'right'},{l:'5日净流入',a:'right'},{l:'主力净流入',a:'right'}]; const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rowsHtml}</tbody></table></div>`; };
             
             // 增强后的 getPortfolioData 函数，专门处理“我的投资组合”的来源和建议比例
-            async function getPortfolioData(yieldSheetName, portfolioSheetName) {
+                        async function getPortfolioData(yieldSheetName, portfolioSheetName) {
                 const file1 = { 
                     user: 'digital-era', 
                     repo: 'AIPEInvestmentAgent', 
@@ -297,128 +297,127 @@
             
                 const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`;
                 
-                let yieldData = [], portfolioDataFromSheet = [];
-                let portfolioName = null;
+                let yieldData = [];
+                let portfolioDataFromSheet = [];
+                let portfolioName = null; // To store portfolio name from yield data
 
                 try {
-                    const [res1, res2] = await Promise.all([
+                    const [res1, res2] = await Promise.allSettled([
                         fetch(buildUrl(file1)), 
                         fetch(buildUrl(file2))
                     ]);
             
-                    // Fetch yield data (AIPEEarningYield.xlsx)
-                    if (res1.ok) {
-                        const d = XLSX.utils.sheet_to_json(XLSX.read(await res1.arrayBuffer()).Sheets[file1.sheet] || []);
-                        if (Array.isArray(d)) {
-                            yieldData.push(...d);
-                            if (d.length > 0 && d[0]['组合名称']) portfolioName = d[0]['组合名称'];
-                        }
-                    }
-                    
-                    // Fetch portfolio data from AIPEPortfolio.xlsx
-                    if (res2.ok) {
-                        const d = XLSX.utils.sheet_to_json(XLSX.read(await res2.arrayBuffer()).Sheets[file2.sheet] || []);
-                        if (Array.isArray(d)) {
-                            // If it's "我的投资组合" sheet, we need to process source and suggested percent
-                            if (portfolioSheetName === '我的投资组合') {
-                                // Group by stock code
-                                const groupedByCode = d.reduce((acc, item) => {
-                                    const code = item['股票代码'];
-                                    if (!acc[code]) acc[code] = [];
-                                    acc[code].push(item);
-                                    return acc;
-                                }, {});
-
-                                // For each stock code, find the latest entry by '修改时间'
-                                for (const code in groupedByCode) {
-                                    const itemsForCode = groupedByCode[code];
-                                    if (itemsForCode.length > 0) {
-                                        // Sort by '修改时间' descending to get the latest
-                                        itemsForCode.sort((a, b) => {
-                                            const timeA = a['修改时间'] ? new Date(a['修改时间']).getTime() : 0;
-                                            const timeB = b['修改时间'] ? new Date(b['修改时间']).getTime() : 0;
-                                            return timeB - timeA;
-                                        });
-                                        portfolioDataFromSheet.push(itemsForCode[0]); // Add the latest record
+                    // --- Process Yield Data (AIPEEarningYield.xlsx) ---
+                    if (res1.status === 'fulfilled' && res1.value.ok) {
+                        const buffer = await res1.value.arrayBuffer();
+                        const workbook = XLSX.read(buffer, { type: 'array' });
+                        const sheet = workbook.Sheets[file1.sheet];
+                        if (sheet) {
+                            const rawData = XLSX.utils.sheet_to_json(sheet);
+                            if (Array.isArray(rawData)) {
+                                const latestYieldDataMap = new Map();
+                                rawData.forEach(item => {
+                                    const code = String(item['股票代码']); // Ensure code is a string for consistent keys
+                                    const currentTime = new Date(item['修改时间'] || 0).getTime();
+                                    
+                                    // Only keep the latest record for each stock code from yield data
+                                    if (!latestYieldDataMap.has(code) || currentTime > new Date(latestYieldDataMap.get(code)['修改时间'] || 0).getTime()) {
+                                        latestYieldDataMap.set(code, item);
                                     }
+                                });
+                                yieldData = Array.from(latestYieldDataMap.values());
+                                if (yieldData.length > 0 && yieldData[0]['组合名称']) {
+                                    portfolioName = yieldData[0]['组合名称'];
                                 }
-                            } else {
-                                portfolioDataFromSheet.push(...d);
                             }
-                        }
-                    }
-                    
-                    let combinedLatestData = [];
-
-                    // Combine yieldData and portfolioDataFromSheet
-                    // Prioritize portfolioDataFromSheet for '来源' and '建议比例 (%)' if present
-                    const portfolioMap = new Map(portfolioDataFromSheet.map(item => [item['股票代码'], item]));
-
-                    for (const yieldItem of yieldData) {
-                        const code = yieldItem['股票代码'];
-                        const portfolioItem = portfolioMap.get(code);
-
-                        if (portfolioItem) {
-                            // Merge: yieldItem provides most market data, portfolioItem provides source/suggested percent
-                            combinedLatestData.push({
-                                ...yieldItem,
-                                '来源': portfolioItem['来源'] || yieldItem['来源'] || '', // Prefer portfolioItem's source
-                                '建议比例 (%)': portfolioItem['建议比例 (%)'] != null ? portfolioItem['建议比例 (%)'] : (yieldItem['建议比例 (%)'] != null ? yieldItem['建议比例 (%)'] : null), // Prefer portfolioItem's suggested percent
-                                // Keep other fields from yieldItem, like '修改时间' from yield for overall freshness
-                                // Or, explicitly pick the latest '修改时间'
-                                '修改时间': portfolioItem['修改时间'] > yieldItem['修改时间'] ? portfolioItem['修改时间'] : yieldItem['修改时间']
-                            });
-                            portfolioMap.delete(code); // Remove processed item
                         } else {
-                            combinedLatestData.push(yieldItem); // Add yield data if no portfolio match
+                            console.warn(`Sheet "${file1.sheet}" not found in ${file1.filename}`);
                         }
-                    }
-
-                    // Add any remaining items from portfolioDataFromSheet that weren't in yieldData
-                    for (const remainingPortfolioItem of portfolioMap.values()) {
-                        combinedLatestData.push(remainingPortfolioItem);
-                    }
-
-
-                    if (combinedLatestData.length === 0) return { portfolioData: [], portfolioName };
-                    
-                    // Final filter for the absolute latest data based on '修改时间' across the combined set
-                    let maxTimestamp = 0;
-                    for (const row of combinedLatestData) {
-                        // Ensure '修改时间' is treated as a comparable value (e.g., number or Date object)
-                        const ts = row['修改时间'];
-                        if (ts != null && !isNaN(new Date(ts).getTime())) {
-                            const currentItemTime = new Date(ts).getTime();
-                            if (currentItemTime > maxTimestamp) {
-                                maxTimestamp = currentItemTime;
-                            }
-                        }
-                    }
-                    
-                    // Filter for only items with the absolute latest timestamp
-                    let filteredByLatestTimestamp = [];
-                    if (maxTimestamp > 0) {
-                        filteredByLatestTimestamp = combinedLatestData.filter(r => {
-                            const itemTime = r['修改时间'] ? new Date(r['修改时间']).getTime() : 0;
-                            return itemTime === maxTimestamp;
-                        });
                     } else {
-                        // If no valid timestamps, use all combined data (or handle as an error)
-                        filteredByLatestTimestamp = combinedLatestData;
+                        console.error(`Error fetching or parsing ${file1.filename}:`, res1.reason || (res1.value ? res1.value.statusText : 'Network error'));
                     }
-
-                    // Ensure uniqueness by '股票代码' from the filtered latest set
-                    const unique = Array.from(new Map(filteredByLatestTimestamp.map(item => [item['股票代码'], item])).values());
                     
-                    return { portfolioData: unique, portfolioName };
+                    // --- Process Portfolio Data (AIPEPortfolio.xlsx) ---
+                    if (res2.status === 'fulfilled' && res2.value.ok) {
+                        const buffer = await res2.value.arrayBuffer();
+                        const workbook = XLSX.read(buffer, { type: 'array' });
+                        const sheet = workbook.Sheets[file2.sheet];
+                        if (sheet) {
+                            const rawData = XLSX.utils.sheet_to_json(sheet);
+                            if (Array.isArray(rawData)) {
+                                const latestPortfolioDataMap = new Map();
+                                rawData.forEach(item => {
+                                    const code = String(item['股票代码']); // Ensure code is a string for consistent keys
+                                    const currentTime = new Date(item['修改时间'] || 0).getTime();
+                                    
+                                    // Only keep the latest record for each stock code from portfolio data
+                                    if (!latestPortfolioDataMap.has(code) || currentTime > new Date(latestPortfolioDataMap.get(code)['修改时间'] || 0).getTime()) {
+                                        latestPortfolioDataMap.set(code, item);
+                                    }
+                                });
+                                portfolioDataFromSheet = Array.from(latestPortfolioDataMap.values());
+                            }
+                        } else {
+                            console.warn(`Sheet "${file2.sheet}" not found in ${file2.filename}`);
+                        }
+                    } else {
+                        console.error(`Error fetching or parsing ${file2.filename}:`, res2.reason || (res2.value ? res2.value.statusText : 'Network error'));
+                    }
+                    
+                    // --- Combine and Merge Data ---
+                    let combinedLatestDataMap = new Map();
+
+                    // Step 1: Add all yieldData items to the map.
+                    // If a stock code already exists, keep the newer one (based on '修改时间').
+                    yieldData.forEach(item => {
+                        const code = String(item['股票代码']);
+                        const currentTime = new Date(item['修改时间'] || 0).getTime();
+                        if (!combinedLatestDataMap.has(code) || currentTime > new Date(combinedLatestDataMap.get(code)['修改时间'] || 0).getTime()) {
+                            combinedLatestDataMap.set(code, item);
+                        }
+                    });
+
+                    // Step 2: Merge portfolioDataFromSheet items.
+                    // For each item, merge with existing in map or add new.
+                    // Prioritize portfolioDataFromSheet for '来源' and '建议比例 (%)' fields.
+                    portfolioDataFromSheet.forEach(portfolioItem => {
+                        const code = String(portfolioItem['股票代码']);
+                        const existingItem = combinedLatestDataMap.get(code);
+
+                        if (existingItem) {
+                            // Merge: existingItem (from yieldData or earlier portfolioItem) provides market data,
+                            // portfolioItem provides source/suggested percent, and potentially newer config/time.
+                            const mergedItem = {
+                                ...existingItem, // Start with existing (yield data or previously processed portfolio item)
+                                ...portfolioItem, // Overlay with current portfolioItem (will update common fields)
+                                '来源': portfolioItem['来源'] || existingItem['来源'] || '', // Prefer portfolioItem's source
+                                '建议比例 (%)': portfolioItem['建议比例 (%)'] != null ? portfolioItem['建议比例 (%)'] : (existingItem['建议比例 (%)'] != null ? existingItem['建议比例 (%)'] : null), // Prefer portfolioItem's suggested percent
+                                // Ensure the latest '修改时间' is kept for the merged record
+                                '修改时间': new Date(portfolioItem['修改时间'] || 0).getTime() > new Date(existingItem['修改时间'] || 0).getTime() 
+                                            ? portfolioItem['修改时间'] 
+                                            : existingItem['修改时间'] 
+                            };
+                            combinedLatestDataMap.set(code, mergedItem);
+                        } else {
+                            // If no matching item in combinedLatestDataMap, just add the portfolio item
+                            combinedLatestDataMap.set(code, portfolioItem);
+                        }
+                    });
+                    
+                    // Convert map values to an array for final return
+                    const finalData = Array.from(combinedLatestDataMap.values());
+                    
+                    if (finalData.length === 0) {
+                        return { portfolioData: [], portfolioName: portfolioName }; // Return found portfolioName even if no stocks
+                    }
+                    
+                    return { portfolioData: finalData, portfolioName: portfolioName };
 
                 } catch (error) {
-                    console.error(`Error fetching portfolio for ${portfolioSheetName}:`, error);
+                    console.error(`Error in getPortfolioData for sheets "${yieldSheetName}" and "${portfolioSheetName}":`, error);
                     return { portfolioData: { error: error.message }, portfolioName: null };
                 }
             }
-
-
             
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
             async function fetchBreakthroughTargetsNoApi() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) { console.warn("标的策略_*.json file not found."); return { data: [] }; } const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!Array.isArray(reports)) { console.warn("'买入信号标的报告' not found or is not an array."); return { data: [] }; } const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/; const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p => { const parts = p.split(': '); return parts.length > 1 ? parseFloat(parts[1]) : NaN; }).every(v => !isNaN(v) && v > 0); if (allPositive) { acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } } return acc; }, []); return { data: stocks }; } catch (error) { console.error("Error fetching or parsing breakthrough targets:", error); return { error: error.message }; } }
