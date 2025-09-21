@@ -297,8 +297,9 @@
             
                 const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`;
                 
-                let allSourceData = []; // 存储所有来源的原始数据
-                let portfolioName = null; // To store portfolio name from yield data
+                let latestYieldDataMap = new Map(); // 存储来自 AIPEEarningYield.xlsx 的最新数据
+                let latestPortfolioDataMap = new Map(); // 存储来自 AIPEPortfolio.xlsx 的最新数据
+                let portfolioName = null; // 存储组合名称
 
                 try {
                     const [res1, res2] = await Promise.allSettled([
@@ -306,7 +307,7 @@
                         fetch(buildUrl(file2))
                     ]);
             
-                    // --- Process Yield Data (AIPEEarningYield.xlsx) ---
+                    // --- 阶段一：从 AIPEEarningYield.xlsx 获取每个股票代码的最新记录 ---
                     if (res1.status === 'fulfilled' && res1.value.ok) {
                         const buffer = await res1.value.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
@@ -314,10 +315,18 @@
                         if (sheet) {
                             const rawData = XLSX.utils.sheet_to_json(sheet);
                             if (Array.isArray(rawData)) {
-                                allSourceData.push(...rawData);
-                                // 提取组合名称，只从第一个有效数据源获取一次
-                                if (!portfolioName && rawData.length > 0 && rawData[0]['组合名称']) {
-                                    portfolioName = rawData[0]['组合名称'];
+                                rawData.forEach(item => {
+                                    const code = String(item['股票代码']);
+                                    const currentTime = new Date(item['修改时间'] || 0).getTime();
+                                    const existingItem = latestYieldDataMap.get(code);
+
+                                    if (!existingItem || currentTime > new Date(existingItem['修改时间'] || 0).getTime()) {
+                                        latestYieldDataMap.set(code, item);
+                                    }
+                                });
+                                if (!portfolioName && latestYieldDataMap.size > 0) {
+                                    // 尝试从最新的一个记录中提取组合名称
+                                    portfolioName = Array.from(latestYieldDataMap.values())[0]['组合名称'];
                                 }
                             }
                         } else {
@@ -327,7 +336,7 @@
                         console.error(`Error fetching or parsing ${file1.filename}:`, res1.reason || (res1.value ? res1.value.statusText : 'Network error'));
                     }
                     
-                    // --- Process Portfolio Data (AIPEPortfolio.xlsx) ---
+                    // --- 阶段一：从 AIPEPortfolio.xlsx 获取每个股票代码的最新记录 ---
                     if (res2.status === 'fulfilled' && res2.value.ok) {
                         const buffer = await res2.value.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
@@ -335,10 +344,18 @@
                         if (sheet) {
                             const rawData = XLSX.utils.sheet_to_json(sheet);
                             if (Array.isArray(rawData)) {
-                                allSourceData.push(...rawData);
-                                // 提取组合名称，只从第一个有效数据源获取一次
-                                if (!portfolioName && rawData.length > 0 && rawData[0]['组合名称']) {
-                                    portfolioName = rawData[0]['组合名称'];
+                                rawData.forEach(item => {
+                                    const code = String(item['股票代码']);
+                                    const currentTime = new Date(item['修改时间'] || 0).getTime();
+                                    const existingItem = latestPortfolioDataMap.get(code);
+
+                                    if (!existingItem || currentTime > new Date(existingItem['修改时间'] || 0).getTime()) {
+                                        latestPortfolioDataMap.set(code, item);
+                                    }
+                                });
+                                if (!portfolioName && latestPortfolioDataMap.size > 0) {
+                                     // 尝试从最新的一个记录中提取组合名称，如果之前没有获取到
+                                    portfolioName = Array.from(latestPortfolioDataMap.values())[0]['组合名称'];
                                 }
                             }
                         } else {
@@ -348,45 +365,45 @@
                         console.error(`Error fetching or parsing ${file2.filename}:`, res2.reason || (res2.value ? res2.value.statusText : 'Network error'));
                     }
                     
-                    // --- Combine and Merge Data, ensuring only the latest record per stock code ---
-                    let combinedLatestDataMap = new Map();
+                    // --- 阶段二：合并两个已去重的数据集，并处理字段优先级 ---
+                    let finalDataMap = new Map();
 
-                    allSourceData.forEach(item => {
-                        const code = String(item['股票代码']); // Ensure code is a string for consistent keys
-                        const currentTime = new Date(item['修改时间'] || 0).getTime();
-                        
-                        const existingItem = combinedLatestDataMap.get(code);
+                    // 先处理 AIPEEarningYield.xlsx 的数据 (提供大部分市场数据和配置比例)
+                    latestYieldDataMap.forEach((item, code) => {
+                        finalDataMap.set(code, item);
+                    });
 
-                        if (!existingItem || currentTime > new Date(existingItem['修改时间'] || 0).getTime()) {
-                            // If no existing item, or current item is newer, replace/add it
-                            // For '我的投资组合', prioritize '来源' and '建议比例 (%)' from portfolio sheet if available
-                            if (portfolioSheetName === '我的投资组合') {
-                                const mergedItem = { ...existingItem, ...item }; // Merge existing (if any) with current item
-                                // Explicitly prefer '来源' and '建议比例 (%)' from the portfolio sheet if present in 'item'
-                                if (item['来源'] !== undefined) mergedItem['来源'] = item['来源'];
-                                if (item['建议比例 (%)'] !== undefined) mergedItem['建议比例 (%)'] = item['建议比例 (%)'];
-                                
-                                combinedLatestDataMap.set(code, mergedItem);
-                            } else {
-                                // For other portfolios, just take the latest item
-                                combinedLatestDataMap.set(code, item);
-                            }
-                        } else if (portfolioSheetName === '我的投资组合' && existingItem && currentTime === new Date(existingItem['修改时间'] || 0).getTime()) {
-                            // Special case for '我的投资组合': if times are equal, and we are processing an item from AIPEPortfolio.xlsx (file2)
-                            // which usually contains '来源' and '建议比例 (%)', merge these specific fields.
-                            // This ensures that if yield data and portfolio data have the same timestamp,
-                            // the portfolio-specific fields are picked up.
-                            const isFromPortfolioSheet = item['来源'] !== undefined || item['建议比例 (%)'] !== undefined;
-                            if (isFromPortfolioSheet) {
-                                const mergedItem = { ...existingItem, ...item };
-                                if (item['来源'] !== undefined) mergedItem['来源'] = item['来源'];
-                                if (item['建议比例 (%)'] !== undefined) mergedItem['建议比例 (%)'] = item['建议比例 (%)'];
-                                combinedLatestDataMap.set(code, mergedItem);
+                    // 后处理 AIPEPortfolio.xlsx 的数据 (更新或补充配置比例、来源、建议比例)
+                    latestPortfolioDataMap.forEach((portfolioItem, code) => {
+                        const existingYieldItem = finalDataMap.get(code); // 来自 AIPEEarningYield.xlsx 的数据
+                        const portfolioItemTime = new Date(portfolioItem['修改时间'] || 0).getTime();
+
+                        if (!existingYieldItem) {
+                            // 如果 AIPEEarningYield.xlsx 中没有此股票，则直接添加 AIPEPortfolio.xlsx 的数据
+                            finalDataMap.set(code, portfolioItem);
+                        } else {
+                            const existingYieldItemTime = new Date(existingYieldItem['修改时间'] || 0).getTime();
+                            
+                            // 比较时间戳，保留最新的记录
+                            if (portfolioItemTime > existingYieldItemTime) {
+                                // 如果 AIPEPortfolio.xlsx 的记录更新，用它来更新所有字段
+                                finalDataMap.set(code, { ...existingYieldItem, ...portfolioItem });
+                            } else if (portfolioItemTime < existingYieldItemTime) {
+                                // 如果 AIPEEarningYield.xlsx 的记录更新，但 AIPEPortfolio.xlsx 可能有特定字段
+                                // 此时，保留 existingYieldItem，但从 portfolioItem 补充特定字段（如来源、建议比例）
+                                const mergedItem = { ...existingYieldItem };
+                                if (portfolioItem['来源'] !== undefined) mergedItem['来源'] = portfolioItem['来源'];
+                                if (portfolioItem['建议比例 (%)'] !== undefined) mergedItem['建议比例 (%)'] = portfolioItem['建议比例 (%)'];
+                                if (portfolioItem['配置比例 (%)'] !== undefined) mergedItem['配置比例 (%)'] = portfolioItem['配置比例 (%)']; // 确保配置比例也考虑
+                                finalDataMap.set(code, mergedItem);
+                            } else { // 时间戳相等
+                                // 时间戳相等时，AIPEPortfolio.xlsx 的数据覆盖/补充 AIPEEarningYield.xlsx 的数据
+                                finalDataMap.set(code, { ...existingYieldItem, ...portfolioItem });
                             }
                         }
                     });
                     
-                    const finalData = Array.from(combinedLatestDataMap.values());
+                    const finalData = Array.from(finalDataMap.values());
                     
                     if (finalData.length === 0) {
                         return { portfolioData: [], portfolioName: portfolioName }; // Return found portfolioName even if no stocks
@@ -399,7 +416,6 @@
                     return { portfolioData: { error: error.message }, portfolioName: null };
                 }
             }
-            
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
             async function fetchBreakthroughTargetsNoApi() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) { console.warn("标的策略_*.json file not found."); return { data: [] }; } const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!Array.isArray(reports)) { console.warn("'买入信号标的报告' not found or is not an array."); return { data: [] }; } const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/; const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p => { const parts = p.split(': '); return parts.length > 1 ? parseFloat(parts[1]) : NaN; }).every(v => !isNaN(v) && v > 0); if (allPositive) { acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } } return acc; }, []); return { data: stocks }; } catch (error) { console.error("Error fetching or parsing breakthrough targets:", error); return { error: error.message }; } }
             
