@@ -192,22 +192,104 @@
             const getStockUrl = (code) => { let base = localStorage.getItem('sharedReferrerOrigin') || 'https://aipeinvestmentagent.pages.dev'; const url = `${base}/PotScoreFundAnalytics?stock=`; const codeStr = String(code); const isHk = codeStr.length === 5 && /^\d+$/.test(codeStr); return `${url}${encodeURIComponent(isHk ? `HK${codeStr}` : codeStr)}`; };
             const renderSkeleton = (container) => { if (!container) return; const row = `<tr><td class="py-2.5 px-4"><div class="h-4 skeleton w-full"></div></td><td class="py-2.5 px-4"><div class="h-4 skeleton w-3/4"></div></td><td class="py-2.5 px-4"><div class="h-4 skeleton w-1/2"></div></td></tr>`.repeat(5); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full"><tbody>${row}</tbody></table></div>`; };
             const renderBreakthroughTable = (container, data) => { if (!container) return; if (!data || data.error || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Load failed: ${data?.error || 'Invalid format'}</p>`; return; } if (data.length === 0) { container.innerHTML = `<p class="text-gray-500">No data available.</p>`; return; } const rows = data.map(item => { const codeStr = String(item['代码']); const isHkStock = codeStr.length === 5 && /^\d+$/.test(codeStr); const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; const url = getStockUrl(item['代码']); return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['代码']}</td> <td class="py-2 px-2 text-center"> <button class="action-btn add-from-breakthrough" data-code="${item['代码']}" data-name="${item['名称']}" data-pe="${item.PE_TTM || ''}" title="添加到观察组合"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> </button> </td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent != null ? item.Percent.toFixed(2) : '-'}%</td> <td class="py-2 pl-2 pr-4 text-right">${item.Price != null ? item.Price.toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${!isHkStock && item.PE_TTM != null ? item.PE_TTM.toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${!isHkStock && item.PB != null ? item.PB.toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${!isHkStock && item.Amount != null ? item.Amount.toFixed(2) : '-'}</td> </tr>`; }).join(''); const headers = [{l:'Name'},{l:'Code'},{l:'操作'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'},{l:'Amount(亿)',a:'right'}].map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headers}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody></table></div>`; };
-            const renderObservationList = (container, portfolioState, portfolioType) => { if (!container) return; const data = portfolioState.data; if (data.error || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: ${data.error||'Invalid format'}</p>`; return; } const lastModifiedTime = data.length > 0 ? data[0]['修改时间'] || 'N/A' : 'N/A'; const titleElementId = `${portfolioType}-observation-list-title`; const titleElement = document.getElementById(titleElementId); if (titleElement) { titleElement.innerHTML = `${portfolioState.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-auto">修改时间: ${lastModifiedTime}</span>`; } let totalPercent = 0; const rows = data.map(item => { const currentPercent = parseFloat(item['配置比例 (%)']) || 0; totalPercent += currentPercent; const url = getStockUrl(item['股票代码']); const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td> <td class="py-2 pl-2 pr-4 text-right"> <input type="number" value="${currentPercent.toFixed(2)}" class="w-20 text-right bg-gray-100 dark:bg-gray-700 rounded p-1 update-percent" data-portfolio-type="${portfolioType}" data-code="${item['股票代码']}" step="0.01"> </td> <td class="py-2 px-2 text-center"> <button class="action-btn remove-from-portfolio" data-portfolio-type="${portfolioType}" data-code="${item['股票代码']}" title="删除此项"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg> </button> </td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent!=null?item.Percent.toFixed(2):'-'}%</td> <td class="py-2 pl-2 pr-4 text-right">${item.Price!=null?item.Price.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item.PE_TTM!=null?item.PE_TTM.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item.PB!=null?item.PB.toFixed(2):'-'}</td> </tr>`; }).join(''); const headers = [{l:'NAME'},{l:'CODE'},{l:'配置比例 (%)',a:'right'},{l:'操作'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'}]; const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); const footerHtml = ` <tr class="bg-gray-100 dark:bg-gray-800 font-bold"> <td class="py-2 pl-4 pr-2" colspan="2">总计</td> <td class="py-2 pl-2 pr-4 text-right">${totalPercent.toFixed(2)}%</td> <td colspan="5"></td> </tr> `; container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody><tfoot class="border-t-2 border-gray-300 dark:border-gray-600">${footerHtml}</tfoot></table></div>`; };
-            const renderMyPortfolioList = (container, portfolioState) => { if (!container) return; const data = portfolioState.data; if (data.error || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: ${data.error||'Invalid format'}</p>`; return; } const lastModifiedTime = data.length > 0 ? data[0]['修改时间'] || 'N/A' : 'N/A'; const titleElement = document.getElementById('my-portfolio-list-title'); if (titleElement) { titleElement.innerHTML = `${portfolioState.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-auto">修改时间: ${lastModifiedTime}</span>`; } let totalPercent = 0; const rows = data.map(item => { const currentPercent = parseFloat(item['配置比例 (%)']) || 0; totalPercent += currentPercent; const url = getStockUrl(item['股票代码']); const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td> <td class="py-2 pl-2 pr-4 text-right"> <input type="number" value="${currentPercent.toFixed(2)}" class="w-20 text-right bg-gray-100 dark:bg-gray-700 rounded p-1 update-percent" data-portfolio-type="my" data-code="${item['股票代码']}" step="0.01"> </td> <td class="py-2 px-2 text-center"> <button class="action-btn remove-from-portfolio" data-portfolio-type="my" data-code="${item['股票代码']}" title="删除此项"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg> </button> </td> <td class="py-2 pl-4 pr-2">${item['来源'] || '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item['建议比例 (%)'] != null ? parseFloat(item['建议比例 (%)']).toFixed(2) + '%' : '-'}</td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent!=null?item.Percent.toFixed(2):'-'}%</td> <td class="py-2 pl-2 pr-4 text-right">${item.Price!=null?item.Price.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item.PE_TTM!=null?item.PE_TTM.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item.PB!=null?item.PB.toFixed(2):'-'}</td> </tr>`; }).join(''); const headers = [{l:'NAME'},{l:'CODE'},{l:'配置比例 (%)',a:'right'},{l:'操作'},{l:'来源'},{l:'建议比例 (%)', a:'right'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'}]; const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); const footerHtml = ` <tr class="bg-gray-100 dark:bg-gray-800 font-bold"> <td class="py-2 pl-4 pr-2" colspan="2">总计</td> <td class="py-2 pl-2 pr-4 text-right">${totalPercent.toFixed(2)}%</td> <td colspan="7"></td> </tr> `; container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody><tfoot class="border-t-2 border-gray-300 dark:border-gray-600">${footerHtml}</tfoot></table></div>`; };
+            
+            // 增强后的 renderObservationList 函数
+            const renderObservationList = (container, portfolioState, portfolioType) => { 
+                if (!container) return; 
+                
+                // 过滤掉股票代码为“100000”的现金项
+                const data = portfolioState.data.filter(item => item['股票代码'] !== '100000'); 
+                
+                if (data.error || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: ${data.error||'Invalid format'}</p>`; return; } 
+                const lastModifiedTime = data.length > 0 ? data[0]['修改时间'] || 'N/A' : 'N/A'; 
+                const titleElementId = `${portfolioType}-observation-list-title`; 
+                const titleElement = document.getElementById(titleElementId); 
+                if (titleElement) { titleElement.innerHTML = `${portfolioState.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-auto">修改时间: ${lastModifiedTime}</span>`; } 
+                let totalPercent = 0; 
+                const rows = data.map(item => { 
+                    const currentPercent = parseFloat(item['配置比例 (%)']) || 0; 
+                    totalPercent += currentPercent; 
+                    const url = getStockUrl(item['股票代码']); 
+                    const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; 
+                    return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td> <td class="py-2 pl-2 pr-4 text-right"> <input type="number" value="${currentPercent.toFixed(2)}" class="w-20 text-right bg-gray-100 dark:bg-gray-700 rounded p-1 update-percent" data-portfolio-type="${portfolioType}" data-code="${item['股票代码']}" step="0.01"> </td> <td class="py-2 px-2 text-center"> <button class="action-btn remove-from-portfolio" data-portfolio-type="${portfolioType}" data-code="${item['股票代码']}" title="删除此项"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg> </button> </td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent!=null?item.Percent.toFixed(2):'-'}%</td> <td class="py-2 pl-2 pr-4 text-right">${item.Price!=null?item.Price.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item.PE_TTM!=null?item.PE_TTM.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item.PB!=null?item.PB.toFixed(2):'-'}</td> </tr>`; }).join(''); 
+                const headers = [{l:'NAME'},{l:'CODE'},{l:'配置比例 (%)',a:'right'},{l:'操作'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'}]; 
+                const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); 
+                const footerHtml = ` <tr class="bg-gray-100 dark:bg-gray-800 font-bold"> <td class="py-2 pl-4 pr-2" colspan="2">总计</td> <td class="py-2 pl-2 pr-4 text-right">${totalPercent.toFixed(2)}%</td> <td colspan="5"></td> </tr> `; 
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody><tfoot class="border-t-2 border-gray-300 dark:border-gray-600">${footerHtml}</tfoot></table></div>`; 
+            };
+            
+             // 增强后的 renderMyPortfolioList 函数
+            const renderMyPortfolioList = (container, portfolioState) => { 
+                if (!container) return; 
+                
+                // 过滤掉股票代码为“100000”的现金项
+                const data = portfolioState.data.filter(item => item['股票代码'] !== '100000'); 
+                
+                if (data.error || !Array.isArray(data)) { 
+                    container.innerHTML = `<p class="text-red-500">Failed: ${data.error||'Invalid format'}</p>`; 
+                    return; 
+                } 
+                
+                const lastModifiedTime = data.length > 0 ? data[0]['修改时间'] || 'N/A' : 'N/A'; 
+                const titleElement = document.getElementById('my-portfolio-list-title'); 
+                if (titleElement) { 
+                    titleElement.innerHTML = `${portfolioState.name} <span class="text-sm font-normal text-gray-500 dark:text-gray-400 ml-auto">修改时间: ${lastModifiedTime}</span>`; 
+                } 
+                
+                let totalPercent = 0; 
+                const rows = data.map(item => { 
+                    const currentPercent = parseFloat(item['配置比例 (%)']) || 0; 
+                    totalPercent += currentPercent; 
+                    const url = getStockUrl(item['股票代码']); 
+                    const pClass = item.Percent >= 0 ? 'text-green-500' : 'text-red-500'; 
+                    
+                    // 直接使用 myPortfolioState.data 中已处理好的 '来源' 和 '建议比例 (%)'
+                    const sourceDisplay = item['来源'] || '-';
+                    const suggestedPercentDisplay = item['建议比例 (%)'] != null && !isNaN(parseFloat(item['建议比例 (%)'])) 
+                                                    ? parseFloat(item['建议比例 (%)']).toFixed(2) + '%' 
+                                                    : '-';
+
+                    return `<tr> 
+                                <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td> 
+                                <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td> 
+                                <td class="py-2 pl-2 pr-4 text-right"> 
+                                    <input type="number" value="${currentPercent.toFixed(2)}" class="w-20 text-right bg-gray-100 dark:bg-gray-700 rounded p-1 update-percent" data-portfolio-type="my" data-code="${item['股票代码']}" step="0.01"> 
+                                </td> 
+                                <td class="py-2 px-2 text-center"> 
+                                    <button class="action-btn remove-from-portfolio" data-portfolio-type="my" data-code="${item['股票代码']}" title="删除此项"> 
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg> 
+                                    </button> 
+                                </td> 
+                                <td class="py-2 pl-4 pr-2">${sourceDisplay}</td> 
+                                <td class="py-2 pl-2 pr-4 text-right">${suggestedPercentDisplay}</td> 
+                                <td class="py-2 pl-2 pr-4 text-right ${pClass}">${item.Percent!=null?item.Percent.toFixed(2):'-'}%</td> 
+                                <td class="py-2 pl-2 pr-4 text-right">${item.Price!=null?item.Price.toFixed(2):'-'}</td> 
+                                <td class="py-2 pl-2 pr-4 text-right">${item.PE_TTM!=null?item.PE_TTM.toFixed(2):'-'}</td> 
+                                <td class="py-2 pl-2 pr-4 text-right">${item.PB!=null?item.PB.toFixed(2):'-'}</td> 
+                            </tr>`; 
+                }).join(''); 
+                
+                const headers = [{l:'NAME'},{l:'CODE'},{l:'配置比例 (%)',a:'right'},{l:'操作'},{l:'来源'},{l:'建议比例 (%)', a:'right'},{l:'Change %',a:'right'},{l:'Price',a:'right'},{l:'PE(TTM)',a:'right'},{l:'PB',a:'right'}]; 
+                const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); 
+                const footerHtml = ` <tr class="bg-gray-100 dark:bg-gray-800 font-bold"> <td class="py-2 pl-4 pr-2" colspan="2">总计</td> <td class="py-2 pl-2 pr-4 text-right">${totalPercent.toFixed(2)}%</td> <td colspan="7"></td> </tr> `; 
+                
+                container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rows}</tbody><tfoot class="border-t-2 border-gray-300 dark:border-gray-600">${footerHtml}</tfoot></table></div>`; 
+            };
+            
             const renderModelPortfolio = (container, data, portfolioType) => { if (!container) return; if (!data || !Array.isArray(data)) { container.innerHTML = `<p class="text-red-500">Failed: Invalid format.</p>`; return; } const rowsHtml = data.map(item => { const url = getStockUrl(item['代码']); const price = item.Price!=null?item.Price:item['最近一日价格']; const changeNum = item.Percent!=null?item.Percent:parseFloat((item['涨跌幅(%)']||'0').replace('%','')); const pClass = changeNum>=0?'text-green-500':'text-red-500'; const changeDisplay = !isNaN(changeNum)?`${changeNum.toFixed(2)}%`:(item['涨跌幅(%)']||'-'); return `<tr> <td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${url}" target="_blank" class="hover:underline">${item['名称']}</a></td> <td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['代码']}</td> <td class="py-2 pl-2 pr-4 text-right">${item['最优权重(%)']}</td> <td class="py-2 px-2 text-center"> <button class="action-btn add-from-model" data-portfolio-type="${portfolioType}" data-code="${item['代码']}" data-name="${item['名称']}" data-weight="${item['最优权重(%)']}" title="添加到观察组合"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg> </button> </td> <td class="py-2 pl-2 pr-4 text-right">${price!=null?price.toFixed(2):'-'}</td> <td class="py-2 pl-2 pr-4 text-right ${pClass}">${changeDisplay}</td> <td class="py-2 pl-2 pr-4 text-right">${item['PotScore'] != null ? item['PotScore'].toFixed(2) : '-'}</td> <td class="py-2 pl-2 pr-4 text-right">${item['总净流入占比_5日总和(%)']}</td> <td class="py-2 pl-2 pr-4 text-right">${item['主力净流入-净占比(%)']}</td> </tr>`; }).join(''); const headers = [{l:'名称'},{l:'代码'},{l:'最优权重',a:'right'},{l:'操作'},{l:'价格',a:'right'},{l:'涨跌幅',a:'right'},{l:'PotScore',a:'right'},{l:'5日净流入',a:'right'},{l:'主力净流入',a:'right'}]; const headerHtml = headers.map(h=>`<th class="py-3 ${h.a==='right' ? 'pl-2 pr-4 text-right' : 'pl-4 pr-2'} sortable-header">${h.l}<span class="sort-indicator"></span></th>`).join(''); container.innerHTML = `<div class="overflow-x-auto rounded-lg border dark:border-gray-700"><table class="w-full text-sm text-left"><thead class="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700"><tr>${headerHtml}</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-700">${rowsHtml}</tbody></table></div>`; };
-            // 【请用这个函数整体替换掉旧的 getPortfolioData 函数】
+            
+            // 增强后的 getPortfolioData 函数，专门处理“我的投资组合”的来源和建议比例
             async function getPortfolioData(yieldSheetName, portfolioSheetName) {
-                // FIXED: Correctly pointed file1 to the AIPEInvestmentAgent repository
                 const file1 = { 
                     user: 'digital-era', 
-                    repo: 'AIPEInvestmentAgent', // Correct repository for the yield file
+                    repo: 'AIPEInvestmentAgent', 
                     dir: 'data', 
                     filename: 'AIPEEarningYield.xlsx', 
                     sheet: yieldSheetName 
                 };
                 const file2 = { 
                     user: 'digital-era', 
-                    repo: 'AIPEPortfolioTracker', // Correct repository for the portfolio file
+                    repo: 'AIPEPortfolioTracker', 
                     dir: 'data', 
                     filename: 'AIPEPortfolio.xlsx', 
                     sheet: portfolioSheetName 
@@ -215,49 +297,129 @@
             
                 const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`;
                 
-                let combinedData = [], portfolioName = null;
+                let yieldData = [], portfolioDataFromSheet = [];
+                let portfolioName = null;
+
                 try {
                     const [res1, res2] = await Promise.all([
                         fetch(buildUrl(file1)), 
                         fetch(buildUrl(file2))
                     ]);
             
+                    // Fetch yield data (AIPEEarningYield.xlsx)
                     if (res1.ok) {
                         const d = XLSX.utils.sheet_to_json(XLSX.read(await res1.arrayBuffer()).Sheets[file1.sheet] || []);
                         if (Array.isArray(d)) {
-                            combinedData.push(...d);
+                            yieldData.push(...d);
                             if (d.length > 0 && d[0]['组合名称']) portfolioName = d[0]['组合名称'];
                         }
                     }
                     
+                    // Fetch portfolio data from AIPEPortfolio.xlsx
                     if (res2.ok) {
                         const d = XLSX.utils.sheet_to_json(XLSX.read(await res2.arrayBuffer()).Sheets[file2.sheet] || []);
-                        if (Array.isArray(d)) combinedData.push(...d);
-                    }
-                    
-                    if (combinedData.length === 0) return { portfolioData: [], portfolioName };
-                    
-                    let maxTimestamp = 0;
-                    for (const row of combinedData) {
-                        const ts = row['修改时间'];
-                        if (ts != null && !isNaN(parseFloat(ts)) && ts > maxTimestamp) {
-                            maxTimestamp = ts;
+                        if (Array.isArray(d)) {
+                            // If it's "我的投资组合" sheet, we need to process source and suggested percent
+                            if (portfolioSheetName === '我的投资组合') {
+                                // Group by stock code
+                                const groupedByCode = d.reduce((acc, item) => {
+                                    const code = item['股票代码'];
+                                    if (!acc[code]) acc[code] = [];
+                                    acc[code].push(item);
+                                    return acc;
+                                }, {});
+
+                                // For each stock code, find the latest entry by '修改时间'
+                                for (const code in groupedByCode) {
+                                    const itemsForCode = groupedByCode[code];
+                                    if (itemsForCode.length > 0) {
+                                        // Sort by '修改时间' descending to get the latest
+                                        itemsForCode.sort((a, b) => {
+                                            const timeA = a['修改时间'] ? new Date(a['修改时间']).getTime() : 0;
+                                            const timeB = b['修改时间'] ? new Date(b['修改时间']).getTime() : 0;
+                                            return timeB - timeA;
+                                        });
+                                        portfolioDataFromSheet.push(itemsForCode[0]); // Add the latest record
+                                    }
+                                }
+                            } else {
+                                portfolioDataFromSheet.push(...d);
+                            }
                         }
                     }
                     
-                    if (maxTimestamp === 0) {
-                        console.warn(`No valid timestamps found for ${portfolioSheetName}.`);
-                        return { portfolioData: [], portfolioName };
+                    let combinedLatestData = [];
+
+                    // Combine yieldData and portfolioDataFromSheet
+                    // Prioritize portfolioDataFromSheet for '来源' and '建议比例 (%)' if present
+                    const portfolioMap = new Map(portfolioDataFromSheet.map(item => [item['股票代码'], item]));
+
+                    for (const yieldItem of yieldData) {
+                        const code = yieldItem['股票代码'];
+                        const portfolioItem = portfolioMap.get(code);
+
+                        if (portfolioItem) {
+                            // Merge: yieldItem provides most market data, portfolioItem provides source/suggested percent
+                            combinedLatestData.push({
+                                ...yieldItem,
+                                '来源': portfolioItem['来源'] || yieldItem['来源'] || '', // Prefer portfolioItem's source
+                                '建议比例 (%)': portfolioItem['建议比例 (%)'] != null ? portfolioItem['建议比例 (%)'] : (yieldItem['建议比例 (%)'] != null ? yieldItem['建议比例 (%)'] : null), // Prefer portfolioItem's suggested percent
+                                // Keep other fields from yieldItem, like '修改时间' from yield for overall freshness
+                                // Or, explicitly pick the latest '修改时间'
+                                '修改时间': portfolioItem['修改时间'] > yieldItem['修改时间'] ? portfolioItem['修改时间'] : yieldItem['修改时间']
+                            });
+                            portfolioMap.delete(code); // Remove processed item
+                        } else {
+                            combinedLatestData.push(yieldItem); // Add yield data if no portfolio match
+                        }
+                    }
+
+                    // Add any remaining items from portfolioDataFromSheet that weren't in yieldData
+                    for (const remainingPortfolioItem of portfolioMap.values()) {
+                        combinedLatestData.push(remainingPortfolioItem);
+                    }
+
+
+                    if (combinedLatestData.length === 0) return { portfolioData: [], portfolioName };
+                    
+                    // Final filter for the absolute latest data based on '修改时间' across the combined set
+                    let maxTimestamp = 0;
+                    for (const row of combinedLatestData) {
+                        // Ensure '修改时间' is treated as a comparable value (e.g., number or Date object)
+                        const ts = row['修改时间'];
+                        if (ts != null && !isNaN(new Date(ts).getTime())) {
+                            const currentItemTime = new Date(ts).getTime();
+                            if (currentItemTime > maxTimestamp) {
+                                maxTimestamp = currentItemTime;
+                            }
+                        }
                     }
                     
-                    const latest = combinedData.filter(r => r['修改时间'] === maxTimestamp);
-                    const unique = Array.from(new Map(latest.map(item => [item['股票代码'], item])).values());
+                    // Filter for only items with the absolute latest timestamp
+                    let filteredByLatestTimestamp = [];
+                    if (maxTimestamp > 0) {
+                        filteredByLatestTimestamp = combinedLatestData.filter(r => {
+                            const itemTime = r['修改时间'] ? new Date(r['修改时间']).getTime() : 0;
+                            return itemTime === maxTimestamp;
+                        });
+                    } else {
+                        // If no valid timestamps, use all combined data (or handle as an error)
+                        filteredByLatestTimestamp = combinedLatestData;
+                    }
+
+                    // Ensure uniqueness by '股票代码' from the filtered latest set
+                    const unique = Array.from(new Map(filteredByLatestTimestamp.map(item => [item['股票代码'], item])).values());
+                    
                     return { portfolioData: unique, portfolioName };
+
                 } catch (error) {
                     console.error(`Error fetching portfolio for ${portfolioSheetName}:`, error);
                     return { portfolioData: { error: error.message }, portfolioName: null };
                 }
             }
+
+
+            
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
             async function fetchBreakthroughTargetsNoApi() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) { console.warn("标的策略_*.json file not found."); return { data: [] }; } const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!Array.isArray(reports)) { console.warn("'买入信号标的报告' not found or is not an array."); return { data: [] }; } const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/; const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p => { const parts = p.split(': '); return parts.length > 1 ? parseFloat(parts[1]) : NaN; }).every(v => !isNaN(v) && v > 0); if (allPositive) { acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } } return acc; }, []); return { data: stocks }; } catch (error) { console.error("Error fetching or parsing breakthrough targets:", error); return { error: error.message }; } }
             
