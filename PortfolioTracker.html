@@ -297,17 +297,14 @@
             
                 const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`;
                 
-                let allRawRecords = []; // 收集所有来源的原始记录
-                let portfolioSheetRecords = []; // 单独存放 "我的投资组合" sheet 的所有记录，用于回溯
+                let allRawRecords = [];
+                let portfolioSheetRecords = [];
                 let portfolioName = null;
 
                 try {
-                    const [res1, res2] = await Promise.allSettled([
-                        fetch(buildUrl(file1)), 
-                        fetch(buildUrl(file2))
-                    ]);
-            
                     // --- 步骤 1: 收集所有原始记录 ---
+                    const [res1, res2] = await Promise.allSettled([ fetch(buildUrl(file1)), fetch(buildUrl(file2)) ]);
+            
                     if (res1.status === 'fulfilled' && res1.value.ok) {
                         const buffer = await res1.value.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
@@ -326,31 +323,24 @@
                             const rawData = XLSX.utils.sheet_to_json(sheet);
                             if (Array.isArray(rawData)) {
                                 allRawRecords.push(...rawData);
-                                // 如果是 "我的投资组合"，则单独保存其所有记录
-                                if (portfolioSheetName === '我的投资组合') {
-                                    portfolioSheetRecords.push(...rawData);
-                                }
+                                if (portfolioSheetName === '我的投资组合') portfolioSheetRecords.push(...rawData);
                             }
                         }
                     }
                     
                     if (allRawRecords.length === 0) return { portfolioData: [], portfolioName: null };
 
-                    // --- 步骤 2: 找到全局的最大修改时间 (作为字符串进行比较) ---
+                    // --- 步骤 2: 找到全局的最大修改时间字符串 ---
                     let maxTimestampString = '0'; 
                     allRawRecords.forEach(record => {
                         const currentTimeString = String(record['修改时间'] || '0');
-                        if (currentTimeString > maxTimestampString) {
-                            maxTimestampString = currentTimeString;
-                        }
+                        if (currentTimeString > maxTimestampString) maxTimestampString = currentTimeString;
                     });
 
                     if (maxTimestampString === '0') return { portfolioData: [], portfolioName: null };
 
-                    // --- 步骤 3: 筛选出所有修改时间等于最大时间的记录 ---
+                    // --- 步骤 3 & 4: 筛选并合并最新批次的记录 ---
                     const latestRecords = allRawRecords.filter(record => String(record['修改时间'] || '0') === maxTimestampString);
-                    
-                    // --- 步骤 4: 对最新批次的记录进行去重和合并 ---
                     const finalDataMap = new Map();
                     latestRecords.forEach(record => {
                         const code = String(record['股票代码']);
@@ -358,9 +348,8 @@
                         finalDataMap.set(code, { ...(existingRecord || {}), ...record });
                     });
 
-                    // --- 新增步骤 5: 智能回填 "来源" 和 "建议比例 (%)" ---
+                    // --- 修正后的步骤 5: 智能回填 "来源" 和 "建议比例 (%)" ---
                     if (portfolioSheetName === '我的投资组合' && portfolioSheetRecords.length > 0) {
-                        // 1. 准备一个按股票代码分组并按时间降序排好的历史记录 Map
                         const portfolioHistoryMap = new Map();
                         portfolioSheetRecords.forEach(rec => {
                             const code = String(rec['股票代码']);
@@ -371,32 +360,38 @@
                             records.sort((a, b) => String(b['修改时间'] || '0').localeCompare(String(a['修改时间'] || '0')));
                         });
 
-                        // 2. 遍历最终列表，检查并回填缺失字段
                         finalDataMap.forEach((record, code) => {
-                            const history = portfolioHistoryMap.get(code);
-                            if (history) {
-                                // 检查并回填 "来源"
-                                if (!record['来源']) {
-                                    const foundSourceRecord = history.find(histRec => histRec['来源']);
-                                    if (foundSourceRecord) record['来源'] = foundSourceRecord['来源'];
-                                }
-                                // 检查并回填 "建议比例 (%)"
-                                // 使用 == null 可以同时判断 undefined 和 null
-                                if (record['建议比例 (%)'] == null) {
-                                    const foundPercentRecord = history.find(histRec => histRec['建议比例 (%)'] != null);
-                                    if (foundPercentRecord) record['建议比例 (%)'] = foundPercentRecord['建议比例 (%)'];
+                            // 只有当至少一个字段为空时，才启动回溯
+                            if (!record['来源'] || record['建议比例 (%)'] == null) {
+                                const history = portfolioHistoryMap.get(code);
+                                if (history) {
+                                    // 修正逻辑：寻找一个“最佳候选记录”来同时提供两个字段的信息
+                                    
+                                    // 优先策略：寻找最近的、同时包含这两个字段的记录
+                                    let bestCandidate = history.find(histRec => histRec['来源'] && histRec['建议比例 (%)'] != null);
+                                    
+                                    // 降级策略：如果找不到完美的，就找最近的、包含任意一个字段的记录
+                                    if (!bestCandidate) {
+                                       bestCandidate = history.find(histRec => histRec['来源'] || histRec['建议比例 (%)'] != null);
+                                    }
+
+                                    if (bestCandidate) {
+                                        // 使用找到的这“一条”候选记录来填充当前记录的空值
+                                        if (!record['来源']) {
+                                            record['来源'] = bestCandidate['来源'];
+                                        }
+                                        if (record['建议比例 (%)'] == null) {
+                                            record['建议比例 (%)'] = bestCandidate['建议比例 (%)'];
+                                        }
+                                    }
                                 }
                             }
                         });
                     }
 
-                    if (finalDataMap.size > 0) {
-                        portfolioName = Array.from(finalDataMap.values())[0]['组合名称'];
-                    }
+                    if (finalDataMap.size > 0) portfolioName = Array.from(finalDataMap.values())[0]['组合名称'];
                     
-                    const finalData = Array.from(finalDataMap.values());
-                    
-                    return { portfolioData: finalData, portfolioName: portfolioName };
+                    return { portfolioData: Array.from(finalDataMap.values()), portfolioName };
 
                 } catch (error) {
                     console.error(`Error in getPortfolioData for sheets "${yieldSheetName}" and "${portfolioSheetName}":`, error);
