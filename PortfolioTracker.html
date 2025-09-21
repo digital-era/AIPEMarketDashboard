@@ -307,28 +307,23 @@
                     ]);
             
                     // --- 步骤 1: 收集所有原始记录 ---
-                    // 从 AIPEEarningYield.xlsx 收集
-                    if (res1.status === 'fulfilled' && res1.value.ok) {
-                        const buffer = await res1.value.arrayBuffer();
+                    const collectRecords = (buffer, sheetName) => {
                         const workbook = XLSX.read(buffer, { type: 'array' });
-                        const sheet = workbook.Sheets[file1.sheet];
+                        const sheet = workbook.Sheets[sheetName];
                         if (sheet) {
                             const rawData = XLSX.utils.sheet_to_json(sheet);
                             if (Array.isArray(rawData)) allRawRecords.push(...rawData);
                         }
+                    };
+
+                    if (res1.status === 'fulfilled' && res1.value.ok) {
+                        collectRecords(await res1.value.arrayBuffer(), file1.sheet);
                     } else {
                         console.error(`Error fetching or parsing ${file1.filename}:`, res1.reason || (res1.value ? res1.value.statusText : 'Network error'));
                     }
                     
-                    // 从 AIPEPortfolio.xlsx 收集
                     if (res2.status === 'fulfilled' && res2.value.ok) {
-                        const buffer = await res2.value.arrayBuffer();
-                        const workbook = XLSX.read(buffer, { type: 'array' });
-                        const sheet = workbook.Sheets[file2.sheet];
-                        if (sheet) {
-                            const rawData = XLSX.utils.sheet_to_json(sheet);
-                            if (Array.isArray(rawData)) allRawRecords.push(...rawData);
-                        }
+                        collectRecords(await res2.value.arrayBuffer(), file2.sheet);
                     } else {
                         console.error(`Error fetching or parsing ${file2.filename}:`, res2.reason || (res2.value ? res2.value.statusText : 'Network error'));
                     }
@@ -337,29 +332,29 @@
                         return { portfolioData: [], portfolioName: null };
                     }
 
-                    // --- 步骤 2: 找到全局的最大修改时间 ---
-                    let maxTimestamp = 0;
-                    let maxTimestampString = ''; // 同时保留原始的时间字符串，用于精确匹配
+                    // --- 步骤 2: 找到全局的最大修改时间 (作为字符串) ---
+                    // 直接比较 YYYYMMDDHHMMSS 格式的字符串即可判断新旧
+                    let maxTimestampString = '0'; 
+
                     allRawRecords.forEach(record => {
-                        const currentTimestamp = new Date(record['修改时间'] || 0).getTime();
-                        if (currentTimestamp > maxTimestamp) {
-                            maxTimestamp = currentTimestamp;
-                            maxTimestampString = record['修改时间'];
+                        const currentTimeString = String(record['修改时间'] || '0');
+                        if (currentTimeString > maxTimestampString) {
+                            maxTimestampString = currentTimeString;
                         }
                     });
 
-                    if (maxTimestamp === 0) {
+                    if (maxTimestampString === '0' || !maxTimestampString) {
                          console.warn("Could not determine a valid maximum timestamp.");
                          return { portfolioData: [], portfolioName: null };
                     }
 
                     // --- 步骤 3: 筛选出所有修改时间等于最大时间的记录 ---
                     const latestRecords = allRawRecords.filter(record => {
-                        return record['修改时间'] === maxTimestampString;
+                        return String(record['修改时间'] || '0') === maxTimestampString;
                     });
                     
                     // --- 步骤 4: 对最新批次的记录进行去重和合并 ---
-                    // 这一步确保在最新批次内部，如果因为数据源问题导致同一股票有重复，也能正确处理
+                    // 确保在最新批次内部，如果因数据源问题导致同一股票有重复，也能正确处理
                     const finalDataMap = new Map();
                     latestRecords.forEach(record => {
                         const code = String(record['股票代码']);
@@ -386,7 +381,6 @@
                     return { portfolioData: { error: error.message }, portfolioName: null };
                 }
             }
-
             
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
             async function fetchBreakthroughTargetsNoApi() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) { console.warn("标的策略_*.json file not found."); return { data: [] }; } const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!Array.isArray(reports)) { console.warn("'买入信号标的报告' not found or is not an array."); return { data: [] }; } const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/; const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p => { const parts = p.split(': '); return parts.length > 1 ? parseFloat(parts[1]) : NaN; }).every(v => !isNaN(v) && v > 0); if (allPositive) { acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } } return acc; }, []); return { data: stocks }; } catch (error) { console.error("Error fetching or parsing breakthrough targets:", error); return { error: error.message }; } }
