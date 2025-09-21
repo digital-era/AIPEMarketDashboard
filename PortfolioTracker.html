@@ -340,7 +340,7 @@
             function closeModal() { ui.modal.classList.remove('modal-active'); ui.modal.addEventListener('transitionend', () => ui.modal.classList.add('hidden'), { once: true }); document.body.classList.remove('overflow-hidden'); }
             
             async function triggerPortfolioUpdate(excelBase64) { const UPDATE_API_URL = 'https://aipe-portfolio-tracker.vercel.app/api/update-portfolio'; const originalIconHTML = ui.updateConfigBtn.innerHTML; ui.updateConfigBtn.disabled = true; ui.updateConfigBtn.innerHTML = `<svg class="w-5 h-5 reloading" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5M20 4s-2-2-6-2-8 4-8 4S2 14 6 18s8-4 8-4"></path></svg>`; try { const response = await fetch(UPDATE_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ portfolioData: excelBase64 }) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || `Server Error: ${response.status}`); } const result = await response.json(); alert('组合配置更新成功！'); console.log('Update success:', result); } catch (error) { console.error('Failed to update portfolio:', error); alert(`组合配置更新失败: ${error.message}`); } finally { ui.updateConfigBtn.disabled = false; ui.updateConfigBtn.innerHTML = originalIconHTML; } }
-            async function generateAndTriggerUpdate() {
+                      async function generateAndTriggerUpdate() {
                 const getTimestamp = () => {
                     const d = new Date();
                     const pad = (n) => n.toString().padStart(2, '0');
@@ -381,9 +381,14 @@
                     .filter(filterCash) // 过滤现金项
                     .map(item => {
                         let source = item['来源'] || '';
-                        let suggestedPercent = item['建议比例 (%)'] != null ? parseFloat(item['建议比例 (%)']) : '';
+                        // 确保 suggestedPercent 总是数字或 null
+                        let suggestedPercent = item['建议比例 (%)'] != null ? parseFloat(item['建议比例 (%)']) : null;
+                        if (isNaN(suggestedPercent)) { // 如果解析后是 NaN，也设为 null
+                            suggestedPercent = null;
+                        }
 
-                        if (!source || suggestedPercent === '') { // 如果来源或建议比例为空
+
+                        if (!source || suggestedPercent === null) { // 如果来源或建议比例为空/null
                             const stockCode = item['股票代码'];
 
                             // 在大智投资组合中查找
@@ -406,7 +411,7 @@
                             '股票代码': item['股票代码'],
                             '股票名称': item['股票名称'],
                             '来源': source,
-                            '建议比例 (%)': suggestedPercent, // 保持为数字或空字符串，XLSX.utils.json_to_sheet会处理
+                            '建议比例 (%)': suggestedPercent, // 统一为数字或 null
                             '配置比例 (%)': parseFloat(item['配置比例 (%)']) || 0,
                             '修改时间': timestamp
                         };
