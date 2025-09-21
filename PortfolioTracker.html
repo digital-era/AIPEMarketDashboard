@@ -297,7 +297,6 @@
                 const buildUrl = (f) => `https://raw.githubusercontent.com/${f.user}/${f.repo}/main/${f.dir}/${f.filename}?t=${new Date().getTime()}`;
                 
                 let allRawRecords = [];
-                // **修正核心1：只为“我的投资组合”准备专用的历史数据**
                 let myPortfolioHistory = []; 
                 let portfolioName = null;
 
@@ -315,11 +314,9 @@
                         const buffer = await res2.value.arrayBuffer();
                         const workbook = XLSX.read(buffer, { type: 'array' });
                         
-                        // 1. 读取当前页面的数据加入 allRawRecords
                         const currentPortfolioSheet = workbook.Sheets[portfolioSheetName];
                         if (currentPortfolioSheet) allRawRecords.push(...XLSX.utils.sheet_to_json(currentPortfolioSheet));
 
-                        // 2. 如果是“我的投资组合”页面，则把该sheet的“全部”记录读入专用历史数组
                         if (portfolioSheetName === '我的投资组合') {
                             const mySheet = workbook.Sheets['我的投资组合'];
                             if (mySheet) {
@@ -359,16 +356,14 @@
                         });
 
                         finalDataMap.forEach((record, code) => {
-                            // 当任一字段缺失时，启动回填
                             if (!record['来源'] || record['建议比例 (%)'] == null) {
                                 const history = historyMap.get(code);
                                 if (history) {
-                                    // **修正核心2：执行“成对”查找**
-                                    // 查找最近的一条包含有效“来源”的记录
-                                    const bestCandidate = history.find(histRec => histRec['来源']);
+                                    // **最终修正核心：查找同时包含两个有效字段的最近记录**
+                                    const bestCandidate = history.find(histRec => histRec['来源'] && histRec['建议比例 (%)'] != null);
 
-                                    // 如果找到了这条记录，就用它来同时更新两个字段
                                     if (bestCandidate) {
+                                        // 使用找到的这条“完整”记录来同时更新两个字段
                                         if (!record['来源']) {
                                             record['来源'] = bestCandidate['来源'];
                                         }
@@ -390,6 +385,7 @@
                     return { portfolioData: { error: error.message }, portfolioName: null };
                 }
             }
+            
             async function fetchModelPortfolioData(prefix) { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`); let latest = files.filter(f => regex.test(f.name)).sort((a,b) => b.name.localeCompare(a.name))[0]; if (!latest) return { error: `'${prefix}_*.json' file not found.` }; const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const data = json?.结果?.最优投资组合配置?.配置详情; if (!data) return { error: "Invalid data structure." }; const date = latest.name.match(regex)[1]; return { data, title: `${prefix.replace('模型', '组合模型')} (${date})` }; } catch (error) { return { error: error.message }; } }
             async function fetchBreakthroughTargetsNoApi() { const API_URL = 'https://api.github.com/repos/digital-era/AIPEQModel/contents/'; try { const res = await fetch(API_URL); if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`); const files = await res.json(); const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/; const latest = files.filter(f => regex.test(f.name)).sort((a, b) => b.name.localeCompare(a.name))[0]; if (!latest) { console.warn("标的策略_*.json file not found."); return { data: [] }; } const dataRes = await fetch(`${latest.download_url}?t=${Date.now()}`); if (!dataRes.ok) throw new Error(`Download fail: ${dataRes.status}`); const json = await dataRes.json(); const reports = json?.步骤2_交易策略分析?.买入信号标的报告; if (!Array.isArray(reports)) { console.warn("'买入信号标的报告' not found or is not an array."); return { data: [] }; } const nameCodeRe = /### 交易策略分析报告: (.+?) \((\d{5,6})\)/; const factorsRe = /因子数值 \(\d{4}-\d{2}-\d{2}\): (.*)/; const stocks = reports.reduce((acc, text) => { const nameCodeMatch = text.match(nameCodeRe); const factorsMatch = text.match(factorsRe); if (nameCodeMatch && factorsMatch) { const allPositive = factorsMatch[1].split(', ').map(p => { const parts = p.split(': '); return parts.length > 1 ? parseFloat(parts[1]) : NaN; }).every(v => !isNaN(v) && v > 0); if (allPositive) { acc.push({ '名称': nameCodeMatch[1], '代码': nameCodeMatch[2] }); } } return acc; }, []); return { data: stocks }; } catch (error) { console.error("Error fetching or parsing breakthrough targets:", error); return { error: error.message }; } }
             
