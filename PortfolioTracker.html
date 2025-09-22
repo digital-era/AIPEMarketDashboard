@@ -231,7 +231,7 @@
 
                 let columns = [
                     { id: 'name', header: '名称', cell: item => `<td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${getStockUrl(item['股票代码'])}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td>` },
-                    { id: 'code', header: 'CODE', cell: item => `<td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td>` },
+                    { id: 'code', header: '价格', cell: item => `<td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td>` },
                     { id: 'allocation', header: '配置比例 (%)', align: 'right', cell: item => `<td class="py-2 pl-2 pr-4 text-right"><input type="number" value="${(parseFloat(item['配置比例 (%)']) || 0).toFixed(2)}" class="w-20 text-right bg-gray-100 dark:bg-gray-700 rounded p-1 update-percent" data-portfolio-type="${portfolioType}" data-code="${item['股票代码']}" step="0.01"></td>` },
                     { id: 'actions', header: '操作', cell: item => `<td class="py-2 px-2 text-center"><button class="action-btn remove-from-portfolio" data-portfolio-type="${portfolioType}" data-code="${item['股票代码']}" title="删除此项"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg></button></td>` },
                     { id: 'change', header: '涨跌幅', align: 'right', cell: item => `<td class="py-2 pl-2 pr-4 text-right ${item.Percent >= 0 ? 'text-green-500' : 'text-red-500'}">${item.Percent!=null?item.Percent.toFixed(2):'-'}%</td>` },
@@ -268,7 +268,7 @@
 
                 let columns = [
                     { id: 'name', header: '名称', cell: item => `<td class="py-2 pl-4 pr-2 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${getStockUrl(item['股票代码'])}" target="_blank" class="hover:underline">${item['股票名称']||'N/A'}</a></td>` },
-                    { id: 'code', header: 'CODE', cell: item => `<td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td>` },
+                    { id: 'code', header: '价格', cell: item => `<td class="py-2 pl-4 pr-2 text-gray-500 dark:text-gray-400">${item['股票代码']}</td>` },
                     { id: 'allocation', header: '配置比例 (%)', align: 'right', cell: item => `<td class="py-2 pl-2 pr-4 text-right"><input type="number" value="${(parseFloat(item['配置比例 (%)']) || 0).toFixed(2)}" class="w-20 text-right bg-gray-100 dark:bg-gray-700 rounded p-1 update-percent" data-portfolio-type="my" data-code="${item['股票代码']}" step="0.01"></td>` },
                     { id: 'actions', header: '操作', cell: item => `<td class="py-2 px-2 text-center"><button class="action-btn remove-from-portfolio" data-portfolio-type="my" data-code="${item['股票代码']}" title="删除此项"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg></button></td>` },
                     { id: 'source', header: '来源', cell: item => `<td class="py-2 pl-4 pr-2">${item['来源'] || '-'}</td>` },
