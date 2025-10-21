@@ -622,7 +622,7 @@
                     if (!data) return { error: "Invalid data structure or missing '配置详情'." };
             
                     // 从文件名中提取日期
-                    const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\d{2})\\.json$`);
+                    const regex = new RegExp(`^${prefix}_(\\d{4}-\\d{2}-\\d{2})\\.json$`);
                     const dateMatch = fileName.match(regex);
                     const date = dateMatch ? dateMatch[1] : LATEST_DATE; // 使用文件名中的日期或预设日期
             
@@ -799,16 +799,52 @@
                         }
                     });
 
-                    const apiPayload = { dynamiclist: cnList, dynamicHKlist: hkList, dynamicETFlist: etfList };
-                    ui.statusText.textContent = `Triggering backend for ${codesToRefresh.length} stocks...`;
+                    // --- MODIFICATION START ---
+                    // The original code sent one request. Now we create an array of fetch promises.
+                    
+                    const apiRequests = [];
 
-                    const res = await fetch(VERCEL_TRIGGER_URL, {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify(apiPayload)
-                    });
+                    // Create a request for CN stocks if the list is not empty
+                    if (cnList.length > 0) {
+                        apiRequests.push(fetch(VERCEL_TRIGGER_URL, {
+                            method: 'POST',
+                            headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({ dynamiclist: cnList })
+                        }));
+                    }
+                    
+                    // Create a request for HK stocks if the list is not empty
+                    if (hkList.length > 0) {
+                        apiRequests.push(fetch(VERCEL_TRIGGER_URL, {
+                            method: 'POST',
+                            headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({ dynamicHKlist: hkList })
+                        }));
+                    }
 
-                    if (!res.ok) throw new Error((await res.json()).error || `Trigger API failed`);
+                    // Create a request for ETFs if the list is not empty
+                    if (etfList.length > 0) {
+                        apiRequests.push(fetch(VERCEL_TRIGGER_URL, {
+                            method: 'POST',
+                            headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({ dynamicETFlist: etfList })
+                        }));
+                    }
+
+                    ui.statusText.textContent = `Triggering backend for ${codesToRefresh.length} stocks across ${apiRequests.length} requests...`;
+
+                    // Execute all trigger requests in parallel and wait for all to complete
+                    const responses = await Promise.all(apiRequests);
+
+                    // Check if any of the requests failed
+                    for (const res of responses) {
+                        if (!res.ok) {
+                            // If a request fails, throw an error to be caught by the catch block
+                            throw new Error((await res.json()).error || `Trigger API failed with status ${res.status}`);
+                        }
+                    }
+                    
+                    // --- MODIFICATION END ---
                     
                     ui.statusText.textContent = `Backend is processing... Please wait about ${REFRESH_DELAY_MS/1000}s.`;
                     await new Promise(r => setTimeout(r, REFRESH_DELAY_MS));
