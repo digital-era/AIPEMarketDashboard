@@ -553,7 +553,7 @@
                     if (!res.ok) throw new Error(`GitHub API fail: ${res.status}`);
 
                     const files = await res.json();
-                    const regex = /^标的策略_(\d{4}-\d{2}-\d{2})\.json$/;
+                    const regex = /^标的策略_(\d{4}-\\d{2}-\\d{2})\.json$/;
 
                     const latest = files
                         .filter(f => regex.test(f.name))
@@ -800,51 +800,57 @@
                     });
 
                     // --- MODIFICATION START ---
-                    // The original code sent one request. Now we create an array of fetch promises.
-                    
                     const apiRequests = [];
 
-                    // Create a request for CN stocks if the list is not empty
+                    // 为A股创建请求
                     if (cnList.length > 0) {
                         apiRequests.push(fetch(VERCEL_TRIGGER_URL, {
                             method: 'POST',
                             headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ dynamiclist: cnList })
+                            body: JSON.stringify({ 
+                                list_type: 'a_shares',
+                                dynamiclist: cnList 
+                            })
                         }));
                     }
                     
-                    // Create a request for HK stocks if the list is not empty
+                    // 为港股创建请求
                     if (hkList.length > 0) {
                         apiRequests.push(fetch(VERCEL_TRIGGER_URL, {
                             method: 'POST',
                             headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ dynamicHKlist: hkList })
+                            body: JSON.stringify({ 
+                                list_type: 'hk_shares',
+                                dynamicHKlist: hkList 
+                            })
                         }));
                     }
 
-                    // Create a request for ETFs if the list is not empty
+                    // 为ETF创建请求
                     if (etfList.length > 0) {
                         apiRequests.push(fetch(VERCEL_TRIGGER_URL, {
                             method: 'POST',
                             headers: {'Content-Type':'application/json'},
-                            body: JSON.stringify({ dynamicETFlist: etfList })
+                            body: JSON.stringify({ 
+                                list_type: 'etf',
+                                dynamicETFlist: etfList 
+                            })
                         }));
                     }
+                    // --- MODIFICATION END ---
 
                     ui.statusText.textContent = `Triggering backend for ${codesToRefresh.length} stocks across ${apiRequests.length} requests...`;
 
-                    // Execute all trigger requests in parallel and wait for all to complete
+                    // 并行执行所有触发请求并等待它们全部完成
                     const responses = await Promise.all(apiRequests);
 
-                    // Check if any of the requests failed
+                    // 检查是否有任何请求失败
                     for (const res of responses) {
                         if (!res.ok) {
-                            // If a request fails, throw an error to be caught by the catch block
+                            // 如果请求失败，则抛出一个错误，由catch块捕获
                             throw new Error((await res.json()).error || `Trigger API failed with status ${res.status}`);
                         }
                     }
-                    
-                    // --- MODIFICATION END ---
                     
                     ui.statusText.textContent = `Backend is processing... Please wait about ${REFRESH_DELAY_MS/1000}s.`;
                     await new Promise(r => setTimeout(r, REFRESH_DELAY_MS));
