@@ -679,9 +679,37 @@
                 ui.refreshButton.classList.add('reloading');
                 ui.refreshButton.disabled = true;
 
-                const dynamicDataUrl = `${DATA_PATH}/stock_dynamic_data_portfolio.json?t=${Date.now()}`;
-                const response = await fetch(dynamicDataUrl).catch(e => ({ ok: false }));
-                const combinedDynamicData = response.ok ? await response.json() : [];
+                // --- MODIFICATION START ---
+                // 定义所有需要获取的动态数据文件
+                const dynamicDataUrls = {
+                    a_shares: `${DATA_PATH}/partial_a_shares.json?t=${Date.now()}`,
+                    hk_shares: `${DATA_PATH}/partial_hk_shares.json?t=${Date.now()}`,
+                    etf: `${DATA_PATH}/partial_etf.json?t=${Date.now()}`
+                };
+
+                let allDynamicData = [];
+                let anyDynamicDataFetched = false;
+
+                // 并行发起所有动态数据文件的请求
+                const dynamicDataResponses = await Promise.allSettled(
+                    Object.values(dynamicDataUrls).map(url => fetch(url).catch(e => ({ ok: false, error: e })))
+                );
+
+                for (const res of dynamicDataResponses) {
+                    if (res.status === 'fulfilled' && res.value.ok) {
+                        const data = await res.value.json();
+                        if (Array.isArray(data)) {
+                            allDynamicData.push(...data);
+                            anyDynamicDataFetched = true;
+                        }
+                    } else if (res.status === 'rejected') {
+                        console.warn(`Failed to fetch dynamic data: ${res.reason}`);
+                    } else {
+                        console.warn(`Failed to fetch dynamic data with status: ${res.value.status}`);
+                    }
+                }
+                // --- MODIFICATION END ---
+
 
                 const [dazhiResult, dachengResult, myResult, dazhiModel, dachengModel, breakthrough] = await Promise.all([
                     getPortfolioData('大智投资组合收益', '大智投资组合'),
@@ -692,7 +720,11 @@
                     fetchBreakthroughTargetsNoApi()
                 ]);
 
-                const dynamicMap = new Map(combinedDynamicData.map(i => [String(i['代码']).replace('HK', ''), i]));
+                // --- MODIFICATION START ---
+                // 使用合并后的 allDynamicData 来创建 dynamicMap
+                const dynamicMap = new Map(allDynamicData.map(i => [String(i['代码']).replace('HK', ''), i]));
+                // --- MODIFICATION END ---
+
                 const enrich = (data, codeKey) => data.map(item => ({...item, ...dynamicMap.get(String(item[codeKey]).replace('HK', ''))}));
                 
                 dazhiPortfolioState.name = dazhiResult.portfolioName || '大智 (稳健智远)';
@@ -729,18 +761,21 @@
                 ui.dynamicListsGrid.classList.toggle('hidden', !showCard);
                 renderBreakthroughTable(ui.breakthroughDataContainer, enrich(combinedList, '代码'));
                 
-                if (combinedDynamicData.length > 0) {
-                    const latestData = combinedDynamicData.sort((a, b) => (b.update_time_bjt || '').localeCompare(a.update_time_bjt || ''))[0];
+                // --- MODIFICATION START ---
+                if (anyDynamicDataFetched && allDynamicData.length > 0) {
+                    const latestData = allDynamicData.sort((a, b) => (b.update_time_bjt || '').localeCompare(a.update_time_bjt || ''))[0];
                     ui.statusText.textContent = `Last updated (BJT): ${latestData.update_time_bjt || 'N/A'} | Trade Date: ${latestData.trade_date || 'N/A'}`;
                 } else {
                     ui.statusText.textContent = 'Data loaded. Market data feed might be unavailable.';
                 }
+                // --- MODIFICATION END ---
                 
                 ui.refreshButton.classList.remove('reloading');
                 ui.refreshButton.disabled = false;
                 isRefreshing = false;
                 
-                if (isInitialLoad && !response.ok) {
+                // 如果是首次加载且没有任何动态数据被成功获取，则触发一次后台刷新
+                if (isInitialLoad && !anyDynamicDataFetched) {
                     console.warn('Initial dynamic data not found. Triggering a background refresh to generate it.');
                     triggerAndFetchData();
                 }
