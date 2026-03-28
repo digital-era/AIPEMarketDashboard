@@ -103432,59 +103432,59 @@
     "TopPotScore5Days": [
         {
             "l2name": "\u7535\u529bII",
-            "PotScore": 325.71,
+            "PotScore": 325.74,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -235.93
         },
         {
             "l2name": "\u7535\u7f51\u8bbe\u5907II",
-            "PotScore": 152.26,
+            "PotScore": 168.1,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -469.52
         },
         {
             "l2name": "\u5149\u4f0f\u8bbe\u5907II",
-            "PotScore": 97.17,
+            "PotScore": 97.06,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -427.18
         },
         {
             "l2name": "\u7535\u6c60II",
-            "PotScore": 87.26,
+            "PotScore": 87.73,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 85.72
         },
         {
             "l2name": "\u901a\u4fe1\u8bbe\u5907II",
-            "PotScore": 54.11,
+            "PotScore": 66.21,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -577.58
         },
         {
-            "l2name": "\u5143\u4ef6II",
-            "PotScore": 44.93,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -525.51
-        },
-        {
             "l2name": "\u7164\u70ad\u5f00\u91c7II",
-            "PotScore": 41.86,
+            "PotScore": 43.62,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -129.29
         },
         {
+            "l2name": "\u5143\u4ef6II",
+            "PotScore": 43.22,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -525.51
+        },
+        {
             "l2name": "\u71c3\u6c14II",
-            "PotScore": 41.56,
+            "PotScore": 43.12,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -371.87
         },
         {
             "l2name": "\u98ce\u7535\u8bbe\u5907II",
-            "PotScore": 39.77,
+            "PotScore": 42.88,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -371.95
         },
         {
             "l2name": "\u5316\u5b66\u539f\u6599II",
-            "PotScore": 34.08,
+            "PotScore": 36.13,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -39.76000000000001
         }
     ],
     "TopMainFund5Days": [
         {
             "l2name": "\u80fd\u6e90\u91d1\u5c5eII",
-            "PotScore": 13.72,
+            "PotScore": 12.49,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 295.69
         },
         {
@@ -103494,7 +103494,7 @@
         },
         {
             "l2name": "\u7535\u6c60II",
-            "PotScore": 87.26,
+            "PotScore": 87.73,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 85.72
         },
         {
@@ -103519,7 +103519,7 @@
         },
         {
             "l2name": "\u8d38\u6613II",
-            "PotScore": -3.35,
+            "PotScore": -6.0,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 10.89
         },
         {
@@ -103529,7 +103529,7 @@
         },
         {
             "l2name": "\u7535\u89c6\u5e7f\u64adII",
-            "PotScore": -15.03,
+            "PotScore": -16.36,
             "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 1.659999999999997
         }
     ],
@@ -103538,7 +103538,7 @@
             "\u4ee3\u7801": 722,
             "l2name": "\u7535\u529bII",
             "\u540d\u79f0": "\u6e56\u5357\u53d1\u5c55",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 95.58999999999999,
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 95.59,
             "PotScore": 1.49,
             "\u6536\u76d8\u4ef7": 16.96,
             "\u6da8\u8dcc\u5e45": -7.22
@@ -103575,7 +103575,7 @@
             "l2name": "\u7535\u7f51\u8bbe\u5907II",
             "\u540d\u79f0": "\u4e2d\u5229\u96c6\u56e2",
             "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 225.66,
-            "PotScore": null,
+            "PotScore": 0.95,
             "\u6536\u76d8\u4ef7": 4.33,
             "\u6da8\u8dcc\u5e45": -8.65
         },
@@ -103622,7 +103622,7 @@
             "l2name": "\u80fd\u6e90\u91d1\u5c5eII",
             "\u540d\u79f0": "\u6c5f\u7279\u7535\u673a",
             "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 85.75,
-            "PotScore": null,
+            "PotScore": 0.14,
             "\u6536\u76d8\u4ef7": 10.29,
             "\u6da8\u8dcc\u5e45": 10.05
         },
@@ -103639,7 +103639,7 @@
             "\u4ee3\u7801": 2756,
             "l2name": "\u80fd\u6e90\u91d1\u5c5eII",
             "\u540d\u79f0": "\u6c38\u5174\u6750\u6599",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 47.68000000000001,
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 47.68,
             "PotScore": 0.97,
             "\u6536\u76d8\u4ef7": 81.21,
             "\u6da8\u8dcc\u5e45": 10.0
@@ -103648,7 +103648,7 @@
             "\u4ee3\u7801": 2428,
             "l2name": "\u7a00\u6709\u91d1\u5c5eII",
             "\u540d\u79f0": "\u4e91\u5357\u9517\u4e1a",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 67.00999999999999,
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 67.01,
             "PotScore": 1.04,
             "\u6536\u76d8\u4ef7": 51.36,
             "\u6da8\u8dcc\u5e45": 10.0
