@@ -2,695 +2,679 @@
     "DistributeHotIndustry": [
         {
             "Industry Name": "\u534a\u5bfc\u4f53II",
-            "Hot Frequency Index (%)": 12.0253164556962
+            "Hot Frequency Index (%)": 21.73913043478261
         },
         {
             "Industry Name": "\u5143\u4ef6II",
-            "Hot Frequency Index (%)": 8.860759493670885
-        },
-        {
-            "Industry Name": "\u901a\u7528\u673a\u68b0II",
-            "Hot Frequency Index (%)": 7.594936708860759
-        },
-        {
-            "Industry Name": "\u5316\u5b66\u5236\u54c1II",
-            "Hot Frequency Index (%)": 5.69620253164557
-        },
-        {
-            "Industry Name": "\u7535\u5b50\u5316\u5b66\u54c1II",
-            "Hot Frequency Index (%)": 5.69620253164557
-        },
-        {
-            "Industry Name": "\u4e13\u7528\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 4.430379746835443
+            "Hot Frequency Index (%)": 8.695652173913043
         },
         {
             "Industry Name": "\u5149\u5b66\u5149\u7535\u5b50II",
-            "Hot Frequency Index (%)": 4.430379746835443
+            "Hot Frequency Index (%)": 6.211180124223603
         },
         {
-            "Industry Name": "\u7535\u5b50\u5236\u9020II",
-            "Hot Frequency Index (%)": 3.79746835443038
+            "Industry Name": "\u901a\u7528\u673a\u68b0II",
+            "Hot Frequency Index (%)": 5.590062111801243
         },
         {
             "Industry Name": "\u7a00\u6709\u91d1\u5c5eII",
-            "Hot Frequency Index (%)": 3.79746835443038
+            "Hot Frequency Index (%)": 3.726708074534161
         },
         {
-            "Industry Name": "\u5176\u4ed6\u7535\u5b50II",
-            "Hot Frequency Index (%)": 3.164556962025316
+            "Industry Name": "\u7535\u5b50\u5316\u5b66\u54c1II",
+            "Hot Frequency Index (%)": 3.726708074534161
         },
         {
-            "Industry Name": "\u5851\u6599II",
-            "Hot Frequency Index (%)": 2.531645569620253
+            "Industry Name": "\u5316\u5b66\u5236\u54c1II",
+            "Hot Frequency Index (%)": 3.726708074534161
         },
         {
             "Industry Name": "\u81ea\u52a8\u5316\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 2.531645569620253
+            "Hot Frequency Index (%)": 3.105590062111801
         },
         {
             "Industry Name": "\u8bc1\u5238II",
-            "Hot Frequency Index (%)": 2.531645569620253
+            "Hot Frequency Index (%)": 3.105590062111801
         },
         {
-            "Industry Name": "\u6c7d\u8f66\u96f6\u90e8\u4ef6II",
-            "Hot Frequency Index (%)": 2.531645569620253
-        },
-        {
-            "Industry Name": "\u5316\u5b66\u5236\u836fII",
-            "Hot Frequency Index (%)": 1.89873417721519
-        },
-        {
-            "Industry Name": "\u5316\u5b66\u539f\u6599II",
-            "Hot Frequency Index (%)": 1.89873417721519
+            "Industry Name": "\u7535\u5b50\u5236\u9020II",
+            "Hot Frequency Index (%)": 3.105590062111801
         },
         {
             "Industry Name": "\u73bb\u7483\u5236\u9020II",
-            "Hot Frequency Index (%)": 1.89873417721519
+            "Hot Frequency Index (%)": 2.484472049689441
+        },
+        {
+            "Industry Name": "\u5316\u5b66\u5236\u836fII",
+            "Hot Frequency Index (%)": 2.484472049689441
+        },
+        {
+            "Industry Name": "\u4e13\u7528\u8bbe\u5907II",
+            "Hot Frequency Index (%)": 2.484472049689441
+        },
+        {
+            "Industry Name": "\u5176\u4ed6\u7535\u5b50II",
+            "Hot Frequency Index (%)": 1.863354037267081
+        },
+        {
+            "Industry Name": "\u5316\u5b66\u539f\u6599II",
+            "Hot Frequency Index (%)": 1.863354037267081
+        },
+        {
+            "Industry Name": "\u5851\u6599II",
+            "Hot Frequency Index (%)": 1.863354037267081
         },
         {
             "Industry Name": "\u901a\u4fe1\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u975e\u91d1\u5c5e\u6750\u6599II",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u7535\u6c60II",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u7269\u6d41II",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u4e13\u4e1a\u5de5\u7a0bII",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u519c\u5316\u5236\u54c1II",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u5149\u4f0f\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 1.265822784810127
-        },
-        {
-            "Industry Name": "\u73af\u5883\u6cbb\u7406II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u8fd0\u8f93\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u7164\u70ad\u5f00\u91c7II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u98df\u54c1\u52a0\u5de5II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u822a\u8fd0\u6e2f\u53e3II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u70bc\u5316\u53ca\u8d38\u6613II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u5316\u5b66\u7ea4\u7ef4II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u7535\u529bII",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u7535\u6e90\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u5de5\u7a0b\u54a8\u8be2\u670d\u52a1II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u5bb6\u7528\u8f7b\u5de5II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "IT\u670d\u52a1II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u623f\u5730\u4ea7\u5f00\u53d1II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u6e38\u620fII",
-            "Hot Frequency Index (%)": 0.6329113924050633
+            "Hot Frequency Index (%)": 1.24223602484472
         },
         {
             "Industry Name": "\u519b\u5de5\u7535\u5b50II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u51b6\u94a2\u539f\u6599II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u7eba\u7ec7\u5236\u9020II",
-            "Hot Frequency Index (%)": 0.6329113924050633
+            "Hot Frequency Index (%)": 1.24223602484472
         },
         {
             "Industry Name": "\u670d\u88c5\u5bb6\u7ebaII",
-            "Hot Frequency Index (%)": 0.6329113924050633
+            "Hot Frequency Index (%)": 1.24223602484472
         },
         {
-            "Industry Name": "\u8c03\u5473\u53d1\u9175\u54c1II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u5176\u4ed6\u5efa\u6750II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u8f6f\u4ef6\u5f00\u53d1II",
-            "Hot Frequency Index (%)": 0.6329113924050633
-        },
-        {
-            "Industry Name": "\u91d1\u5c5e\u975e\u91d1\u5c5e\u65b0\u6750\u6599II",
-            "Hot Frequency Index (%)": 0.6329113924050633
+            "Industry Name": "\u5de5\u7a0b\u54a8\u8be2\u670d\u52a1II",
+            "Hot Frequency Index (%)": 1.24223602484472
         },
         {
             "Industry Name": "\u73af\u4fdd\u8bbe\u5907II",
-            "Hot Frequency Index (%)": 0.6329113924050633
+            "Hot Frequency Index (%)": 1.24223602484472
+        },
+        {
+            "Industry Name": "\u80fd\u6e90\u91d1\u5c5eII",
+            "Hot Frequency Index (%)": 1.24223602484472
+        },
+        {
+            "Industry Name": "\u4e13\u4e1a\u5de5\u7a0bII",
+            "Hot Frequency Index (%)": 1.24223602484472
+        },
+        {
+            "Industry Name": "\u6c7d\u8f66\u96f6\u90e8\u4ef6II",
+            "Hot Frequency Index (%)": 1.24223602484472
+        },
+        {
+            "Industry Name": "\u7269\u6d41II",
+            "Hot Frequency Index (%)": 1.24223602484472
+        },
+        {
+            "Industry Name": "\u623f\u5730\u4ea7\u5f00\u53d1II",
+            "Hot Frequency Index (%)": 1.24223602484472
+        },
+        {
+            "Industry Name": "IT\u670d\u52a1II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u5de5\u4e1a\u91d1\u5c5eII",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u70bc\u5316\u53ca\u8d38\u6613II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u8fd0\u8f93\u8bbe\u5907II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u7eba\u7ec7\u5236\u9020II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u767d\u8272\u5bb6\u7535II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u7164\u70ad\u5f00\u91c7II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u73af\u5883\u6cbb\u7406II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u98df\u54c1\u52a0\u5de5II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u7535\u6e90\u8bbe\u5907II",
+            "Hot Frequency Index (%)": 0.6211180124223602
         },
         {
             "Industry Name": "\u6a61\u80f6II",
-            "Hot Frequency Index (%)": 0.6329113924050633
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u5149\u4f0f\u8bbe\u5907II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u519c\u5316\u5236\u54c1II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u975e\u91d1\u5c5e\u6750\u6599II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u8f6f\u4ef6\u5f00\u53d1II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u751f\u7269\u5236\u54c1II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u5bb6\u7535\u96f6\u90e8\u4ef6II",
+            "Hot Frequency Index (%)": 0.6211180124223602
+        },
+        {
+            "Industry Name": "\u533b\u7597\u5668\u68b0II",
+            "Hot Frequency Index (%)": 0.6211180124223602
         }
     ],
     "PriceThisYearChange": [
         {
             "\u540d\u79f0": "\u6052\u751f\u4e92\u8054\u7f51ETF\u534e\u590f",
-            "YC": -35.08
+            "YC": -32.75
         },
         {
             "\u540d\u79f0": "\u9152ETF\u9e4f\u534e",
-            "YC": -27.61
-        },
-        {
-            "\u540d\u79f0": "\u6e38\u620fETF\u56fd\u6cf0",
-            "YC": -25.89
+            "YC": -26.12
         },
         {
             "\u540d\u79f0": "\u8f6f\u4ef6ETF\u56fd\u6cf0",
-            "YC": -24.78
+            "YC": -24.67
+        },
+        {
+            "\u540d\u79f0": "\u6e38\u620fETF\u56fd\u6cf0",
+            "YC": -24.14
         },
         {
             "\u540d\u79f0": "\u6d88\u8d39ETF\u6c47\u6dfb\u5bcc",
-            "YC": -23.96
-        },
-        {
-            "\u540d\u79f0": "\u755c\u7267\u517b\u6b96ETF\u62db\u5546",
-            "YC": -23.51
-        },
-        {
-            "\u540d\u79f0": "\u519c\u4e1aETF\u5bcc\u56fd",
-            "YC": -21.73
-        },
-        {
-            "\u540d\u79f0": "\u94a2\u94c1ETF\u56fd\u6cf0",
-            "YC": -21.57
-        },
-        {
-            "\u540d\u79f0": "\u6052\u751f\u533b\u7597ETF\u535a\u65f6",
-            "YC": -20.58
+            "YC": -21.56
         },
         {
             "\u540d\u79f0": "\u623f\u5730\u4ea7ETF\u5357\u65b9",
-            "YC": -20.55
+            "YC": -21.01
+        },
+        {
+            "\u540d\u79f0": "\u755c\u7267\u517b\u6b96ETF\u62db\u5546",
+            "YC": -20.96
+        },
+        {
+            "\u540d\u79f0": "\u94a2\u94c1ETF\u56fd\u6cf0",
+            "YC": -20.88
+        },
+        {
+            "\u540d\u79f0": "\u519c\u4e1aETF\u5bcc\u56fd",
+            "YC": -19.57
         },
         {
             "\u540d\u79f0": "\u4f20\u5a92ETF\u5e7f\u53d1",
-            "YC": -19.94
+            "YC": -19.14
         },
         {
             "\u540d\u79f0": "\u6052\u751f\u4e2d\u56fd\u4f01\u4e1aETF\u6613\u65b9\u8fbe",
-            "YC": -18.79
+            "YC": -17.12
         },
         {
-            "\u540d\u79f0": "\u4e2d\u836f50ETF",
-            "YC": -18.06
-        },
-        {
-            "\u540d\u79f0": "\u75ab\u82d7ETF\u56fd\u6cf0",
-            "YC": -17.72
+            "\u540d\u79f0": "\u6052\u751f\u533b\u7597ETF\u535a\u65f6",
+            "YC": -14.92
         },
         {
             "\u540d\u79f0": "\u533b\u7597\u5668\u68b0ETF\u6c38\u8d62",
-            "YC": -17.45
+            "YC": -14.37
         },
         {
-            "\u540d\u79f0": "\u6e2f\u80a1\u521b\u65b0\u836fETF\u5e7f\u53d1",
-            "YC": -15.41
-        },
-        {
-            "\u540d\u79f0": "\u75ab\u82d7ETF\u5609\u5b9e",
-            "YC": -14.18
+            "\u540d\u79f0": "\u4e2d\u836f50ETF",
+            "YC": -14.3
         },
         {
             "\u540d\u79f0": "\u6e2f\u80a1\u7ea2\u5229ETF\u5de5\u94f6",
-            "YC": -13.83
+            "YC": -12.57
         },
         {
             "\u540d\u79f0": "\u91d1\u878dETF\u56fd\u6cf0",
-            "YC": -13.34
+            "YC": -12.49
         },
         {
-            "\u540d\u79f0": "\u533b\u7597ETF\u534e\u5b9d",
-            "YC": -12.94
-        },
-        {
-            "\u540d\u79f0": "\u533b\u836fETF\u6613\u65b9\u8fbe",
-            "YC": -11.38
-        },
-        {
-            "\u540d\u79f0": "\u667a\u80fd\u6c7d\u8f66ETF\u5bcc\u56fd",
-            "YC": -10.3
-        },
-        {
-            "\u540d\u79f0": "\u9ec4\u91d1ETF\u534e\u5b89",
-            "YC": -9.79
+            "\u540d\u79f0": "\u75ab\u82d7ETF\u56fd\u6cf0",
+            "YC": -11.93
         },
         {
             "\u540d\u79f0": "\u519b\u5de5ETF\u56fd\u6cf0",
-            "YC": -9.61
-        },
-        {
-            "\u540d\u79f0": "\u94f6\u884cETF\u534e\u5b9d",
-            "YC": -9.36
+            "YC": -10.12
         },
         {
             "\u540d\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
-            "YC": -9.1
+            "YC": -9.78
+        },
+        {
+            "\u540d\u79f0": "\u667a\u80fd\u6c7d\u8f66ETF\u5bcc\u56fd",
+            "YC": -9.7
+        },
+        {
+            "\u540d\u79f0": "\u9ec4\u91d1ETF\u534e\u5b89",
+            "YC": -9.16
+        },
+        {
+            "\u540d\u79f0": "\u94f6\u884cETF\u534e\u5b9d",
+            "YC": -8.87
+        },
+        {
+            "\u540d\u79f0": "\u6e2f\u80a1\u521b\u65b0\u836fETF\u5e7f\u53d1",
+            "YC": -8.79
+        },
+        {
+            "\u540d\u79f0": "\u533b\u7597ETF\u534e\u5b9d",
+            "YC": -8.53
+        },
+        {
+            "\u540d\u79f0": "\u75ab\u82d7ETF\u5609\u5b9e",
+            "YC": -7.98
         },
         {
             "\u540d\u79f0": "\u5238\u5546ETF\u534e\u5b9d",
-            "YC": -8.64
+            "YC": -7.43
         },
         {
             "\u540d\u79f0": "\u7ea2\u5229\u4f4e\u6ce2ETF\u534e\u6cf0\u67cf\u745e",
-            "YC": -8.08
+            "YC": -7.4
+        },
+        {
+            "\u540d\u79f0": "\u533b\u836fETF\u6613\u65b9\u8fbe",
+            "YC": -5.82
         },
         {
             "\u540d\u79f0": "\u6709\u8272ETF\u6c47\u6dfb\u5bcc",
-            "YC": -7.47
+            "YC": -5.73
         },
         {
             "\u540d\u79f0": "\u4e2d\u8bc1\u7ea2\u5229ETF\u62db\u5546",
-            "YC": -5.74
+            "YC": -5.28
         },
         {
             "\u540d\u79f0": "\u65b0\u80fd\u6e90\u8f66ETF\u4e1c\u8d22",
-            "YC": -3.79
-        },
-        {
-            "\u540d\u79f0": "\u4e0a\u8bc150ETF\u534e\u590f",
-            "YC": -3.38
+            "YC": -2.71
         },
         {
             "\u540d\u79f0": "\u592e\u4f01\u7ea2\u5229ETF\u6c47\u6dfb\u5bcc",
-            "YC": -2.15
+            "YC": -2.06
         },
         {
             "\u540d\u79f0": "\u4e91\u8ba1\u7b97ETF\u6613\u65b9\u8fbe",
-            "YC": -1.95
+            "YC": -1.66
+        },
+        {
+            "\u540d\u79f0": "\u4e0a\u8bc150ETF\u534e\u590f",
+            "YC": -0.71
         },
         {
             "\u540d\u79f0": "\u4e0a\u8bc1\u6307\u6570ETF\u56fd\u6cf0",
-            "YC": 0.93
+            "YC": 1.63
         },
         {
             "\u540d\u79f0": "\u6807\u666e500ETF\u535a\u65f6",
-            "YC": 2.06
+            "YC": 1.89
         },
         {
             "\u540d\u79f0": "\u4e0a\u8bc1\u6307\u6570ETF\u5bcc\u56fd",
-            "YC": 2.22
+            "YC": 2.82
         },
         {
             "\u540d\u79f0": "30\u5e74\u56fd\u503aETF\u9e4f\u626c",
-            "YC": 2.61
+            "YC": 2.9
         },
         {
             "\u540d\u79f0": "\u7535\u529bETF\u534e\u6cf0\u67cf\u745e",
-            "YC": 3.3
+            "YC": 3.79
         },
         {
             "\u540d\u79f0": "\u592e\u4f01\u521b\u65b0ETF\u535a\u65f6",
-            "YC": 4.02
-        },
-        {
-            "\u540d\u79f0": "\u5149\u4f0fETF\u534e\u6cf0\u67cf\u745e",
-            "YC": 4.26
-        },
-        {
-            "\u540d\u79f0": "\u7eb3\u6307\u751f\u7269\u79d1\u6280ETF\u6c47\u6dfb\u5bcc",
-            "YC": 4.27
+            "YC": 4.52
         },
         {
             "\u540d\u79f0": "\u8d44\u6e90ETF\u535a\u65f6",
-            "YC": 4.45
+            "YC": 4.62
         },
         {
-            "\u540d\u79f0": "\u9053\u743c\u65afETF",
-            "YC": 4.86
+            "\u540d\u79f0": "\u5149\u4f0fETF\u534e\u6cf0\u67cf\u745e",
+            "YC": 5.09
         },
         {
             "\u540d\u79f0": "\u5316\u5de5ETF\u534e\u5b9d",
-            "YC": 5.03
+            "YC": 5.49
+        },
+        {
+            "\u540d\u79f0": "\u9053\u743c\u65afETF",
+            "YC": 5.99
         },
         {
             "\u540d\u79f0": "\u7164\u70adETF\u56fd\u6cf0",
-            "YC": 5.16
-        },
-        {
-            "\u540d\u79f0": "\u6caa\u6df1300ETF\u534e\u6cf0\u67cf\u745e",
-            "YC": 5.92
+            "YC": 6.81
         },
         {
             "\u540d\u79f0": "\u673a\u5668\u4ebaETF\u5929\u5f18",
-            "YC": 7.39
+            "YC": 6.82
+        },
+        {
+            "\u540d\u79f0": "\u6caa\u6df1300ETF\u534e\u6cf0\u67cf\u745e",
+            "YC": 7.04
+        },
+        {
+            "\u540d\u79f0": "\u7eb3\u6307\u751f\u7269\u79d1\u6280ETF\u6c47\u6dfb\u5bcc",
+            "YC": 9.32
         },
         {
             "\u540d\u79f0": "\u4e2d\u8bc1800ETF\u6c47\u6dfb\u5bcc",
-            "YC": 9.98
+            "YC": 10.54
         },
         {
             "\u540d\u79f0": "\u65e5\u672c\u4e1c\u8bc1\u6307\u6570ETF\u5357\u65b9",
-            "YC": 10.64
+            "YC": 10.83
         },
         {
             "\u540d\u79f0": "\u7eb3\u6307ETF\u56fd\u6cf0",
-            "YC": 13.34
+            "YC": 14.39
         },
         {
             "\u540d\u79f0": "\u4e2d\u8bc1500ETF\u534e\u590f",
-            "YC": 17.98
+            "YC": 19.32
         },
         {
             "\u540d\u79f0": "\u521b\u4e1a\u677fETF\u6613\u65b9\u8fbe",
-            "YC": 32.3
+            "YC": 32.96
         },
         {
             "\u540d\u79f0": "\u521b\u4e1a\u677f50ETF\u534e\u5b89",
-            "YC": 32.59
+            "YC": 33.05
         },
         {
             "\u540d\u79f0": "\u4eba\u5de5\u667a\u80fdETF\u534e\u590f",
-            "YC": 34.99
+            "YC": 36.9
         },
         {
             "\u540d\u79f0": "\u65e5\u7ecfETF\u534e\u590f",
-            "YC": 40.58
-        },
-        {
-            "\u540d\u79f0": "\u79d1\u521b50ETF\u534e\u590f",
-            "YC": 50.53
+            "YC": 38.63
         },
         {
             "\u540d\u79f0": "\u79d1\u521b\u521b\u4e1aETF\u6613\u65b9\u8fbe",
-            "YC": 51.36
+            "YC": 54.63
+        },
+        {
+            "\u540d\u79f0": "\u79d1\u521b50ETF\u534e\u590f",
+            "YC": 58.65
         },
         {
             "\u540d\u79f0": "\u5de5\u4e1a\u6bcd\u673aETF\u56fd\u6cf0",
-            "YC": 65.38
-        },
-        {
-            "\u540d\u79f0": "\u7535\u5b50ETF\u534e\u5b9d",
-            "YC": 66.21
+            "YC": 64.06
         },
         {
             "\u540d\u79f0": "\u901a\u4fe1ETF\u56fd\u6cf0",
-            "YC": 71.2
+            "YC": 67.11
+        },
+        {
+            "\u540d\u79f0": "\u7535\u5b50ETF\u534e\u5b9d",
+            "YC": 69.86
         },
         {
             "\u540d\u79f0": "\u82af\u7247ETF\u56fd\u6cf0",
-            "YC": 80.72
+            "YC": 90.11
         },
         {
             "\u540d\u79f0": "\u534a\u5bfc\u4f53ETF\u56fd\u8054\u5b89",
-            "YC": 87.64
+            "YC": 98.7
         }
     ],
     "PriceChangeFrom2021": [
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u4e92\u8054",
-            "\u4ef7\u683c\u589e\u957f%": -64.94
+            "\u4ef7\u683c\u589e\u957f%": -64.74
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9152ETF",
-            "\u4ef7\u683c\u589e\u957f%": -62.0
+            "\u4ef7\u683c\u589e\u957f%": -62.85
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597ETF",
-            "\u4ef7\u683c\u589e\u957f%": -60.51
+            "\u4ef7\u683c\u589e\u957f%": -59.98
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597\u5668\u68b0ETF\u6c38\u8d62",
-            "\u4ef7\u683c\u589e\u957f%": -58.03
+            "\u4ef7\u683c\u589e\u957f%": -58.52
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u836fETF",
-            "\u4ef7\u683c\u589e\u957f%": -57.03
+            "\u4ef7\u683c\u589e\u957f%": -55.99
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6d88\u8d39ETF\u6c47\u6dfb\u5bcc",
-            "\u4ef7\u683c\u589e\u957f%": -54.78
+            "\u4ef7\u683c\u589e\u957f%": -55.44
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5238\u5546ETF",
-            "\u4ef7\u683c\u589e\u957f%": -54.12
+            "\u4ef7\u683c\u589e\u957f%": -54.89
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u533b\u7597",
-            "\u4ef7\u683c\u589e\u957f%": -53.1
+            "\u4ef7\u683c\u589e\u957f%": -51.88
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF\u56fd\u6cf0",
-            "\u4ef7\u683c\u589e\u957f%": -49.8
+            "\u4ef7\u683c\u589e\u957f%": -49.5
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u755c\u7267\u517b\u6b96",
-            "\u4ef7\u683c\u589e\u957f%": -44.21
+            "\u4ef7\u683c\u589e\u957f%": -45.52
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF",
-            "\u4ef7\u683c\u589e\u957f%": -38.26
+            "\u4ef7\u683c\u589e\u957f%": -38.46
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u94f6\u884cETF",
-            "\u4ef7\u683c\u589e\u957f%": -30.72
+            "\u4ef7\u683c\u589e\u957f%": -32.24
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u8f6f\u4ef6ETF",
-            "\u4ef7\u683c\u589e\u957f%": -24.1
+            "\u4ef7\u683c\u589e\u957f%": -25.44
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u4e2d\u56fd",
-            "\u4ef7\u683c\u589e\u957f%": -16.88
+            "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u836f",
+            "\u4ef7\u683c\u589e\u957f%": -17.71
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5149\u4f0fETF",
             "\u4ef7\u683c\u589e\u957f%": -16.76
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u836f",
-            "\u4ef7\u683c\u589e\u957f%": -16.09
+            "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u4e2d\u56fd",
+            "\u4ef7\u683c\u589e\u957f%": -16.62
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "50ETF",
-            "\u4ef7\u683c\u589e\u957f%": -15.0
+            "\u4ef7\u683c\u589e\u957f%": -14.47
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5de5\u4e1a\u6bcd\u673aETF\u56fd\u6cf0",
-            "\u4ef7\u683c\u589e\u957f%": -12.41
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u519b\u5de5ETF",
-            "\u4ef7\u683c\u589e\u957f%": -9.47
+            "\u4ef7\u683c\u589e\u957f%": -11.13
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7164\u70adETF",
-            "\u4ef7\u683c\u589e\u957f%": -6.18
+            "\u4ef7\u683c\u589e\u957f%": -9.08
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
-            "\u4ef7\u683c\u589e\u957f%": -6.04
+            "\u57fa\u91d1\u7b80\u79f0": "\u519b\u5de5ETF",
+            "\u4ef7\u683c\u589e\u957f%": -8.75
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4f20\u5a92ETF",
-            "\u4ef7\u683c\u589e\u957f%": -5.61
+            "\u4ef7\u683c\u589e\u957f%": -6.06
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u65b0\u80fd\u6e90\u8f66ETF\u4e1c\u8d22",
-            "\u4ef7\u683c\u589e\u957f%": -3.39
+            "\u57fa\u91d1\u7b80\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
+            "\u4ef7\u683c\u589e\u957f%": -5.74
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "300ETF",
-            "\u4ef7\u683c\u589e\u957f%": -3.16
+            "\u4ef7\u683c\u589e\u957f%": -2.67
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u5316\u5de5ETF",
-            "\u4ef7\u683c\u589e\u957f%": -1.07
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u667a\u80fd\u6c7d\u8f66",
-            "\u4ef7\u683c\u589e\u957f%": -0.38
+            "\u57fa\u91d1\u7b80\u79f0": "\u65b0\u80fd\u6e90\u8f66ETF\u4e1c\u8d22",
+            "\u4ef7\u683c\u589e\u957f%": -1.85
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u94a2\u94c1ETF",
-            "\u4ef7\u683c\u589e\u957f%": 0.85
+            "\u4ef7\u683c\u589e\u957f%": 0.6
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7535\u5b50ETF",
-            "\u4ef7\u683c\u589e\u957f%": 1.68
+            "\u57fa\u91d1\u7b80\u79f0": "\u667a\u80fd\u6c7d\u8f66",
+            "\u4ef7\u683c\u589e\u957f%": 0.95
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u5316\u5de5ETF",
+            "\u4ef7\u683c\u589e\u957f%": 2.25
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6e38\u620fETF",
-            "\u4ef7\u683c\u589e\u957f%": 3.74
+            "\u4ef7\u683c\u589e\u957f%": 3.84
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "HK\u521b\u65b0\u836f",
-            "\u4ef7\u683c\u589e\u957f%": 4.67
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u82af\u7247ETF",
-            "\u4ef7\u683c\u589e\u957f%": 9.61
+            "\u57fa\u91d1\u7b80\u79f0": "\u7535\u5b50ETF",
+            "\u4ef7\u683c\u589e\u957f%": 6.33
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u91d1\u878dETF",
-            "\u4ef7\u683c\u589e\u957f%": 9.97
+            "\u4ef7\u683c\u589e\u957f%": 7.22
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "HK\u521b\u65b0\u836f",
+            "\u4ef7\u683c\u589e\u957f%": 8.59
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u592e\u4f01\u5206\u7ea2",
-            "\u4ef7\u683c\u589e\u957f%": 12.08
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7efc\u6307ETF",
-            "\u4ef7\u683c\u589e\u957f%": 15.27
+            "\u4ef7\u683c\u589e\u957f%": 12.39
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "30\u5e74\u56fd\u503a",
-            "\u4ef7\u683c\u589e\u957f%": 15.42
+            "\u4ef7\u683c\u589e\u957f%": 15.4
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u7efc\u6307ETF",
+            "\u4ef7\u683c\u589e\u957f%": 15.6
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u82af\u7247ETF",
+            "\u4ef7\u683c\u589e\u957f%": 15.78
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "800ETF",
-            "\u4ef7\u683c\u589e\u957f%": 15.89
+            "\u4ef7\u683c\u589e\u957f%": 17.42
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u673a\u5668\u4ebaETF\u5929\u5f18",
-            "\u4ef7\u683c\u589e\u957f%": 16.68
+            "\u4ef7\u683c\u589e\u957f%": 17.78
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9053\u743c\u65af",
-            "\u4ef7\u683c\u589e\u957f%": 25.98
+            "\u4ef7\u683c\u589e\u957f%": 26.87
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7535\u529bETF",
-            "\u4ef7\u683c\u589e\u957f%": 30.84
+            "\u4ef7\u683c\u589e\u957f%": 28.44
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e0a\u8bc1ETF",
-            "\u4ef7\u683c\u589e\u957f%": 32.5
+            "\u4ef7\u683c\u589e\u957f%": 32.41
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u8bc1\u7ea2\u5229",
-            "\u4ef7\u683c\u589e\u957f%": 37.45
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b50",
-            "\u4ef7\u683c\u589e\u957f%": 38.18
+            "\u4ef7\u683c\u589e\u957f%": 35.61
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b\u521b\u4e1aETF\u6613\u65b9\u8fbe",
-            "\u4ef7\u683c\u589e\u957f%": 39.96
+            "\u4ef7\u683c\u589e\u957f%": 42.96
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677fETF\u6613\u65b9\u8fbe",
-            "\u4ef7\u683c\u589e\u957f%": 41.47
+            "\u4ef7\u683c\u589e\u957f%": 43.08
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b50",
+            "\u4ef7\u683c\u589e\u957f%": 43.17
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5730\u4ea7ETF",
-            "\u4ef7\u683c\u589e\u957f%": 46.79
+            "\u4ef7\u683c\u589e\u957f%": 44.29
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u8bc1500",
-            "\u4ef7\u683c\u589e\u957f%": 47.16
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7eb3\u6307\u751f\u7269",
-            "\u4ef7\u683c\u589e\u957f%": 56.59
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677f50ETF\u534e\u5b89",
-            "\u4ef7\u683c\u589e\u957f%": 56.77
+            "\u4ef7\u683c\u589e\u957f%": 49.68
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e1c\u8bc1ETF",
-            "\u4ef7\u683c\u589e\u957f%": 56.85
+            "\u4ef7\u683c\u589e\u957f%": 56.67
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677f50ETF\u534e\u5b89",
+            "\u4ef7\u683c\u589e\u957f%": 58.47
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u7eb3\u6307\u751f\u7269",
+            "\u4ef7\u683c\u589e\u957f%": 59.41
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u592e\u521bETF",
-            "\u4ef7\u683c\u589e\u957f%": 60.98
+            "\u4ef7\u683c\u589e\u957f%": 61.07
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6709\u8272ETF\u6c47\u6dfb\u5bcc",
-            "\u4ef7\u683c\u589e\u957f%": 66.6
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u901a\u4fe1ETF",
-            "\u4ef7\u683c\u589e\u957f%": 68.61
+            "\u4ef7\u683c\u589e\u957f%": 67.9
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7ea2\u5229\u4f4e\u6ce2",
-            "\u4ef7\u683c\u589e\u957f%": 73.31
+            "\u4ef7\u683c\u589e\u957f%": 70.36
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u901a\u4fe1ETF",
+            "\u4ef7\u683c\u589e\u957f%": 71.71
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e91\u8ba1\u7b97",
-            "\u4ef7\u683c\u589e\u957f%": 74.57
+            "\u4ef7\u683c\u589e\u957f%": 76.29
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u65e5\u7ecfETF",
-            "\u4ef7\u683c\u589e\u957f%": 93.9
+            "\u4ef7\u683c\u589e\u957f%": 95.56
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "AI\u667a\u80fd",
-            "\u4ef7\u683c\u589e\u957f%": 112.37
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u6807\u666e500",
-            "\u4ef7\u683c\u589e\u957f%": 118.07
+            "\u4ef7\u683c\u589e\u957f%": 117.53
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9ec4\u91d1ETF",
-            "\u4ef7\u683c\u589e\u957f%": 118.79
+            "\u4ef7\u683c\u589e\u957f%": 118.22
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u6807\u666e500",
+            "\u4ef7\u683c\u589e\u957f%": 119.64
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u534a\u5bfc\u4f53",
-            "\u4ef7\u683c\u589e\u957f%": 130.18
+            "\u4ef7\u683c\u589e\u957f%": 143.01
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u8d44\u6e90ETF",
-            "\u4ef7\u683c\u589e\u957f%": 149.81
+            "\u4ef7\u683c\u589e\u957f%": 150.19
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7eb3\u6307ETF",
-            "\u4ef7\u683c\u589e\u957f%": 150.95
+            "\u4ef7\u683c\u589e\u957f%": 152.45
         }
     ],
     "ShareThisYearChange": [
@@ -700,39 +684,35 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9152ETF\u9e4f\u534e",
-            "Year\u4efd\u989d\u589e\u957f%": 104.0
+            "Year\u4efd\u989d\u589e\u957f%": 106.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u8f6f\u4ef6ETF\u56fd\u6cf0",
+            "Year\u4efd\u989d\u589e\u957f%": 436.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6e38\u620fETF\u56fd\u6cf0",
             "Year\u4efd\u989d\u589e\u957f%": 1.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u8f6f\u4ef6ETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": 432.0
-        },
-        {
             "\u57fa\u91d1\u7b80\u79f0": "\u6d88\u8d39ETF\u6c47\u6dfb\u5bcc",
             "Year\u4efd\u989d\u589e\u957f%": 111.0
         },
         {
+            "\u57fa\u91d1\u7b80\u79f0": "\u623f\u5730\u4ea7ETF\u5357\u65b9",
+            "Year\u4efd\u989d\u589e\u957f%": -66.0
+        },
+        {
             "\u57fa\u91d1\u7b80\u79f0": "\u755c\u7267\u517b\u6b96ETF\u62db\u5546",
-            "Year\u4efd\u989d\u589e\u957f%": 199.0
+            "Year\u4efd\u989d\u589e\u957f%": 197.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u94a2\u94c1ETF\u56fd\u6cf0",
+            "Year\u4efd\u989d\u589e\u957f%": -3.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u519c\u4e1aETF\u5bcc\u56fd",
             "Year\u4efd\u989d\u589e\u957f%": null
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u94a2\u94c1ETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": -5.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u533b\u7597ETF\u535a\u65f6",
-            "Year\u4efd\u989d\u589e\u957f%": -60.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u623f\u5730\u4ea7ETF\u5357\u65b9",
-            "Year\u4efd\u989d\u589e\u957f%": -65.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4f20\u5a92ETF\u5e7f\u53d1",
@@ -743,24 +723,16 @@
             "Year\u4efd\u989d\u589e\u957f%": -73.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u836f50ETF",
-            "Year\u4efd\u989d\u589e\u957f%": 34.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": 169.0
+            "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u533b\u7597ETF\u535a\u65f6",
+            "Year\u4efd\u989d\u589e\u957f%": -60.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597\u5668\u68b0ETF\u6c38\u8d62",
             "Year\u4efd\u989d\u589e\u957f%": 116.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u6e2f\u80a1\u521b\u65b0\u836fETF\u5e7f\u53d1",
-            "Year\u4efd\u989d\u589e\u957f%": 161.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF\u5609\u5b9e",
-            "Year\u4efd\u989d\u589e\u957f%": -41.0
+            "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u836f50ETF",
+            "Year\u4efd\u989d\u589e\u957f%": 34.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6e2f\u80a1\u7ea2\u5229ETF\u5de5\u94f6",
@@ -768,15 +740,19 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u91d1\u878dETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": -53.0
+            "Year\u4efd\u989d\u589e\u957f%": -58.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597ETF\u534e\u5b9d",
-            "Year\u4efd\u989d\u589e\u957f%": 25.0
+            "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF\u56fd\u6cf0",
+            "Year\u4efd\u989d\u589e\u957f%": 164.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u533b\u836fETF\u6613\u65b9\u8fbe",
-            "Year\u4efd\u989d\u589e\u957f%": 0.0
+            "\u57fa\u91d1\u7b80\u79f0": "\u519b\u5de5ETF\u56fd\u6cf0",
+            "Year\u4efd\u989d\u589e\u957f%": -43.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
+            "Year\u4efd\u989d\u589e\u957f%": 24.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u667a\u80fd\u6c7d\u8f66ETF\u5bcc\u56fd",
@@ -784,43 +760,47 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9ec4\u91d1ETF\u534e\u5b89",
-            "Year\u4efd\u989d\u589e\u957f%": 255.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u519b\u5de5ETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": -43.0
+            "Year\u4efd\u989d\u589e\u957f%": 252.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u94f6\u884cETF\u534e\u5b9d",
-            "Year\u4efd\u989d\u589e\u957f%": 164.0
+            "Year\u4efd\u989d\u589e\u957f%": 167.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
-            "Year\u4efd\u989d\u589e\u957f%": 22.0
+            "\u57fa\u91d1\u7b80\u79f0": "\u6e2f\u80a1\u521b\u65b0\u836fETF\u5e7f\u53d1",
+            "Year\u4efd\u989d\u589e\u957f%": 160.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597ETF\u534e\u5b9d",
+            "Year\u4efd\u989d\u589e\u957f%": 25.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF\u5609\u5b9e",
+            "Year\u4efd\u989d\u589e\u957f%": -41.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5238\u5546ETF\u534e\u5b9d",
-            "Year\u4efd\u989d\u589e\u957f%": 173.0
+            "Year\u4efd\u989d\u589e\u957f%": 175.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7ea2\u5229\u4f4e\u6ce2ETF\u534e\u6cf0\u67cf\u745e",
-            "Year\u4efd\u989d\u589e\u957f%": 928.0
+            "Year\u4efd\u989d\u589e\u957f%": 936.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u533b\u836fETF\u6613\u65b9\u8fbe",
+            "Year\u4efd\u989d\u589e\u957f%": -1.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6709\u8272ETF\u6c47\u6dfb\u5bcc",
-            "Year\u4efd\u989d\u589e\u957f%": 630.0
+            "Year\u4efd\u989d\u589e\u957f%": 620.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u8bc1\u7ea2\u5229ETF\u62db\u5546",
-            "Year\u4efd\u989d\u589e\u957f%": 152.0
+            "Year\u4efd\u989d\u589e\u957f%": 155.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u65b0\u80fd\u6e90\u8f66ETF\u4e1c\u8d22",
             "Year\u4efd\u989d\u589e\u957f%": -67.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4e0a\u8bc150ETF\u534e\u590f",
-            "Year\u4efd\u989d\u589e\u957f%": -78.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u592e\u4f01\u7ea2\u5229ETF\u6c47\u6dfb\u5bcc",
@@ -828,11 +808,15 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e91\u8ba1\u7b97ETF\u6613\u65b9\u8fbe",
-            "Year\u4efd\u989d\u589e\u957f%": 19.0
+            "Year\u4efd\u989d\u589e\u957f%": 20.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u4e0a\u8bc150ETF\u534e\u590f",
+            "Year\u4efd\u989d\u589e\u957f%": -80.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e0a\u8bc1\u6307\u6570ETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": 141.0
+            "Year\u4efd\u989d\u589e\u957f%": 139.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6807\u666e500ETF\u535a\u65f6",
@@ -840,51 +824,51 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e0a\u8bc1\u6307\u6570ETF\u5bcc\u56fd",
-            "Year\u4efd\u989d\u589e\u957f%": -14.0
+            "Year\u4efd\u989d\u589e\u957f%": -13.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "30\u5e74\u56fd\u503aETF\u9e4f\u626c",
-            "Year\u4efd\u989d\u589e\u957f%": 6327.0
+            "Year\u4efd\u989d\u589e\u957f%": 6328.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7535\u529bETF\u534e\u6cf0\u67cf\u745e",
-            "Year\u4efd\u989d\u589e\u957f%": 1417.0
+            "Year\u4efd\u989d\u589e\u957f%": 1346.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u592e\u4f01\u521b\u65b0ETF\u535a\u65f6",
             "Year\u4efd\u989d\u589e\u957f%": -44.0
         },
         {
+            "\u57fa\u91d1\u7b80\u79f0": "\u8d44\u6e90ETF\u535a\u65f6",
+            "Year\u4efd\u989d\u589e\u957f%": 35.0
+        },
+        {
             "\u57fa\u91d1\u7b80\u79f0": "\u5149\u4f0fETF\u534e\u6cf0\u67cf\u745e",
-            "Year\u4efd\u989d\u589e\u957f%": -46.0
+            "Year\u4efd\u989d\u589e\u957f%": -45.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u5316\u5de5ETF\u534e\u5b9d",
+            "Year\u4efd\u989d\u589e\u957f%": 432.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u9053\u743c\u65afETF",
+            "Year\u4efd\u989d\u589e\u957f%": 801.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u7164\u70adETF\u56fd\u6cf0",
+            "Year\u4efd\u989d\u589e\u957f%": 1277.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u673a\u5668\u4ebaETF\u5929\u5f18",
+            "Year\u4efd\u989d\u589e\u957f%": 719.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u6caa\u6df1300ETF\u534e\u6cf0\u67cf\u745e",
+            "Year\u4efd\u989d\u589e\u957f%": -39.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7eb3\u6307\u751f\u7269\u79d1\u6280ETF\u6c47\u6dfb\u5bcc",
             "Year\u4efd\u989d\u589e\u957f%": 27.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u8d44\u6e90ETF\u535a\u65f6",
-            "Year\u4efd\u989d\u589e\u957f%": 36.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u9053\u743c\u65afETF",
-            "Year\u4efd\u989d\u589e\u957f%": 799.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u5316\u5de5ETF\u534e\u5b9d",
-            "Year\u4efd\u989d\u589e\u957f%": 433.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7164\u70adETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": 1300.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u6caa\u6df1300ETF\u534e\u6cf0\u67cf\u745e",
-            "Year\u4efd\u989d\u589e\u957f%": -34.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u673a\u5668\u4ebaETF\u5929\u5f18",
-            "Year\u4efd\u989d\u589e\u957f%": 722.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u8bc1800ETF\u6c47\u6dfb\u5bcc",
@@ -904,11 +888,11 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677fETF\u6613\u65b9\u8fbe",
-            "Year\u4efd\u989d\u589e\u957f%": -49.0
+            "Year\u4efd\u989d\u589e\u957f%": -50.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677f50ETF\u534e\u5b89",
-            "Year\u4efd\u989d\u589e\u957f%": -48.0
+            "Year\u4efd\u989d\u589e\u957f%": -47.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4eba\u5de5\u667a\u80fdETF\u534e\u590f",
@@ -919,24 +903,24 @@
             "Year\u4efd\u989d\u589e\u957f%": 117.0
         },
         {
+            "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b\u521b\u4e1aETF\u6613\u65b9\u8fbe",
+            "Year\u4efd\u989d\u589e\u957f%": -17.0
+        },
+        {
             "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b50ETF\u534e\u590f",
             "Year\u4efd\u989d\u589e\u957f%": -70.0
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b\u521b\u4e1aETF\u6613\u65b9\u8fbe",
-            "Year\u4efd\u989d\u589e\u957f%": -18.0
-        },
-        {
             "\u57fa\u91d1\u7b80\u79f0": "\u5de5\u4e1a\u6bcd\u673aETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": 653.0
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7535\u5b50ETF\u534e\u5b9d",
-            "Year\u4efd\u989d\u589e\u957f%": 22.0
+            "Year\u4efd\u989d\u589e\u957f%": 659.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u901a\u4fe1ETF\u56fd\u6cf0",
-            "Year\u4efd\u989d\u589e\u957f%": 1230.0
+            "Year\u4efd\u989d\u589e\u957f%": 1247.0
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u7535\u5b50ETF\u534e\u5b9d",
+            "Year\u4efd\u989d\u589e\u957f%": 24.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u82af\u7247ETF\u56fd\u6cf0",
@@ -950,31 +934,31 @@
     "ShareChangeFrom2021": [
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u4e92\u8054",
-            "\u4efd\u989d\u589e\u957f%": 888.72
+            "\u4efd\u989d\u589e\u957f%": 888.88
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9152ETF",
-            "\u4efd\u989d\u589e\u957f%": 1129.88
+            "\u4efd\u989d\u589e\u957f%": 1144.19
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597ETF",
-            "\u4efd\u989d\u589e\u957f%": 4760.53
+            "\u4efd\u989d\u589e\u957f%": 4742.39
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u7597\u5668\u68b0ETF\u6c38\u8d62",
-            "\u4efd\u989d\u589e\u957f%": 4448.45
+            "\u4efd\u989d\u589e\u957f%": 4457.23
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u533b\u836fETF",
-            "\u4efd\u989d\u589e\u957f%": 1596.71
+            "\u4efd\u989d\u589e\u957f%": 1580.12
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6d88\u8d39ETF\u6c47\u6dfb\u5bcc",
-            "\u4efd\u989d\u589e\u957f%": 1361.52
+            "\u4efd\u989d\u589e\u957f%": 1360.65
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5238\u5546ETF",
-            "\u4efd\u989d\u589e\u957f%": 259.83
+            "\u4efd\u989d\u589e\u957f%": 261.67
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u533b\u7597",
@@ -982,11 +966,11 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF\u56fd\u6cf0",
-            "\u4efd\u989d\u589e\u957f%": 18.64
+            "\u4efd\u989d\u589e\u957f%": 16.57
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u755c\u7267\u517b\u6b96",
-            "\u4efd\u989d\u589e\u957f%": 2467.72
+            "\u4efd\u989d\u589e\u957f%": 2443.32
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u75ab\u82d7ETF",
@@ -994,155 +978,155 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u94f6\u884cETF",
-            "\u4efd\u989d\u589e\u957f%": 77.88
+            "\u4efd\u989d\u589e\u957f%": 79.85
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u8f6f\u4ef6ETF",
-            "\u4efd\u989d\u589e\u957f%": 1377.54
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u4e2d\u56fd",
-            "\u4efd\u989d\u589e\u957f%": -57.57
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u5149\u4f0fETF",
-            "\u4efd\u989d\u589e\u957f%": -15.76
+            "\u4efd\u989d\u589e\u957f%": 1387.36
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u836f",
             "\u4efd\u989d\u589e\u957f%": -74.66
         },
         {
+            "\u57fa\u91d1\u7b80\u79f0": "\u5149\u4f0fETF",
+            "\u4efd\u989d\u589e\u957f%": -15.4
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u6052\u751f\u4e2d\u56fd",
+            "\u4efd\u989d\u589e\u957f%": -57.97
+        },
+        {
             "\u57fa\u91d1\u7b80\u79f0": "50ETF",
-            "\u4efd\u989d\u589e\u957f%": -53.96
+            "\u4efd\u989d\u589e\u957f%": -57.4
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5de5\u4e1a\u6bcd\u673aETF\u56fd\u6cf0",
-            "\u4efd\u989d\u589e\u957f%": 568.25
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u519b\u5de5ETF",
-            "\u4efd\u989d\u589e\u957f%": -35.69
+            "\u4efd\u989d\u589e\u957f%": 573.41
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7164\u70adETF",
-            "\u4efd\u989d\u589e\u957f%": 2147.44
+            "\u4efd\u989d\u589e\u957f%": 2110.85
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
-            "\u4efd\u989d\u589e\u957f%": -75.63
+            "\u57fa\u91d1\u7b80\u79f0": "\u519b\u5de5ETF",
+            "\u4efd\u989d\u589e\u957f%": -35.73
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4f20\u5a92ETF",
-            "\u4efd\u989d\u589e\u957f%": 51.99
+            "\u4efd\u989d\u589e\u957f%": 51.47
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u65b0\u80fd\u6e90\u8f66ETF\u4e1c\u8d22",
-            "\u4efd\u989d\u589e\u957f%": -12.31
+            "\u57fa\u91d1\u7b80\u79f0": "\u4ea4\u901a\u8fd0\u8f93ETF\u534e\u590f",
+            "\u4efd\u989d\u589e\u957f%": -75.19
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "300ETF",
-            "\u4efd\u989d\u589e\u957f%": 173.11
+            "\u4efd\u989d\u589e\u957f%": 153.3
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u5316\u5de5ETF",
-            "\u4efd\u989d\u589e\u957f%": 252.25
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u667a\u80fd\u6c7d\u8f66",
-            "\u4efd\u989d\u589e\u957f%": -1.9
+            "\u57fa\u91d1\u7b80\u79f0": "\u65b0\u80fd\u6e90\u8f66ETF\u4e1c\u8d22",
+            "\u4efd\u989d\u589e\u957f%": -13.16
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u94a2\u94c1ETF",
-            "\u4efd\u989d\u589e\u957f%": 356.62
+            "\u4efd\u989d\u589e\u957f%": 367.36
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7535\u5b50ETF",
-            "\u4efd\u989d\u589e\u957f%": -62.55
+            "\u57fa\u91d1\u7b80\u79f0": "\u667a\u80fd\u6c7d\u8f66",
+            "\u4efd\u989d\u589e\u957f%": -0.34
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u5316\u5de5ETF",
+            "\u4efd\u989d\u589e\u957f%": 251.42
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6e38\u620fETF",
-            "\u4efd\u989d\u589e\u957f%": 219.94
+            "\u4efd\u989d\u589e\u957f%": 219.33
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "HK\u521b\u65b0\u836f",
-            "\u4efd\u989d\u589e\u957f%": 10396.51
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u82af\u7247ETF",
-            "\u4efd\u989d\u589e\u957f%": -32.21
+            "\u57fa\u91d1\u7b80\u79f0": "\u7535\u5b50ETF",
+            "\u4efd\u989d\u589e\u957f%": -62.21
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u91d1\u878dETF",
-            "\u4efd\u989d\u589e\u957f%": -62.05
+            "\u4efd\u989d\u589e\u957f%": -66.21
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "HK\u521b\u65b0\u836f",
+            "\u4efd\u989d\u589e\u957f%": 10339.64
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u592e\u4f01\u5206\u7ea2",
-            "\u4efd\u989d\u589e\u957f%": -92.02
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u7efc\u6307ETF",
-            "\u4efd\u989d\u589e\u957f%": 1459.41
+            "\u4efd\u989d\u589e\u957f%": -92.08
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "30\u5e74\u56fd\u503a",
-            "\u4efd\u989d\u589e\u957f%": 15739.46
+            "\u4efd\u989d\u589e\u957f%": 15743.91
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u7efc\u6307ETF",
+            "\u4efd\u989d\u589e\u957f%": 1466.25
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u82af\u7247ETF",
+            "\u4efd\u989d\u589e\u957f%": -32.7
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "800ETF",
-            "\u4efd\u989d\u589e\u957f%": 55.26
+            "\u4efd\u989d\u589e\u957f%": 55.03
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u673a\u5668\u4ebaETF\u5929\u5f18",
-            "\u4efd\u989d\u589e\u957f%": 2667.92
+            "\u4efd\u989d\u589e\u957f%": 2657.37
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u9053\u743c\u65af",
-            "\u4efd\u989d\u589e\u957f%": 798.82
+            "\u4efd\u989d\u589e\u957f%": 800.83
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7535\u529bETF",
-            "\u4efd\u989d\u589e\u957f%": 1042.59
+            "\u4efd\u989d\u589e\u957f%": 989.55
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e0a\u8bc1ETF",
-            "\u4efd\u989d\u589e\u957f%": 177.31
+            "\u4efd\u989d\u589e\u957f%": 174.55
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u8bc1\u7ea2\u5229",
-            "\u4efd\u989d\u589e\u957f%": 1837.22
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b50",
-            "\u4efd\u989d\u589e\u957f%": 275.14
+            "\u4efd\u989d\u589e\u957f%": 1863.81
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b\u521b\u4e1aETF\u6613\u65b9\u8fbe",
-            "\u4efd\u989d\u589e\u957f%": 161.31
+            "\u4efd\u989d\u589e\u957f%": 163.51
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677fETF\u6613\u65b9\u8fbe",
-            "\u4efd\u989d\u589e\u957f%": 110.14
+            "\u4efd\u989d\u589e\u957f%": 106.08
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u79d1\u521b50",
+            "\u4efd\u989d\u589e\u957f%": 269.7
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u5730\u4ea7ETF",
-            "\u4efd\u989d\u589e\u957f%": 16.14
+            "\u4efd\u989d\u589e\u957f%": 13.38
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e2d\u8bc1500",
-            "\u4efd\u989d\u589e\u957f%": 2.48
+            "\u4efd\u989d\u589e\u957f%": 2.58
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u4e1c\u8bc1ETF",
+            "\u4efd\u989d\u589e\u957f%": 1965.94
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677f50ETF\u534e\u5b89",
+            "\u4efd\u989d\u589e\u957f%": 47.41
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7eb3\u6307\u751f\u7269",
             "\u4efd\u989d\u589e\u957f%": 346.41
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u521b\u4e1a\u677f50ETF\u534e\u5b89",
-            "\u4efd\u989d\u589e\u957f%": 46.45
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u4e1c\u8bc1ETF",
-            "\u4efd\u989d\u589e\u957f%": 1965.16
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u592e\u521bETF",
@@ -1150,43 +1134,43 @@
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6709\u8272ETF\u6c47\u6dfb\u5bcc",
-            "\u4efd\u989d\u589e\u957f%": 109.52
-        },
-        {
-            "\u57fa\u91d1\u7b80\u79f0": "\u901a\u4fe1ETF",
-            "\u4efd\u989d\u589e\u957f%": 935.51
+            "\u4efd\u989d\u589e\u957f%": 106.44
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7ea2\u5229\u4f4e\u6ce2",
-            "\u4efd\u989d\u589e\u957f%": 23983.27
+            "\u4efd\u989d\u589e\u957f%": 24166.75
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u901a\u4fe1ETF",
+            "\u4efd\u989d\u589e\u957f%": 948.83
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u4e91\u8ba1\u7b97",
-            "\u4efd\u989d\u589e\u957f%": 319.67
+            "\u4efd\u989d\u589e\u957f%": 325.0
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u65e5\u7ecfETF",
-            "\u4efd\u989d\u589e\u957f%": 1428.02
+            "\u4efd\u989d\u589e\u957f%": 1428.74
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "AI\u667a\u80fd",
-            "\u4efd\u989d\u589e\u957f%": 197.14
+            "\u4efd\u989d\u589e\u957f%": 196.78
+        },
+        {
+            "\u57fa\u91d1\u7b80\u79f0": "\u9ec4\u91d1ETF",
+            "\u4efd\u989d\u589e\u957f%": 294.86
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u6807\u666e500",
             "\u4efd\u989d\u589e\u957f%": 347.22
         },
         {
-            "\u57fa\u91d1\u7b80\u79f0": "\u9ec4\u91d1ETF",
-            "\u4efd\u989d\u589e\u957f%": 298.21
-        },
-        {
             "\u57fa\u91d1\u7b80\u79f0": "\u534a\u5bfc\u4f53",
-            "\u4efd\u989d\u589e\u957f%": -15.27
+            "\u4efd\u989d\u589e\u957f%": -15.29
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u8d44\u6e90ETF",
-            "\u4efd\u989d\u589e\u957f%": -6.54
+            "\u4efd\u989d\u589e\u957f%": -6.96
         },
         {
             "\u57fa\u91d1\u7b80\u79f0": "\u7eb3\u6307ETF",
@@ -19621,6 +19605,17 @@
         },
         {
             "Date": "2026-06-26",
+            "Close_UDI": 101.36,
+            "High": 101.57,
+            "Low": 101.05,
+            "Open": 101.5,
+            "Percent": -0.07,
+            "DA": 0.51,
+            "YC": 2.99,
+            "Close_SZI": 4027.265
+        },
+        {
+            "Date": "2026-06-29",
             "Close_UDI": null,
             "High": null,
             "Low": null,
@@ -19628,32 +19623,10 @@
             "Percent": null,
             "DA": null,
             "YC": null,
-            "Close_SZI": 4027.265
+            "Close_SZI": 4073.902
         }
     ],
     "UDI_SZI_ThisYear": [
-        {
-            "Date": "2025-06-26",
-            "Close_UDI": 97.15,
-            "High": 97.61,
-            "Low": 97.0,
-            "Open": 97.55,
-            "Percent": -0.54,
-            "DA": 0.62,
-            "YC": -11.19,
-            "Close_SZI": 3448.453
-        },
-        {
-            "Date": "2025-06-27",
-            "Close_UDI": 97.4,
-            "High": 97.5,
-            "Low": 97.0,
-            "Open": 97.33,
-            "Percent": 0.26,
-            "DA": 0.51,
-            "YC": -10.96,
-            "Close_SZI": 3424.227
-        },
         {
             "Date": "2025-06-30",
             "Close_UDI": 96.88,
@@ -22472,6 +22445,17 @@
         },
         {
             "Date": "2026-06-26",
+            "Close_UDI": 101.36,
+            "High": 101.57,
+            "Low": 101.05,
+            "Open": 101.5,
+            "Percent": -0.07,
+            "DA": 0.51,
+            "YC": 2.99,
+            "Close_SZI": 4027.265
+        },
+        {
+            "Date": "2026-06-29",
             "Close_UDI": null,
             "High": null,
             "Low": null,
@@ -22479,7 +22463,7 @@
             "Percent": null,
             "DA": null,
             "YC": null,
-            "Close_SZI": 4027.265
+            "Close_SZI": 4073.902
         }
     ],
     "UDI_GDI_from2021": [
@@ -50209,26 +50193,26 @@
             "Percent_GDI": 1.01,
             "DA_GDI": 1.1,
             "YC_GDI": -6.58
+        },
+        {
+            "Date": "2026-06-26",
+            "Close_UDI": 101.36,
+            "High_UDI": 101.57,
+            "Low_UDI": 101.05,
+            "Open_UDI": 101.5,
+            "Percent_UDI": -0.07,
+            "DA_UDI": 0.51,
+            "YC_UDI": 2.99,
+            "Close_GDI": 4078.7,
+            "High_GDI": 4078.7,
+            "Low_GDI": 4078.7,
+            "Open_GDI": 4078.7,
+            "Percent_GDI": 1.2,
+            "DA_GDI": 0.0,
+            "YC_GDI": -5.46
         }
     ],
     "UDI_GDI_ThisYear": [
-        {
-            "Date": "2025-06-25",
-            "Close_UDI": 97.68,
-            "High_UDI": 98.2,
-            "Low_UDI": 97.65,
-            "Open_UDI": 97.94,
-            "Percent_UDI": -0.18,
-            "DA_UDI": 0.56,
-            "YC_UDI": -10.7,
-            "Close_GDI": 3327.1,
-            "High_GDI": 3331.2,
-            "Low_GDI": 3310.6,
-            "Open_GDI": 3321.6,
-            "Percent_GDI": 0.29,
-            "DA_GDI": 0.62,
-            "YC_GDI": 25.13
-        },
         {
             "Date": "2025-06-26",
             "Close_UDI": 97.15,
@@ -54512,9 +54496,117 @@
             "Percent_GDI": 1.01,
             "DA_GDI": 1.1,
             "YC_GDI": -6.58
+        },
+        {
+            "Date": "2026-06-26",
+            "Close_UDI": 101.36,
+            "High_UDI": 101.57,
+            "Low_UDI": 101.05,
+            "Open_UDI": 101.5,
+            "Percent_UDI": -0.07,
+            "DA_UDI": 0.51,
+            "YC_UDI": 2.99,
+            "Close_GDI": 4078.7,
+            "High_GDI": 4078.7,
+            "Low_GDI": 4078.7,
+            "Open_GDI": 4078.7,
+            "Percent_GDI": 1.2,
+            "DA_GDI": 0.0,
+            "YC_GDI": -5.46
         }
     ],
     "ARGroup": [
+        {
+            "\u4ee3\u7801": 512170,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u4e2d\u8bc1\u533b\u7597",
+            "PotScore-New_Mean": 0.06254620489008406,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": 609.0065849869948
+        },
+        {
+            "\u4ee3\u7801": 515260,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u7535\u5b5050",
+            "PotScore-New_Mean": 0.4021181037056927,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": 147.2883691273063
+        },
+        {
+            "\u4ee3\u7801": 562860,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u75ab\u82d7\u751f\u7269",
+            "PotScore-New_Mean": 0.1184579201516647,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": 61.08363757737006
+        },
+        {
+            "\u4ee3\u7801": 588000,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u79d1\u521b50",
+            "PotScore-New_Mean": 0.1137452651053656,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": 13.78463332926751
+        },
+        {
+            "\u4ee3\u7801": 563300,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u4e2d\u8bc12000",
+            "PotScore-New_Mean": -0.0009900397333755834,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -21.71133883210175
+        },
+        {
+            "\u4ee3\u7801": 500000,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "All",
+            "PotScore-New_Mean": -0.01395666416610953,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -31.6376836947485
+        },
+        {
+            "\u4ee3\u7801": 512100,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u4e2d\u8bc11000",
+            "PotScore-New_Mean": -0.02933816433954017,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -43.88831480409752
+        },
+        {
+            "\u4ee3\u7801": 512500,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u4e2d\u8bc1500",
+            "PotScore-New_Mean": -0.02639775545689261,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -52.3886434136338
+        },
+        {
+            "\u4ee3\u7801": 512010,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "300\u533b\u836f",
+            "PotScore-New_Mean": 0.06017162394202403,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -101.8496035491278
+        },
+        {
+            "\u4ee3\u7801": 510300,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u6caa\u6df1300",
+            "PotScore-New_Mean": -0.06261812157987377,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -140.9305430720337
+        },
+        {
+            "\u4ee3\u7801": 931270,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u4e2d\u8bc1A50",
+            "PotScore-New_Mean": -0.07601534183619577,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -168.5671950303078
+        },
+        {
+            "\u4ee3\u7801": 510050,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "\u4e0a\u8bc150",
+            "PotScore-New_Mean": -0.1209543416896529,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -211.2245254902157
+        },
+        {
+            "\u4ee3\u7801": 515250,
+            "\u65e5\u671f": "2026-06-29",
+            "Category": "CS\u667a\u6c7d\u8f66",
+            "PotScore-New_Mean": -0.05837939920032391,
+            "\u589e\u957f\u767e\u5206\u6bd4_PotScore_Mean": -231.7997025063336
+        },
         {
             "\u4ee3\u7801": 515260,
             "\u65e5\u671f": "2026-06-26",
@@ -110638,271 +110730,271 @@
     "TopPotScore5Days": [
         {
             "l2name": "\u534a\u5bfc\u4f53II",
-            "PotScore": 331.58,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -813.62
+            "PotScore": 347.32,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -715.76
         },
         {
             "l2name": "\u5143\u4ef6II",
-            "PotScore": 156.23,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -394.51
-        },
-        {
-            "l2name": "\u901a\u7528\u673a\u68b0II",
-            "PotScore": 107.27,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -1888.19
+            "PotScore": 145.48,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -425.14
         },
         {
             "l2name": "\u7535\u5b50\u5316\u5b66\u54c1II",
-            "PotScore": 101.38,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 9.020000000000007
+            "PotScore": 107.7,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 9.480000000000008
         },
         {
             "l2name": "\u5149\u5b66\u5149\u7535\u5b50II",
-            "PotScore": 95.96,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -611.98
+            "PotScore": 100.53,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -731.75
         },
         {
-            "l2name": "\u7535\u5b50\u5236\u9020II",
-            "PotScore": 79.3,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -835.43
-        },
-        {
-            "l2name": "\u81ea\u52a8\u5316\u8bbe\u5907II",
-            "PotScore": 74.4,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -458.29
+            "l2name": "\u901a\u7528\u673a\u68b0II",
+            "PotScore": 97.98,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -1856.26
         },
         {
             "l2name": "\u5316\u5b66\u5236\u54c1II",
-            "PotScore": 70.92,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -774.04
+            "PotScore": 72.17,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -885.22
         },
         {
-            "l2name": "\u901a\u4fe1\u8bbe\u5907II",
-            "PotScore": 60.87,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -1056.33
+            "l2name": "\u81ea\u52a8\u5316\u8bbe\u5907II",
+            "PotScore": 69.89,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -408.26
+        },
+        {
+            "l2name": "\u7535\u5b50\u5236\u9020II",
+            "PotScore": 68.57000000000001,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -994.62
         },
         {
             "l2name": "\u5176\u4ed6\u7535\u5b50II",
-            "PotScore": 59.62,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -307.35
+            "PotScore": 56.61,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -412.89
+        },
+        {
+            "l2name": "\u7a00\u6709\u91d1\u5c5eII",
+            "PotScore": 50.17,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": -222.4
         }
     ],
     "TopMainFund5Days": [
         {
-            "l2name": "\u5316\u5b66\u539f\u6599II",
-            "PotScore": -2.45,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 212.72
-        },
-        {
-            "l2name": "\u57ce\u5546\u884cII",
-            "PotScore": -13.43,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 139.18
-        },
-        {
             "l2name": "\u80a1\u4efd\u5236\u94f6\u884cII",
-            "PotScore": -6.47,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 110.32
-        },
-        {
-            "l2name": "\u623f\u5730\u4ea7\u670d\u52a1II",
-            "PotScore": -7.56,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 68.42
-        },
-        {
-            "l2name": "\u8bc1\u5238II",
-            "PotScore": 32.06,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 66.91
-        },
-        {
-            "l2name": "\u4fdd\u9669II",
-            "PotScore": 2.06,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 40.08
-        },
-        {
-            "l2name": "\u7164\u70ad\u5f00\u91c7II",
-            "PotScore": -22.84,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 34.8
+            "PotScore": -6.23,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 131.87
         },
         {
             "l2name": "\u767d\u8272\u5bb6\u7535II",
-            "PotScore": -4.71,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 34.40000000000001
+            "PotScore": -2.05,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 87.44
         },
         {
-            "l2name": "\u6c7d\u8f66\u670d\u52a1II",
-            "PotScore": -7.99,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 13.34
+            "l2name": "\u57ce\u5546\u884cII",
+            "PotScore": -12.52,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 80.22
+        },
+        {
+            "l2name": "\u4fdd\u9669II",
+            "PotScore": 0.98,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 49.41
+        },
+        {
+            "l2name": "\u5316\u5b66\u539f\u6599II",
+            "PotScore": 1.39,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 41.39
+        },
+        {
+            "l2name": "\u56fd\u6709\u5927\u578b\u94f6\u884cII",
+            "PotScore": -3.72,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 19.95
+        },
+        {
+            "l2name": "\u7164\u70ad\u5f00\u91c7II",
+            "PotScore": -23.55,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 17.35
+        },
+        {
+            "l2name": "\u7535\u5b50\u5316\u5b66\u54c1II",
+            "PotScore": 107.7,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 9.480000000000008
+        },
+        {
+            "l2name": "\u623f\u5730\u4ea7\u670d\u52a1II",
+            "PotScore": -7.35,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 7.43
         },
         {
             "l2name": "\u7126\u70adII",
-            "PotScore": -10.25,
-            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 9.239999999999998
+            "PotScore": -9.62,
+            "\u4e3b\u529b\u51c0\u6d41\u5165-\u51c0\u5360\u6bd4": 1.73
         }
     ],
     "TopStockInTopPotScore": [
         {
+            "\u4ee3\u7801": 688689,
+            "l2name": "\u534a\u5bfc\u4f53II",
+            "\u540d\u79f0": "\u94f6\u6cb3\u5fae\u7535",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 133.53,
+            "PotScore": null,
+            "\u6536\u76d8\u4ef7": 55.88,
+            "\u6da8\u8dcc\u5e45": 19.99
+        },
+        {
+            "\u4ee3\u7801": 3043,
+            "l2name": "\u534a\u5bfc\u4f53II",
+            "\u540d\u79f0": "\u534e\u4e9a\u667a\u80fd",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 64.37,
+            "PotScore": 0.67,
+            "\u6536\u76d8\u4ef7": 90.35,
+            "\u6da8\u8dcc\u5e45": 10.0
+        },
+        {
             "\u4ee3\u7801": 600171,
             "l2name": "\u534a\u5bfc\u4f53II",
             "\u540d\u79f0": "\u4e0a\u6d77\u8d1d\u5cad",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 54.79,
-            "PotScore": 0.23,
-            "\u6536\u76d8\u4ef7": 29.9,
-            "\u6da8\u8dcc\u5e45": -6.42
-        },
-        {
-            "\u4ee3\u7801": 600584,
-            "l2name": "\u534a\u5bfc\u4f53II",
-            "\u540d\u79f0": "\u957f\u7535\u79d1\u6280",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 28.65,
-            "PotScore": 1.08,
-            "\u6536\u76d8\u4ef7": 100.89,
-            "\u6da8\u8dcc\u5e45": -3.15
-        },
-        {
-            "\u4ee3\u7801": 688593,
-            "l2name": "\u534a\u5bfc\u4f53II",
-            "\u540d\u79f0": "\u65b0\u76f8\u5fae",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 28.42,
-            "PotScore": 0.48,
-            "\u6536\u76d8\u4ef7": 35.41,
-            "\u6da8\u8dcc\u5e45": -3.28
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 56.6,
+            "PotScore": 0.28,
+            "\u6536\u76d8\u4ef7": 30.88,
+            "\u6da8\u8dcc\u5e45": 3.28
         },
         {
             "\u4ee3\u7801": 823,
             "l2name": "\u5143\u4ef6II",
             "\u540d\u79f0": "\u8d85\u58f0\u7535\u5b50",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 93.55,
-            "PotScore": 1.46,
-            "\u6536\u76d8\u4ef7": 28.46,
-            "\u6da8\u8dcc\u5e45": 10.01
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 71.79,
+            "PotScore": 1.43,
+            "\u6536\u76d8\u4ef7": 25.94,
+            "\u6da8\u8dcc\u5e45": -8.85
         },
         {
             "\u4ee3\u7801": 301132,
             "l2name": "\u5143\u4ef6II",
             "\u540d\u79f0": "\u6ee1\u5764\u79d1\u6280",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 50.37,
-            "PotScore": 1.07,
-            "\u6536\u76d8\u4ef7": 55.2,
-            "\u6da8\u8dcc\u5e45": -2.35
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 53.96,
+            "PotScore": 0.83,
+            "\u6536\u76d8\u4ef7": 50.99,
+            "\u6da8\u8dcc\u5e45": -7.63
         },
         {
-            "\u4ee3\u7801": 603989,
+            "\u4ee3\u7801": 600563,
             "l2name": "\u5143\u4ef6II",
-            "\u540d\u79f0": "\u827e\u534e\u96c6\u56e2",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 35.59,
-            "PotScore": 1.34,
-            "\u6536\u76d8\u4ef7": 56.0,
-            "\u6da8\u8dcc\u5e45": 4.19
+            "\u540d\u79f0": "\u6cd5\u62c9\u7535\u5b50",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 34.64,
+            "PotScore": 0.66,
+            "\u6536\u76d8\u4ef7": 189.4,
+            "\u6da8\u8dcc\u5e45": 0.34
         },
         {
-            "\u4ee3\u7801": 603757,
-            "l2name": "\u901a\u7528\u673a\u68b0II",
-            "\u540d\u79f0": "\u5927\u5143\u6cf5\u4e1a",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 85.85,
-            "PotScore": 1.04,
-            "\u6536\u76d8\u4ef7": 74.22,
-            "\u6da8\u8dcc\u5e45": 3.2
+            "\u4ee3\u7801": 2584,
+            "l2name": "\u7535\u5b50\u5316\u5b66\u54c1II",
+            "\u540d\u79f0": "\u897f\u9647\u79d1\u5b66",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 154.37,
+            "PotScore": 0.97,
+            "\u6536\u76d8\u4ef7": 9.35,
+            "\u6da8\u8dcc\u5e45": -2.81
         },
         {
-            "\u4ee3\u7801": 2559,
-            "l2name": "\u901a\u7528\u673a\u68b0II",
-            "\u540d\u79f0": "\u4e9a\u5a01\u80a1\u4efd",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 52.23,
-            "PotScore": 0.98,
-            "\u6536\u76d8\u4ef7": 12.31,
-            "\u6da8\u8dcc\u5e45": 10.01
+            "\u4ee3\u7801": 688603,
+            "l2name": "\u7535\u5b50\u5316\u5b66\u54c1II",
+            "\u540d\u79f0": "\u5929\u627f\u79d1\u6280",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 24.53,
+            "PotScore": 1.27,
+            "\u6536\u76d8\u4ef7": 191.33,
+            "\u6da8\u8dcc\u5e45": -3.76
         },
         {
-            "\u4ee3\u7801": 600172,
-            "l2name": "\u901a\u7528\u673a\u68b0II",
-            "\u540d\u79f0": "\u9ec4\u6cb3\u65cb\u98ce",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 47.27,
-            "PotScore": 1.17,
-            "\u6536\u76d8\u4ef7": 16.65,
-            "\u6da8\u8dcc\u5e45": -8.87
+            "\u4ee3\u7801": 300398,
+            "l2name": "\u7535\u5b50\u5316\u5b66\u54c1II",
+            "\u540d\u79f0": "\u98de\u51ef\u6750\u6599",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 23.31,
+            "PotScore": 1.79,
+            "\u6536\u76d8\u4ef7": 64.26,
+            "\u6da8\u8dcc\u5e45": 4.85
         }
     ],
     "TopStockIn5DaysMainFund": [
         {
-            "\u4ee3\u7801": 818,
-            "l2name": "\u5316\u5b66\u539f\u6599II",
-            "\u540d\u79f0": "\u822a\u9526\u79d1\u6280",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 92.59,
-            "PotScore": 0.95,
-            "\u6536\u76d8\u4ef7": 13.97,
-            "\u6da8\u8dcc\u5e45": -5.67
-        },
-        {
-            "\u4ee3\u7801": 603938,
-            "l2name": "\u5316\u5b66\u539f\u6599II",
-            "\u540d\u79f0": "\u4e09\u5b5a\u80a1\u4efd",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 82.44,
-            "PotScore": 1.47,
-            "\u6536\u76d8\u4ef7": 75.81,
-            "\u6da8\u8dcc\u5e45": 8.8
-        },
-        {
-            "\u4ee3\u7801": 545,
-            "l2name": "\u5316\u5b66\u539f\u6599II",
-            "\u540d\u79f0": "\u91d1\u6d66\u949b\u4e1a",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 81.23,
-            "PotScore": 0.37,
-            "\u6536\u76d8\u4ef7": 2.52,
-            "\u6da8\u8dcc\u5e45": -3.82
-        },
-        {
-            "\u4ee3\u7801": 600926,
-            "l2name": "\u57ce\u5546\u884cII",
-            "\u540d\u79f0": "\u676d\u5dde\u94f6\u884c",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 41.08,
-            "PotScore": -0.19,
-            "\u6536\u76d8\u4ef7": 14.85,
-            "\u6da8\u8dcc\u5e45": -1.2
-        },
-        {
-            "\u4ee3\u7801": 601577,
-            "l2name": "\u57ce\u5546\u884cII",
-            "\u540d\u79f0": "\u957f\u6c99\u94f6\u884c",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 36.39,
-            "PotScore": -0.21,
-            "\u6536\u76d8\u4ef7": 8.87,
-            "\u6da8\u8dcc\u5e45": -2.21
-        },
-        {
-            "\u4ee3\u7801": 2142,
-            "l2name": "\u57ce\u5546\u884cII",
-            "\u540d\u79f0": "\u5b81\u6ce2\u94f6\u884c",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 30.5,
-            "PotScore": -0.09,
-            "\u6536\u76d8\u4ef7": 31.13,
-            "\u6da8\u8dcc\u5e45": 1.1
-        },
-        {
             "\u4ee3\u7801": 600016,
             "l2name": "\u80a1\u4efd\u5236\u94f6\u884cII",
             "\u540d\u79f0": "\u6c11\u751f\u94f6\u884c",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 89.25,
-            "PotScore": -0.14,
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 77.53,
+            "PotScore": -0.21,
             "\u6536\u76d8\u4ef7": 3.29,
-            "\u6da8\u8dcc\u5e45": -2.08
+            "\u6da8\u8dcc\u5e45": 0.0
         },
         {
             "\u4ee3\u7801": 601818,
             "l2name": "\u80a1\u4efd\u5236\u94f6\u884cII",
             "\u540d\u79f0": "\u5149\u5927\u94f6\u884c",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 34.62,
-            "PotScore": -0.19,
-            "\u6536\u76d8\u4ef7": 2.97,
-            "\u6da8\u8dcc\u5e45": -1.33
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 41.05,
+            "PotScore": -0.18,
+            "\u6536\u76d8\u4ef7": 2.95,
+            "\u6da8\u8dcc\u5e45": -0.67
         },
         {
             "\u4ee3\u7801": 600000,
             "l2name": "\u80a1\u4efd\u5236\u94f6\u884cII",
             "\u540d\u79f0": "\u6d66\u53d1\u94f6\u884c",
-            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 30.52,
-            "PotScore": -0.3,
-            "\u6536\u76d8\u4ef7": 8.76,
-            "\u6da8\u8dcc\u5e45": -1.02
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 36.82,
+            "PotScore": -0.24,
+            "\u6536\u76d8\u4ef7": 8.73,
+            "\u6da8\u8dcc\u5e45": -0.34
+        },
+        {
+            "\u4ee3\u7801": 651,
+            "l2name": "\u767d\u8272\u5bb6\u7535II",
+            "\u540d\u79f0": "\u683c\u529b\u7535\u5668",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 40.49,
+            "PotScore": 0.05,
+            "\u6536\u76d8\u4ef7": 37.92,
+            "\u6da8\u8dcc\u5e45": 2.43
+        },
+        {
+            "\u4ee3\u7801": 2668,
+            "l2name": "\u767d\u8272\u5bb6\u7535II",
+            "\u540d\u79f0": "TCL\u667a\u5bb6",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 29.52,
+            "PotScore": 0.44,
+            "\u6536\u76d8\u4ef7": 10.66,
+            "\u6da8\u8dcc\u5e45": -3.09
+        },
+        {
+            "\u4ee3\u7801": 333,
+            "l2name": "\u767d\u8272\u5bb6\u7535II",
+            "\u540d\u79f0": "\u7f8e\u7684\u96c6\u56e2",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 24.96,
+            "PotScore": 0.16,
+            "\u6536\u76d8\u4ef7": 77.27,
+            "\u6da8\u8dcc\u5e45": 3.26
+        },
+        {
+            "\u4ee3\u7801": 600926,
+            "l2name": "\u57ce\u5546\u884cII",
+            "\u540d\u79f0": "\u676d\u5dde\u94f6\u884c",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 38.22,
+            "PotScore": -0.2,
+            "\u6536\u76d8\u4ef7": 14.94,
+            "\u6da8\u8dcc\u5e45": 0.61
+        },
+        {
+            "\u4ee3\u7801": 601577,
+            "l2name": "\u57ce\u5546\u884cII",
+            "\u540d\u79f0": "\u957f\u6c99\u94f6\u884c",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 34.4,
+            "PotScore": -0.24,
+            "\u6536\u76d8\u4ef7": 8.9,
+            "\u6da8\u8dcc\u5e45": 0.34
+        },
+        {
+            "\u4ee3\u7801": 2966,
+            "l2name": "\u57ce\u5546\u884cII",
+            "\u540d\u79f0": "\u82cf\u5dde\u94f6\u884c",
+            "\u603b\u51c0\u6d41\u5165\u5360\u6bd4_5\u65e5\u603b\u548c": 27.28,
+            "PotScore": -0.19,
+            "\u6536\u76d8\u4ef7": 7.13,
+            "\u6da8\u8dcc\u5e45": 0.14
         }
     ]
 }
