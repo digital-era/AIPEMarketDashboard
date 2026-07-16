@@ -252,6 +252,55 @@ function createHotIndustriesChart(industryData) {
 }
 
 // Table Functions
+// function createEtfPerformanceTable(data) {
+//     const tableBody = document.querySelector('#etfTable tbody');
+//     tableBody.innerHTML = ''; 
+
+//     const priceChange2021Map = new Map(data.PriceChangeFrom2021.map(item => [item['基金简称'], item['价格增长%']]));
+//     const shareChangeMap = new Map(data.ShareThisYearChange.map(item => [item['基金简称'], item['Year\u4efd\u989d\u589e\u957f%']]));
+
+//     data.PriceThisYearChange.forEach(item => {
+//         const name = item['名称'];
+//         let baseUrl = 'https://aipeinvestmentagent.pages.dev';
+//         const encodedName = encodeURIComponent(name);
+//         //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
+//         const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
+//         if (sharedOrigin) {
+//                 console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
+//                 baseUrl = sharedOrigin;
+//         } else {
+//                 console.log("localStorage 中未找到 sharedReferrerOrigin。");
+//                 baseUrl =  'https://aipeinvestmentagent.pages.dev';
+//         }
+//         const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedName}`;       
+        
+//         const ytdChange = item.YC;
+//         const simpleName = name.replace(/ETF.*/, '').trim();
+//         let since2021Change = priceChange2021Map.get(name) ?? priceChange2021Map.get(simpleName);
+//         let shareChange = shareChangeMap.get(name) ?? shareChangeMap.get(simpleName);
+        
+//         const row = `
+//             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
+//                 <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a></td>
+//                 <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">${formatValue(ytdChange, 2, '%')}</td>
+//                 <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}" data-order="${getOrderValue(since2021Change)}">${formatValue(since2021Change, 2, '%')}</td>
+//                 <td class="px-6 py-4 text-right ${getColorClass(shareChange)}" data-order="${getOrderValue(shareChange)}">${formatValue(shareChange, 2, '%')}</td>
+//             </tr>`;
+//         tableBody.innerHTML += row;
+//     });
+
+//     if ($.fn.DataTable.isDataTable('#etfTable')) {
+//         $('#etfTable').DataTable().destroy();
+//     }
+
+//     new DataTable('#etfTable', {
+//         responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
+//         columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
+//         language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
+//     });
+// }
+
+// Table Functions
 function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
     tableBody.innerHTML = ''; 
@@ -261,18 +310,31 @@ function createEtfPerformanceTable(data) {
 
     data.PriceThisYearChange.forEach(item => {
         const name = item['名称'];
-        let baseUrl = 'https://aipeinvestmentagent.pages.dev';
-        const encodedName = encodeURIComponent(name);
-        //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedName}`;
-        const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
-        if (sharedOrigin) {
-                console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
-                baseUrl = sharedOrigin;
+        
+        // ==========================================
+        // 【修改】构建东方财富 URL（替代 PotScoreFundAnalytics）
+        // ==========================================
+        let stockUrl;
+        // 优先使用代码字段；请确保 AIPEMarketData.json 中包含 "代码" 或 "基金代码"
+        const code = item['代码'] || item['基金代码'] || '';
+        
+        if (code) {
+            const codeStr = String(code).trim();
+            const isHK = codeStr.length === 5; // 港股代码通常为 5 位
+            
+            if (isHK) {
+                stockUrl = `https://quote.eastmoney.com/hk/${codeStr}.html`;
+            } else {
+                // 【关键修正】ETF 交易所判断：
+                //   - 沪市 ETF 以 5/6 开头 (如 510050、600000) → sh
+                //   - 深市 ETF 以 0/1/2/3 开头 (如 159915、000001) → sz
+                const prefix = (codeStr.startsWith('5') || codeStr.startsWith('6')) ? 'sh' : 'sz';
+                stockUrl = `https://quote.eastmoney.com/${prefix}${codeStr}.html`;
+            }
         } else {
-                console.log("localStorage 中未找到 sharedReferrerOrigin。");
-                baseUrl =  'https://aipeinvestmentagent.pages.dev';
+            // 降级：无代码时用名称跳转到东方财富搜索页
+            stockUrl = `https://quote.eastmoney.com/search/web?q=${encodeURIComponent(name)}`;
         }
-        const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedName}`;       
         
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
@@ -281,7 +343,9 @@ function createEtfPerformanceTable(data) {
         
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap"><a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a></td>
+                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <a href="${stockUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a>
+                </td>
                 <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">${formatValue(ytdChange, 2, '%')}</td>
                 <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}" data-order="${getOrderValue(since2021Change)}">${formatValue(since2021Change, 2, '%')}</td>
                 <td class="px-6 py-4 text-right ${getColorClass(shareChange)}" data-order="${getOrderValue(shareChange)}">${formatValue(shareChange, 2, '%')}</td>
