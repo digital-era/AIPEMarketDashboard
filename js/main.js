@@ -95,7 +95,7 @@ async function loadEtfNameMap() {
 }
 
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // 【新增】优先处理视图模式（纯 DOM 操作，不依赖数据加载）
     initViewMode();
 
