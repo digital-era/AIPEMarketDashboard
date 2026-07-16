@@ -277,70 +277,39 @@ function populateTopMainFundTable(data) {
 //     });
 // }
 
-// MODIFIED: 使用股票代码跳转东方财富
+/**
+ * 【修正】Top Stocks in High PotScore Industries
+ * 修复：强制补齐6位代码，防止深圳标的(000xxx)前导零丢失
+ */
 function populateTopStockInPotScoreTable(data) {
     const tableBody = document.getElementById('topStockInTopPotScoreTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
         const stockName = item['名称'];
-        const code = item['代码'] || item['symbol'] || item['stock_code'] || '';
         
-        // 构建东方财富 URL
+        // 1. 获取代码（兼容多种字段名）
+        let rawCode = item['代码'] || item['symbol'] || item['stock_code'] || '';
+        
+        // 2. 【关键修复】强制格式化为6位字符串，补齐前导零
+        const codeStr = rawCode ? String(rawCode).padStart(6, '0').trim() : '';
+        
+        // 3. 构建东方财富 URL
         let stockUrl;
-        if (code) {
-            const codeStr = String(code).trim();
-            const isHK = codeStr.length === 5;
+        if (codeStr && codeStr.length >= 5) {
+            const isHK = codeStr.length === 5; // 港股 5 位
             if (isHK) {
                 stockUrl = `https://quote.eastmoney.com/hk/${codeStr}.html`;
             } else {
-                // 个股：6开头→沪市(sh)，其余→深市(sz)
+                // A股：6开头→沪市(sh)，其余(0/3开头)→深市(sz)
                 const prefix = codeStr.startsWith('6') ? 'sh' : 'sz';
                 stockUrl = `https://quote.eastmoney.com/${prefix}${codeStr}.html`;
             }
         } else {
-            // 兜底：按名称搜索
-            console.warn(`[PotScore] 股票缺少代码: "${stockName}"，降级到搜索页`);
+            // 兜底：无有效代码时按名称搜索
+            console.warn(`[PotScore] 股票代码无效: "${stockName}" (原始值: ${rawCode})，降级到搜索页`);
             stockUrl = `https://quote.eastmoney.com/search/web?q=${encodeURIComponent(stockName)}`;
         }
         
-        const row = `
-            <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
-                <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
-                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
-                        ${stockName}
-                    </a>
-                </td>
-                <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
-                <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
-            </tr>`;
-        tableBody.innerHTML += row;
-    });
-}
-
-// MODIFIED: 使用股票代码跳转东方财富
-function populateTopStockInMainFundTable(data) {
-    const tableBody = document.getElementById('topStockInMainFundTableBody');
-    tableBody.innerHTML = '';
-    data.forEach(item => {
-        const stockName = item['名称'];
-        const code = item['代码'] || item['symbol'] || item['stock_code'] || '';
-        
-        // 构建东方财富 URL
-        let stockUrl;
-        if (code) {
-            const codeStr = String(code).trim();
-            const isHK = codeStr.length === 5;
-            if (isHK) {
-                stockUrl = `https://quote.eastmoney.com/hk/${codeStr}.html`;
-            } else {
-                const prefix = codeStr.startsWith('6') ? 'sh' : 'sz';
-                stockUrl = `https://quote.eastmoney.com/${prefix}${codeStr}.html`;
-            }
-        } else {
-            console.warn(`[MainFund] 股票缺少代码: "${stockName}"，降级到搜索页`);
-            stockUrl = `https://quote.eastmoney.com/search/web?q=${encodeURIComponent(stockName)}`;
-        }
-
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
@@ -356,30 +325,75 @@ function populateTopStockInMainFundTable(data) {
 }
 
 // MODIFIED FUNCTION
+// function populateTopStockInMainFundTable(data) {
+//     const tableBody = document.getElementById('topStockInMainFundTableBody');
+//     tableBody.innerHTML = '';
+//     data.forEach(item => {
+//         const stockName = item['名称'];
+//         let baseUrl = 'https://aipeinvestmentagent.pages.dev';
+//         // Encode the stock name for use in a URL
+//         const encodedStockName = encodeURIComponent(stockName);
+//         // Construct the full URL with the query parameter
+//         //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;     
+//         const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
+//         if (sharedOrigin) {
+//                 console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
+//                 baseUrl = sharedOrigin;
+//         } else {
+//                 console.log("localStorage 中未找到 sharedReferrerOrigin。");
+//                 baseUrl = 'https://aipeinvestmentagent.pages.dev';
+//         }
+//         const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedStockName}`;
+
+//         const row = `
+//             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
+//                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
+//                     <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+//                         ${stockName}
+//                     </a>
+//                 </td>
+//                 <td class="px-4 py-2 text-gray-500 dark:text-dark-subtle">${item['l2name']}</td>
+//                 <td class="px-4 py-2 text-right font-semibold ${getColorClass(item['总净流入占比_5日总和'])}">${formatValue(item['总净流入占比_5日总和'], 2, '%')}</td>
+//             </tr>`;
+//         tableBody.innerHTML += row;
+//     });
+// }
+
+/**
+ * 【修正】Top Stocks in High MainFund Industries
+ * 修复：同步使用代码跳转（原代码仍基于名称，未修改）
+ */
 function populateTopStockInMainFundTable(data) {
     const tableBody = document.getElementById('topStockInMainFundTableBody');
     tableBody.innerHTML = '';
     data.forEach(item => {
         const stockName = item['名称'];
-        let baseUrl = 'https://aipeinvestmentagent.pages.dev';
-        // Encode the stock name for use in a URL
-        const encodedStockName = encodeURIComponent(stockName);
-        // Construct the full URL with the query parameter
-        //const stockUrl = `https://aipeinvestmentagent.pages.dev/PotScoreFundAnalytics?stock=${encodedStockName}`;     
-        const sharedOrigin = localStorage.getItem('sharedReferrerOrigin')
-        if (sharedOrigin) {
-                console.log("从 localStorage 获取到的 referrerOrigin:", sharedOrigin);
-                baseUrl = sharedOrigin;
+        
+        // 1. 获取代码
+        let rawCode = item['代码'] || item['symbol'] || item['stock_code'] || '';
+        
+        // 2. 【关键修复】强制格式化为6位字符串，补齐前导零
+        const codeStr = rawCode ? String(rawCode).padStart(6, '0').trim() : '';
+        
+        // 3. 构建东方财富 URL
+        let stockUrl;
+        if (codeStr && codeStr.length >= 5) {
+            const isHK = codeStr.length === 5;
+            if (isHK) {
+                stockUrl = `https://quote.eastmoney.com/hk/${codeStr}.html`;
+            } else {
+                const prefix = codeStr.startsWith('6') ? 'sh' : 'sz';
+                stockUrl = `https://quote.eastmoney.com/${prefix}${codeStr}.html`;
+            }
         } else {
-                console.log("localStorage 中未找到 sharedReferrerOrigin。");
-                baseUrl = 'https://aipeinvestmentagent.pages.dev';
+            console.warn(`[MainFund] 股票代码无效: "${stockName}" (原始值: ${rawCode})，降级到搜索页`);
+            stockUrl = `https://quote.eastmoney.com/search/web?q=${encodeURIComponent(stockName)}`;
         }
-        const stockUrl = `${baseUrl}/PotScoreFundAnalytics?stock=${encodedStockName}`;
 
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-4 py-2 font-medium text-gray-900 dark:text-white">
-                    <a href="${stockUrl}" target="stockAnalyticsTab" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
+                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">
                         ${stockName}
                     </a>
                 </td>
