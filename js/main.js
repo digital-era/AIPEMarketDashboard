@@ -3,6 +3,9 @@ let timeSeriesChartInstance = null;
 let hotIndustriesChartInstance = null;
 let timeSeriesChartThisYearInstance = null;
 
+// 【新增】ETF 名称→代码映射表
+let etfNameMap = {};
+
 // --- Theme Management ---
 const themeToggleBtn = document.getElementById('theme-toggle');
 const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
@@ -75,10 +78,29 @@ function initViewMode() {
     console.log(`[ViewMode] Single view: ${view}, target ${targetPage}, hidden ${navItems.length - visibleCount} tabs.`);
 }
 
+/**
+ * 【新增】加载 ETFNameMap.json
+ * 结构: { "510050": "华夏上证50ETF", "510300": "华泰柏瑞沪深300ETF", ... }
+ */
+async function loadEtfNameMap() {
+    try {
+        const res = await fetch('ETFNameMap.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        etfNameMap = await res.json();
+        console.log(`[ETFMap] Loaded ${Object.keys(etfNameMap).length} entries`);
+    } catch (e) {
+        console.warn('[ETFMap] Failed to load ETFNameMap.json:', e.message);
+        etfNameMap = {};
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // 【新增】优先处理视图模式（纯 DOM 操作，不依赖数据加载）
     initViewMode();
+
+    // 【新增】优先加载 ETF 代码映射（不阻塞主数据加载，但确保在渲染表格前就绪）
+    await loadEtfNameMap();
     
     fetch('AIPEMarketData.json')
         .then(response => {
@@ -301,6 +323,7 @@ function createHotIndustriesChart(industryData) {
 // }
 
 // Table Functions
+// Table Functions
 function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
     tableBody.innerHTML = ''; 
@@ -312,27 +335,40 @@ function createEtfPerformanceTable(data) {
         const name = item['名称'];
         
         // ==========================================
-        // 【修改】构建东方财富 URL（替代 PotScoreFundAnalytics）
+        // 【核心修改】从 ETFNameMap 查找代码
         // ==========================================
-        let stockUrl;
-        // 优先使用代码字段；请确保 AIPEMarketData.json 中包含 "代码" 或 "基金代码"
-        const code = item['代码'] || item['基金代码'] || '';
+        let code = '';
         
+        // etfNameMap 结构: { "510050": "华夏上证50ETF", ... }
+        // 通过名称反向查找代码
+        if (etfNameMap && Object.keys(etfNameMap).length > 0) {
+            const foundCode = Object.keys(etfNameMap).find(k => etfNameMap[k] === name);
+            if (foundCode) code = foundCode;
+        }
+        
+        // 兜底：如果映射表缺失或匹配失败，尝试 item 自带字段
+        if (!code) {
+            code = item['代码'] || item['symbol'] || item['基金代码'] || '';
+        }
+
+        // 构建东方财富 URL
+        let stockUrl;
         if (code) {
             const codeStr = String(code).trim();
-            const isHK = codeStr.length === 5; // 港股代码通常为 5 位
+            const isHK = codeStr.length === 5; // 港股 5 位
             
             if (isHK) {
                 stockUrl = `https://quote.eastmoney.com/hk/${codeStr}.html`;
             } else {
-                // 【关键修正】ETF 交易所判断：
-                //   - 沪市 ETF 以 5/6 开头 (如 510050、600000) → sh
-                //   - 深市 ETF 以 0/1/2/3 开头 (如 159915、000001) → sz
+                // ETF/股票交易所判断：
+                //   - 沪市: 5xxxxx (ETF)、6xxxxx (股票) → sh
+                //   - 深市: 0xxxxx、1xxxxx (ETF)、3xxxxx → sz
                 const prefix = (codeStr.startsWith('5') || codeStr.startsWith('6')) ? 'sh' : 'sz';
                 stockUrl = `https://quote.eastmoney.com/${prefix}${codeStr}.html`;
             }
         } else {
-            // 降级：无代码时用名称跳转到东方财富搜索页
+            // 完全找不到代码，降级到搜索页
+            console.warn(`[ETF Table] 无法找到代码: "${name}"，降级到东方财富搜索页`);
             stockUrl = `https://quote.eastmoney.com/search/web?q=${encodeURIComponent(name)}`;
         }
         
@@ -344,7 +380,7 @@ function createEtfPerformanceTable(data) {
         const row = `
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    <a href="${stockUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a>
+                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a>
                 </td>
                 <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">${formatValue(ytdChange, 2, '%')}</td>
                 <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}" data-order="${getOrderValue(since2021Change)}">${formatValue(since2021Change, 2, '%')}</td>
