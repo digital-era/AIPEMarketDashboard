@@ -33,8 +33,53 @@ themeToggleBtn.addEventListener('click', () => {
     applyTheme(savedTheme || 'dark');
 })();
 
+// ==================== 新增：外部跳转单视图模式 ====================
+function initViewMode() {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (!view) return; // 无 view 参数 = 正常站内访问，不干预
+
+    // view 参数与页面文件名的映射
+    const viewMap = {
+        'market':   'index.html',
+        'flow':     'PotScoreMainFund.html',
+        'hotspot':  'HotspotTracker.html',
+        'portfolio':'PortfolioTracker.html',
+        'usmarket': 'USMarket.html'
+    };
+
+    const targetPage = viewMap[view];
+    if (!targetPage) return;
+
+    // 遍历导航栏所有 <li>，只保留目标页面对应的 Tab
+    const navItems = document.querySelectorAll('nav ul li');
+    let visibleCount = 0;
+
+    navItems.forEach(item => {
+        const link = item.querySelector('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (href === targetPage) {
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    // 只剩一个 Tab 时，隐藏导航栏底部边框（避免单一条目下的视觉残留线）
+    if (visibleCount <= 1) {
+        const navBorder = document.querySelector('nav .border-b');
+        if (navBorder) navBorder.style.borderBottom = 'none';
+    }
+
+    console.log(`[ViewMode] Single view: ${view}, target ${targetPage}, hidden ${navItems.length - visibleCount} tabs.`);
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 【新增】优先处理视图模式（纯 DOM 操作，不依赖数据加载）
+    initViewMode();
+    
     fetch('AIPEMarketData.json')
         .then(response => {
             if (!response.ok) {
