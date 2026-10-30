@@ -2,6 +2,8 @@
 let timeSeriesChartInstance = null;
 let hotIndustriesChartInstance = null;
 let timeSeriesChartThisYearInstance = null;
+// 新增：ETF 代码 → 二级行业 的映射
+let etfIndustryMap = {};
 
 // 【新增】ETF 名称→代码映射表
 let etfNameMap = {};
@@ -94,13 +96,58 @@ async function loadEtfNameMap() {
     }
 }
 
+/**
+ * 【新增】加载 ETFIndustry.json
+ * 结构: { "A股行业主题": [ { 一级大类, 二级行业, 代表ETF:{代码,名称}, 备选ETF:[...] }, ... ],
+ *         "港股与中概": [...], "宽基与风格基准": [...], "跨境与商品": [...],
+ *         "meta": {...}, "覆盖缺口": [...], "主要剔除项": [...] }
+ * 目标: 构建 { ETF代码 -> 二级行业 } 扁平映射（代表ETF + 备选ETF 都收）
+ */
+async function loadEtfIndustryMap() {
+    try {
+        const res = await fetch('ETFIndustry.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const raw = await res.json();
+
+        const map = {};
+        Object.values(raw).forEach(arr => {
+            if (!Array.isArray(arr)) return;         // 跳过 meta / 覆盖缺口 / 主要剔除项
+            arr.forEach(item => {
+                if (!item || typeof item !== 'object') return; // 跳过字符串数组
+                const industry = item['二级行业'];
+                if (!industry) return;
+
+                const primary = item['代表ETF'];
+                if (primary && primary['代码']) {
+                    map[String(primary['代码']).trim()] = industry;
+                }
+                const alternates = item['备选ETF'];
+                if (Array.isArray(alternates)) {
+                    alternates.forEach(alt => {
+                        if (alt && alt['代码']) {
+                            map[String(alt['代码']).trim()] = industry;
+                        }
+                    });
+                }
+            });
+        });
+
+        etfIndustryMap = map;
+        console.log(`[ETFIndustry] Loaded ${Object.keys(map).length} entries`);
+    } catch (e) {
+        console.warn('[ETFIndustry] Failed to load ETFIndustry.json:', e.message);
+        etfIndustryMap = {};
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 【新增】优先处理视图模式（纯 DOM 操作，不依赖数据加载）
     initViewMode();
 
     // 【新增】优先加载 ETF 代码映射（不阻塞主数据加载，但确保在渲染表格前就绪）
-    await loadEtfNameMap();
+    // 并行加载两个映射表，避免串行等待
+    await Promise.all([ loadEtfNameMap(), loadEtfIndustryMap() ]);
     
     fetch('AIPEMarketData.json')
         .then(response => {
@@ -323,80 +370,105 @@ function createHotIndustriesChart(industryData) {
 // }
 
 // Table Functions
-// Table Functions
 function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
-    tableBody.innerHTML = ''; 
+    tableBody.innerHTML = '';
 
-    const priceChange2021Map = new Map(data.PriceChangeFrom2021.map(item => [item['基金简称'], item['价格增长%']]));
-    const shareChangeMap = new Map(data.ShareThisYearChange.map(item => [item['基金简称'], item['Year\u4efd\u989d\u589e\u957f%']]));
+    const priceChange2021Map = new Map(
+        data.PriceChangeFrom2021.map(item => [item['基金简称'], item['价格增长%']])
+    );
+    const shareChangeMap = new Map(
+        data.ShareThisYearChange.map(item => [item['基金简称'], item['Year\u4efd\u989d\u589e\u957f%']])
+    );
+
+    // 提前构建 名称→代码 反向 Map，避免循环里反复 Object.keys().find()
+    const nameToCode = {};
+    if (etfNameMap) {
+        Object.keys(etfNameMap).forEach(k => {
+            const v = etfNameMap[k];
+            if (v) nameToCode[v] = k;
+        });
+    }
+
+    const rowsHtml = [];   // 一次性拼接，避免 innerHTML += 的性能问题
 
     data.PriceThisYearChange.forEach(item => {
         const name = item['名称'];
-        
-        // ==========================================
-        // 【核心修改】从 ETFNameMap 查找代码
-        // ==========================================
-        let code = '';
-        
-        // etfNameMap 结构: { "510050": "华夏上证50ETF", ... }
-        // 通过名称反向查找代码
-        if (etfNameMap && Object.keys(etfNameMap).length > 0) {
-            const foundCode = Object.keys(etfNameMap).find(k => etfNameMap[k] === name);
-            if (foundCode) code = foundCode;
-        }
-        
-        // 兜底：如果映射表缺失或匹配失败，尝试 item 自带字段
-        if (!code) {
-            code = item['代码'] || item['symbol'] || item['基金代码'] || '';
-        }
 
-        // 构建东方财富 URL
+        // ① 代码：先走 nameToCode，再回退到 item 自带字段
+        let code = nameToCode[name] || '';
+        if (!code) code = item['代码'] || item['symbol'] || item['基金代码'] || '';
+
+        // ② 行业：优先 code 匹配，缺失时不做名称兜底（名称口径不一致时不可靠）
+        const industry = code ? (etfIndustryMap[String(code).trim()] || '') : '';
+
+        // ③ 东方财富链接（原逻辑保持）
         let stockUrl;
         if (code) {
             const codeStr = String(code).trim();
-            const isHK = codeStr.length === 5; // 港股 5 位
-            
+            const isHK = codeStr.length === 5;
             if (isHK) {
                 stockUrl = `https://quote.eastmoney.com/hk/${codeStr}.html`;
             } else {
-                // ETF/股票交易所判断：
-                //   - 沪市: 5xxxxx (ETF)、6xxxxx (股票) → sh
-                //   - 深市: 0xxxxx、1xxxxx (ETF)、3xxxxx → sz
                 const prefix = (codeStr.startsWith('5') || codeStr.startsWith('6')) ? 'sh' : 'sz';
                 stockUrl = `https://quote.eastmoney.com/${prefix}${codeStr}.html`;
             }
         } else {
-            // 完全找不到代码，降级到搜索页
-            console.warn(`[ETF Table] 无法找到代码: "${name}"，降级到东方财富搜索页`);
             stockUrl = `https://quote.eastmoney.com/search/web?q=${encodeURIComponent(name)}`;
         }
-        
+
         const ytdChange = item.YC;
         const simpleName = name.replace(/ETF.*/, '').trim();
-        let since2021Change = priceChange2021Map.get(name) ?? priceChange2021Map.get(simpleName);
-        let shareChange = shareChangeMap.get(name) ?? shareChangeMap.get(simpleName);
-        
-        const row = `
+        const since2021Change = priceChange2021Map.get(name) ?? priceChange2021Map.get(simpleName);
+        const shareChange     = shareChangeMap.get(name)     ?? shareChangeMap.get(simpleName);
+
+        // ④ Industry 单元格：带截断 + title，兼顾桌面与移动端
+        const industryCell = industry
+            ? `<span class="inline-block max-w-[140px] truncate align-middle px-2 py-0.5 rounded-full text-xs font-medium
+                             bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
+                     title="${industry}">${industry}</span>`
+            : `<span class="text-gray-400 dark:text-gray-500">-</span>`;
+
+        rowsHtml.push(`
             <tr class="bg-white dark:bg-dark-card border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-slate-700">
                 <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
-                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a>
+                    <a href="${stockUrl}" target="_blank" rel="noopener noreferrer"
+                       class="text-blue-600 dark:text-blue-400 hover:underline">${name}</a>
                 </td>
-                <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}" data-order="${getOrderValue(ytdChange)}">${formatValue(ytdChange, 2, '%')}</td>
-                <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}" data-order="${getOrderValue(since2021Change)}">${formatValue(since2021Change, 2, '%')}</td>
-                <td class="px-6 py-4 text-right ${getColorClass(shareChange)}" data-order="${getOrderValue(shareChange)}">${formatValue(shareChange, 2, '%')}</td>
-            </tr>`;
-        tableBody.innerHTML += row;
+                <td class="px-6 py-4">${industryCell}</td>
+                <td class="px-6 py-4 text-right font-semibold ${getColorClass(ytdChange)}"
+                    data-order="${getOrderValue(ytdChange)}">${formatValue(ytdChange, 2, '%')}</td>
+                <td class="px-6 py-4 text-right ${getColorClass(since2021Change)}"
+                    data-order="${getOrderValue(since2021Change)}">${formatValue(since2021Change, 2, '%')}</td>
+                <td class="px-6 py-4 text-right ${getColorClass(shareChange)}"
+                    data-order="${getOrderValue(shareChange)}">${formatValue(shareChange, 2, '%')}</td>
+            </tr>`);
     });
+
+    tableBody.innerHTML = rowsHtml.join('');
 
     if ($.fn.DataTable.isDataTable('#etfTable')) {
         $('#etfTable').DataTable().destroy();
     }
 
     new DataTable('#etfTable', {
-        responsive: true, order: [[1, 'desc']], pageLength: 10, lengthMenu: [10, 25, 50, -1],
-        columnDefs: [{ type: 'num', targets: [1, 2, 3] }],
-        language: { search: "_INPUT_", searchPlaceholder: "Filter records...", lengthMenu: "Show _MENU_" }
+        responsive: true,
+        order: [[2, 'desc']],             // 注意：YTD 列从 index 1 → 2
+        pageLength: 10,
+        lengthMenu: [10, 25, 50, -1],
+        columnDefs: [
+            { type: 'num', targets: [2, 3, 4] },              // 数字列索引后移
+            { responsivePriority: 1, targets: 0 },            // ETF Name 最重要
+            { responsivePriority: 2, targets: 1 },            // Industry 次重要，移动端优先保留
+            { responsivePriority: 3, targets: 2 },            // YTD
+            { responsivePriority: 4, targets: 3 },
+            { responsivePriority: 5, targets: 4 }
+        ],
+        language: {
+            search: "_INPUT_",
+            searchPlaceholder: "Filter records...",
+            lengthMenu: "Show _MENU_"
+        }
     });
 }
 
