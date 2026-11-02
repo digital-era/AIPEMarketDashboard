@@ -198,7 +198,18 @@ function populateSummaryCards(data) {
     document.getElementById('top-share-growth-name').textContent = topShareGrowth['基金简称'];
     document.getElementById('top-share-growth-change').innerHTML = `<span class="text-blue-500 dark:text-blue-400">${formatValue(topShareGrowth['Year\u4efd\u989d\u589e\u957f%'], 2, '%')}</span>`;
     const worstPerformer = [...data.PriceChangeFrom2021].sort((a, b) => a['价格增长%'] - b['价格增长%'])[0];
-    document.getElementById('worst-performer-name').textContent = worstPerformer['基金简称'];
+
+    // 【改动】名称统一用 PriceThisYearChange 的口径：基金代码 → 代码，取名称
+    let worstName = worstPerformer['基金简称']; // 兜底
+    const worstCode = worstPerformer['基金代码'] ? String(worstPerformer['基金代码']).trim() : '';
+    if (worstCode) {
+        const matched = data.PriceThisYearChange.find(
+            x => x['代码'] && String(x['代码']).trim() === worstCode
+        );
+        if (matched && matched['名称']) worstName = matched['名称'];
+    }
+
+    document.getElementById('worst-performer-name').textContent = worstName;
     document.getElementById('worst-performer-change').innerHTML = `<span class="${getColorClass(worstPerformer['价格增长%'])}">${formatValue(worstPerformer['价格增长%'], 2, '%')}</span>`;
 }
 
