@@ -374,14 +374,19 @@ function createEtfPerformanceTable(data) {
     const tableBody = document.querySelector('#etfTable tbody');
     tableBody.innerHTML = '';
 
-    const priceChange2021Map = new Map(
-        data.PriceChangeFrom2021.map(item => [item['基金简称'], item['价格增长%']])
-    );
-    const shareChangeMap = new Map(
-        data.ShareThisYearChange.map(item => [item['基金简称'], item['Year\u4efd\u989d\u589e\u957f%']])
-    );
+    // 【改动 1】两个 2021 跨表 Map：改为 基金代码 → 值
+    const priceChange2021ByCode = new Map();
+    data.PriceChangeFrom2021.forEach(item => {
+        const c = item['基金代码'] ? String(item['基金代码']).trim() : '';
+        if (c) priceChange2021ByCode.set(c, item['价格增长%']);
+    });
+    const shareChangeByCode = new Map();
+    data.ShareThisYearChange.forEach(item => {
+        const c = item['基金代码'] ? String(item['基金代码']).trim() : '';
+        if (c) shareChangeByCode.set(c, item['Year\u4efd\u989d\u589e\u957f%']);
+    });
 
-    // 提前构建 名称→代码 反向 Map，避免循环里反复 Object.keys().find()
+    // 提前构建 名称→代码 反向 Map（保留，作为 code 兜底）
     const nameToCode = {};
     if (etfNameMap) {
         Object.keys(etfNameMap).forEach(k => {
@@ -395,14 +400,15 @@ function createEtfPerformanceTable(data) {
     data.PriceThisYearChange.forEach(item => {
         const name = item['名称'];
 
-        // ① 代码：先走 nameToCode，再回退到 item 自带字段
-        let code = nameToCode[name] || '';
-        if (!code) code = item['代码'] || item['symbol'] || item['基金代码'] || '';
+        // 【改动 2】代码来源：PriceThisYearChange 自带 代码 优先，nameToCode 兜底
+        let code = item['代码'] ? String(item['代码']).trim() : '';
+        if (!code) code = nameToCode[name] || '';
+        if (!code) code = item['symbol'] || item['基金代码'] || '';
 
-        // ② 行业：优先 code 匹配，缺失时不做名称兜底（名称口径不一致时不可靠）
+        // ② 行业：优先 code 匹配（保持原样）
         const industry = code ? (etfIndustryMap[String(code).trim()] || '') : '';
 
-        // ③ 东方财富链接（原逻辑保持）
+        // ③ 东方财富链接（保持原样）
         let stockUrl;
         if (code) {
             const codeStr = String(code).trim();
@@ -418,11 +424,13 @@ function createEtfPerformanceTable(data) {
         }
 
         const ytdChange = item.YC;
-        const simpleName = name.replace(/ETF.*/, '').trim();
-        const since2021Change = priceChange2021Map.get(name) ?? priceChange2021Map.get(simpleName);
-        const shareChange     = shareChangeMap.get(name)     ?? shareChangeMap.get(simpleName);
 
-        // ④ Industry 单元格：带截断 + title，兼顾桌面与移动端
+        // 【改动 3】两个 2021 字段只按 code 关联，去掉名称兜底
+        const codeKey = code ? String(code).trim() : '';
+        const since2021Change = codeKey ? priceChange2021ByCode.get(codeKey) : undefined;
+        const shareChange     = codeKey ? shareChangeByCode.get(codeKey)     : undefined;
+
+        // ④ Industry 单元格（保持原样）
         const industryCell = industry
             ? `<span class="inline-block max-w-[140px] truncate align-middle px-2 py-0.5 rounded-full text-xs font-medium
                              bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
@@ -453,14 +461,14 @@ function createEtfPerformanceTable(data) {
 
     new DataTable('#etfTable', {
         responsive: true,
-        order: [[2, 'desc']],             // 注意：YTD 列从 index 1 → 2
+        order: [[2, 'desc']],
         pageLength: 10,
         lengthMenu: [10, 25, 50, -1],
         columnDefs: [
-            { type: 'num', targets: [2, 3, 4] },              // 数字列索引后移
-            { responsivePriority: 1, targets: 0 },            // ETF Name 最重要
-            { responsivePriority: 2, targets: 1 },            // Industry 次重要，移动端优先保留
-            { responsivePriority: 3, targets: 2 },            // YTD
+            { type: 'num', targets: [2, 3, 4] },
+            { responsivePriority: 1, targets: 0 },
+            { responsivePriority: 2, targets: 1 },
+            { responsivePriority: 3, targets: 2 },
             { responsivePriority: 4, targets: 3 },
             { responsivePriority: 5, targets: 4 }
         ],
